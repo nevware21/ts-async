@@ -1,0 +1,92 @@
+{
+    "name": "@nevware21/ts-async",
+    "description": "Promise support utilites and helpers for TypeScript",
+    "version": "0.1.0",
+    "homepage": "https://github.com/nevware21/ts-async",
+    "sideEffects": false,
+    "license": "MIT",
+    "author": {
+        "name": "Nevware21",
+        "email": "github+ts_async@nevware21.com"
+    },
+    "keywords": [
+        "typescript",
+        "javascript",
+        "promise",
+        "es6.promise",
+        "async",
+        "asynchronous",
+        "jquery",
+        "jquery.promise",
+        "minification",
+        "browser",
+        "promise polyfill"
+    ],
+    "main": "lib/dist/es5/umd/ts-async.js",
+    "module": "lib/dist-es5/index.js",
+    "esnext": "lib/dist-es6/index.js",
+    "types": "lib/types/index.d.ts",    
+    "scripts": {
+        "postinstall": "node common/scripts/install-run-rush.js update",
+        "build": "rush build",
+        "rebuild": "rush rebuild",
+        "test": "rush test",
+        "lint": "grunt ts_async-lint",
+        "codecov": "nyc report --reporter=json && codecov -f coverage/*.json",
+        "clean": "git clean -xdf && npm install",
+        "cleanBuild": "git clean && npm install && npm run rebuild",
+        "docs": "typedoc",
+        "rush-update": "rush update --recheck --purge --full",
+        "test:browser": "cd lib && npm run test:browser",
+        "test:node": "cd lib && npm run test:node",
+        "test:worker": "cd lib && npm run test:worker",
+        "debug:browser": "cd lib && npm run debug:browser",
+        "debug:worker": "cd lib && npm run debug:worker"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/nevware21/ts-async.git"
+    },
+    "bugs": {
+        "url": "https://github.com/nevware21/ts-async/issues"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "https://github.com/nevware21/ts-async/blob/main/LICENSE"
+        }
+    ],
+    "engines": {
+        "node": ">= 0.8.0"
+    },
+    "dependencies": {
+        "@nevware21/ts-utils": "^0.7.0"
+    },
+    "peerDependencies": {
+        "typescript": ">=1",
+        "@nevware21/ts-utils": ">= 0.7 < 2.x"
+    },
+    "devDependencies": {
+        "@microsoft/rush": "^5.82.1",
+        "@nevware21/grunt-eslint-ts": "0.2.4",
+        "@nevware21/grunt-ts-plugin": "0.4.5",
+        "@nevware21/ts-utils": "^0.7.0",
+        "@types/eslint": "^8.4.2",
+        "@types/estree": "^0.0.51",
+        "@types/jquery": "^3.5.14",
+        "@types/chai": "^4.3.1",
+        "@types/mocha": "^10.0.1",
+        "@types/sinon": "^10.0.11",
+        "@typescript-eslint/eslint-plugin": "^5.26.0",
+        "@typescript-eslint/parser": "^5.26.0",
+        "eslint": "^8.16.0",
+        "eslint-plugin-security": "^1.5.0",
+        "eslint-formatter-codeframe": "^7.32.1",
+        "grunt": "^1.5.3",
+        "grunt-cli": "^1.4.3",
+        "typescript": "^4.9.3",
+        "nyc": "^15.1.0",
+        "codecov": "^3.8.3",
+        "typedoc": "^0.23.23"
+    }
+}

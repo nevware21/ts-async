@@ -1,0 +1,15 @@
+# NPM Ignore
+
+# ignore everything
+*
+
+# ... but these files
+!package.json
+!tsconfig.json
+!/README.md
+!/LICENSE
+!lib/dist-esm/**
+!lib/dist/**
+!lib/browser/**
+!lib/src/**
+!lib/types/**

@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "inlineSources": true,
+        "noImplicitAny": true,
+        "module": "es6",
+        "moduleResolution": "node",
+        "target": "es5",
+        "forceConsistentCasingInFileNames": true,
+        "importHelpers": false,
+        "noEmitHelpers": false,
+        "alwaysStrict": true,
+        "declaration": false,
+        "suppressImplicitAnyIndexErrors": true,
+        "allowSyntheticDefaultImports": true,
+        "removeComments": true,
+        "esModuleInterop": true
+    },
+    "include": [
+        "../src/**/*.ts",
+        "./src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules/"
+    ]
+}
