@@ -97,7 +97,7 @@
         "karma-spec-reporter": "^0.0.34",
         "karma-chrome-launcher": "^3.1.1",
         "chromium": "^3.0.3",
-        "puppeteer": "^14.2.1",
+        "puppeteer": "^19.5.2",
         "sinon": "^14.0.0"
     }
 }
