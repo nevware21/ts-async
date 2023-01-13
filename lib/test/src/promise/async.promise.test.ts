@@ -12,7 +12,6 @@ import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, schedul
 import { createAsyncAllPromise, createAsyncPromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";
 import { IPromise } from "../../../src/promise/interfaces/IPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
-import { EventEmitter } from "events";
 
 function _expectException(cb: () => void, message: string) {
     try {
@@ -73,7 +72,7 @@ describe("Validate createAsyncPromise() timeout usages", () => {
                 gbl.addEventListener("unhandledrejection", _unhandledrejection);
             }
         } else {
-            EventEmitter.captureRejections = false;
+            //EventEmitter.captureRejections = false;
             console.log("Adding Node Rejection Listener");
             process.on("unhandledRejection", _unhandledNodeRejection);
         }

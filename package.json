@@ -16,11 +16,15 @@
         "es6.promise",
         "async",
         "asynchronous",
-        "jquery",
-        "jquery.promise",
+        "sync",
+        "synchronous",
+        "idle",
         "minification",
         "browser",
-        "promise polyfill"
+        "promise polyfill",
+        "idle promise",
+        "synchronous promise",
+        "sync promise"
     ],
     "main": "lib/dist/es5/umd/ts-async.js",
     "module": "lib/dist-es5/index.js",

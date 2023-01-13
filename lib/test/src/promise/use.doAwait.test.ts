@@ -17,7 +17,6 @@ import { createSyncPromise, createSyncRejectedPromise } from "../../../src/promi
 import { PromiseExecutor } from "../../../src/promise/types";
 import { PolyPromise } from "../../../src/polyfills/promise";
 import { IPromise } from "../../../src/promise/interfaces/IPromise";
-import { EventEmitter } from "events";
 
 function _expectException(cb: () => void, message: string) {
     try {
@@ -162,7 +161,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
                 gbl.addEventListener("unhandledrejection", _unhandledrejection);
             }
         } else {
-            EventEmitter.captureRejections = false;
+            //EventEmitter.captureRejections = false;
             console.log("Adding Node Rejection Listener");
             process.on("unhandledRejection", _unhandledNodeRejection);
         }

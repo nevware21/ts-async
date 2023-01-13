@@ -3,7 +3,7 @@
 <h2 align="center">built for minification</h2>
 
 
-![GitHub Workflow Status (main)](https://img.shields.io/github/workflow/status/nevware21/ts-async/NodeCI/main)
+![GitHub Workflow Status (main)](https://img.shields.io/github/actions/workflow/status/nevware21/ts-async/ci.yml?branch=main)
 
 ## Description
 
