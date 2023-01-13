@@ -12,7 +12,6 @@ import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, schedul
 import { createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
 import { IPromise } from "../../../src/promise/interfaces/IPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
-import { EventEmitter } from "events";
 import { PolyPromise } from "../../../src/polyfills/promise";
 import { createSyncRejectedPromise } from "../../../src/promise/syncPromise";
 import { createIdleRejectedPromise } from "../../../src/promise/idlePromise";
@@ -144,7 +143,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
                 gbl.addEventListener("unhandledrejection", _unhandledrejection);
             }
         } else {
-            EventEmitter.captureRejections = false;
+            //EventEmitter.captureRejections = false;
             console.log("Adding Node Rejection Listener");
             process.on("unhandledRejection", _unhandledNodeRejection);
         }

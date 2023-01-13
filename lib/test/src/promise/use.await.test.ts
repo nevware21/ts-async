@@ -16,7 +16,6 @@ import { IPromise } from "../../../src/promise/interfaces/IPromise";
 import { createNativePromise, createNativeRejectedPromise } from "../../../src/promise/nativePromise";
 import { createSyncPromise, createSyncRejectedPromise } from "../../../src/promise/syncPromise";
 import { PromiseExecutor } from "../../../src/promise/types";
-import { EventEmitter } from "events";
 
 function _expectException(cb: () => void, message: string) {
     try {
@@ -158,7 +157,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
                 gbl.addEventListener("unhandledrejection", _unhandledrejection);
             }
         } else {
-            EventEmitter.captureRejections = false;
+            //EventEmitter.captureRejections = false;
             console.log("Adding Node Rejection Listener");
             process.on("unhandledRejection", _unhandledNodeRejection);
         }
