@@ -48,7 +48,8 @@
         "test:node": "cd lib && npm run test:node",
         "test:worker": "cd lib && npm run test:worker",
         "debug:browser": "cd lib && npm run debug:browser",
-        "debug:worker": "cd lib && npm run debug:worker"
+        "debug:worker": "cd lib && npm run debug:worker",
+        "prep_release": "npm run cleanBuild && cd lib && npm pack"
     },
     "repository": {
         "type": "git",

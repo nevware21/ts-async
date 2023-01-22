@@ -86,6 +86,11 @@ doAwait(myPromise, (result) => {
 
 While the examples above are using the `createPromise` you can directly use the `createSyncPromise`, `createAsyncPromise`, `createIdlePromise` or `createNativePromise`, you can also mix and match them (ie. they don't all have to be the same implementation). The `createPromise` alias is provided to enable switching the underlying Promise implementation without changing any of your code.
 
+## Release Notes
+
+- [Releases](https://github.com/nevware21/ts-async/releases)
+- [Changelist Notes](./CHANGELIST.md)
+
 ## Browser Support
 
 General support is currently set to ES5 supported runtimes higher.
