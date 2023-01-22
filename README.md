@@ -1,7 +1,5 @@
 <h1 align="center">@nevware21 ts-async</h1>
-<h2 align="center">Promise support implementations and helpers for TypeScript<h2>
-<h2 align="center">built for minification</h2>
-
+<h2 align="center">Promise support implementations and helpers for TypeScript built for minification</h2>
 
 ![GitHub Workflow Status (main)](https://img.shields.io/github/actions/workflow/status/nevware21/ts-async/ci.yml?branch=main)
 [![codecov](https://codecov.io/gh/nevware21/ts-async/branch/main/graph/badge.svg?token=KA05820FMO)](https://codecov.io/gh/nevware21/ts-async)
@@ -39,6 +37,10 @@ The provided polyfill wrapper is build around the `asynchronous` promise impleme
 - Node (12, 14, 16, 18)
 - Browser (Chromium - headless)
 - Web Worker (Chromium - headless)
+
+### Documentation and details
+
+See the documentation [generated from source code](https://nevware21.github.io/ts-async/typedoc/index.html) via typedoc for a full list and details of all of the available types,  functions and interfaces.
 
 ## Quickstart
 
