@@ -36,4 +36,4 @@ The provided polyfill wrapper is build around the `asynchronous` promise impleme
 
 ## Documentation
 
-Documentation [generated from source code](https://nevware21.github.io/ts-utils/typedoc/index.html) via typedoc
+Documentation [generated from source code](https://nevware21.github.io/ts-async/typedoc/index.html) via typedoc

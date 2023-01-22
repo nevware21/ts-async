@@ -107,3 +107,7 @@ package-deps.json
 package-lock.json
 .nyc_output/
 **/.nyc_output/**
+
+
+#ignore lib Readme
+lib/README.md
