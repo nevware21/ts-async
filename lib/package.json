@@ -45,7 +45,7 @@
     ],
     "scripts": {
         "build": "grunt ts_async --verbose && npm run package",
-        "rebuild": "npm run build && npm run test && npm run docs",
+        "rebuild": "npm run build && npm run test",
         "package": "rollup -c rollup.config.js --bundleConfigAsCjs",
         "test": "grunt ts_async-test && npm run test:node && npm run test:worker && npm run test:browser && npm run coverage:report",
         "test:node": "nyc ts-mocha --type-check -p ./test/tsconfig.test.json ./test/**/*.test.ts --trace-uncaught",
@@ -57,9 +57,9 @@
         "coverage:report": "npm run coverage:nyc && npm run coverage:merge",
         "coverage:nyc": "nyc report --reporter=json",
         "coverage:merge": "node ../tools/coverage/merge-coverage.js",
-        "codecov": "nyc report --reporter=json && codecov -f ../coverage/*.json",
+        "codecov": "npm run coverage:report && codecov -f coverage/*.json --disable=gcov",
         "clean": "git clean -xdf && npm install",
-        "cleanBuild": "npm run clean && npm run rebuild",
+        "cleanBuild": "npm run clean && npm run rebuild && npm run docs",
         "docs": "cd .. && npx typedoc",
         "rush-update": "rush update --recheck --purge --full"
     },

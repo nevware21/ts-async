@@ -4,6 +4,10 @@
 
 
 ![GitHub Workflow Status (main)](https://img.shields.io/github/actions/workflow/status/nevware21/ts-async/ci.yml?branch=main)
+[![codecov](https://codecov.io/gh/nevware21/ts-async/branch/main/graph/badge.svg?token=KA05820FMO)](https://codecov.io/gh/nevware21/ts-async)
+[![npm version](https://badge.fury.io/js/%40nevware21%2Fts-async.svg)](https://badge.fury.io/js/%40nevware21%2Fts-async)
+[![downloads](https://img.shields.io/npm/dt/%40nevware21/ts-async.svg)](https://www.npmjs.com/package/%40nevware21/ts-async)
+[![downloads](https://img.shields.io/npm/dm/%40nevware21/ts-async.svg)](https://www.npmjs.com/package/%40nevware21/ts-async)
 
 ## Description
 
