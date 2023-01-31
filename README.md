@@ -101,7 +101,7 @@ Internal polyfills are used to backfill ES5 functionality which is not provided 
 --- | --- | --- | --- | --- |
 Latest ✔ | Latest ✔ | <center>9+ ✔</center> | Latest ✔ | Latest ✔ |
 
-> Note: ES3/IE8 is not explicitly not supported, but a PolyFill `PolyPromise` and the standard promise implementations and functions are supported in IE and ES5+ environments.
+> Note: A PolyFill `PolyPromise` provides the standard promise implementations for IE and ES5+ environments.
 
 ## Contributing
 
