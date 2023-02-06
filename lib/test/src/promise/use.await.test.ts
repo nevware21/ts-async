@@ -16,6 +16,7 @@ import { IPromise } from "../../../src/promise/interfaces/IPromise";
 import { createNativePromise, createNativeRejectedPromise } from "../../../src/promise/nativePromise";
 import { createSyncPromise, createSyncRejectedPromise } from "../../../src/promise/syncPromise";
 import { PromiseExecutor } from "../../../src/promise/types";
+import { createPromise, createResolvedPromise, setCreatePromiseImpl } from "../../../src/promise/promise";
 
 function _expectException(cb: () => void, message: string) {
     try {
@@ -149,6 +150,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
             //console && console.log && console.log("Debug[" + id + "]:" + message);
         }
 
+        setCreatePromiseImpl(createNewPromise);
         setPromiseDebugState(true, _debug);
 
         if (!isNode()) {
@@ -202,6 +204,15 @@ function batchTests(testKey: string, definition: TestDefinition) {
         _expectException(() => {
             createNewPromise(<any>true);
         }, " is not a function");
+    });
+
+    it("Test clearing the default promise creator", async () => {
+        setCreatePromiseImpl(null as any);
+        let promise = createPromise((resolve) => {
+            resolve(12);
+        });
+        assert.ok(promise instanceof Promise, "Check that it was a native Promise");
+        assert.equal(await promise, 12);
     });
 
     it("Test resolving promise asynchronously using then/catch with timeout", async () => {
@@ -916,6 +927,62 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
     });
 
+    it("Test resolving a promise multiple times", async () => {
+        let resolvedValue : number | null= null;
+        let rejectedValue: Error | null = null;
+        let promise = createNewPromise<any>((resolve, reject) => {
+            setTimeout(() => {
+                resolve(42);
+                resolve(53);
+            }, 10);
+        });
+        
+        let chainedPromise = promise.then((value) => {
+            resolvedValue = value;
+        },
+        (value) => {
+            rejectedValue = value;
+        });
+
+        // Should not be resolved or rejected yet as this should happen asynchronously
+        assert.equal(resolvedValue, null, "Expected the promise to not be resolved yet");
+        assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
+
+        let result: any = await chainedPromise;
+
+        assert.equal(resolvedValue, 42, "Expected the promise to be resolved");
+        assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
+        assert.equal(result, undefined, "Expected the promise to await with the resolved value");
+    });
+
+    it("Test rejecting a promise after resolving it", async () => {
+        let resolvedValue : number | null= null;
+        let rejectedValue: Error | null = null;
+        let promise = createNewPromise<any>((resolve, reject) => {
+            setTimeout(() => {
+                resolve(42);
+                reject(53);
+            }, 10);
+        });
+        
+        let chainedPromise = promise.then((value) => {
+            resolvedValue = value;
+        },
+        (value) => {
+            rejectedValue = value;
+        });
+
+        // Should not be resolved or rejected yet as this should happen asynchronously
+        assert.equal(resolvedValue, null, "Expected the promise to not be resolved yet");
+        assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
+
+        let result: any = await chainedPromise;
+
+        assert.equal(resolvedValue, 42, "Expected the promise to be resolved");
+        assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
+        assert.equal(result, undefined, "Expected the promise to await with the resolved value");
+    });
+
     it("Test resolving promise with an asynchronous value and then a pre-rejected promise", async () => {
         let preRejected = createRejectedPromise(new Error("Simulated Pre Rejected Promise"));
 
@@ -1026,5 +1093,20 @@ function batchTests(testKey: string, definition: TestDefinition) {
         assert.equal(await createNewPromise((resolve, reject) => {
             resolve(2);
         }).finally(()=> 77), 2, "Expect the result to be 2");
+    });
+
+    it("check creating a resolved promise with another promise", async () => {
+
+        let otherPromise = createPromise((resolve, reject) => {
+            scheduleTimeout(() => {
+                resolve(21);
+            }, 0);
+        });
+        
+        let promise = createResolvedPromise(otherPromise);
+        assert.ok(otherPromise === promise);
+
+        let result = await promise;
+        assert.equal(result, 21);
     });
 }

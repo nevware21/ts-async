@@ -25,7 +25,7 @@ let _promiseCreator: ILazyValue<<T>(executor: PromiseExecutor<T>, timeout?: numb
 export function setCreatePromiseImpl(
     creator: <T>(executor: PromiseExecutor<T>, timeout?: number) => IPromise<T>
 ) {
-    _promiseCreator = getLazy(() => creator);
+    _promiseCreator = creator ? getLazy(() => creator) : null;
 }
 
 /**

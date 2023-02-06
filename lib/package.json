@@ -65,14 +65,13 @@
     },
 
     "dependencies": {
+        "@nevware21/ts-utils": ">= 0.7 < 2.x"
     },
     "peerDependencies": {
-        "typescript": ">=1",
-        "@nevware21/ts-utils": ">= 0.7 < 2.x"
+        "typescript": ">=1"
     },
     "devDependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
-        "@nevware21/ts-utils": "^0.7.0",
         "@rollup/plugin-commonjs": "^24.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
