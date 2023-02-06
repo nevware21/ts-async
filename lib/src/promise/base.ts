@@ -67,15 +67,19 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         return (!!evt && evt.initEvent);
     }));
 
+    function _cancelRejectionHandler() {
+        if (_unHandledRejectionHandler) {
+            _unHandledRejectionHandler.cancel();
+            _unHandledRejectionHandler = null;
+        }
+    }
+
     // https://tc39.es/ecma262/#sec-promise.prototype.then
     function _then<TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2> {
         try {
             _currentPromiseId.push(_id);
             _handled = true;
-            if (_unHandledRejectionHandler) {
-                _unHandledRejectionHandler.cancel();
-                _unHandledRejectionHandler = null;
-            }
+            _unHandledRejectionHandler && _cancelRejectionHandler();
 
             _debugLog(_toString(), "then(" + dumpObj(onResolved)+ ", " + dumpObj(onResolved) +  ")");
             let thenPromise = newPromise<TResult1, TResult2>(function (resolve, reject) {
@@ -162,10 +166,6 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         return STRING_STATES[_state];
     }
 
-    function _isHandled() {
-        return _handled;
-    }
-
     function _processQueue() {
         if (_queue.length > 0) {
             // The onFulfilled and onRejected handlers must be called asynchronously. Thus,
@@ -178,10 +178,8 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             _handled = true;
             processor(pending);
             _debugLog(_toString(), "Processing done");
-            if (_unHandledRejectionHandler) {
-                _unHandledRejectionHandler.cancel();
-                _unHandledRejectionHandler = null;
-            }
+            _unHandledRejectionHandler && _cancelRejectionHandler();
+
         } else {
             _debugLog(_toString(), "Empty Processing queue ");
         }
@@ -249,10 +247,8 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                         handler(theEvt);
                     } else {
                         let theConsole = getInst("console");
-                        if (theConsole) {
-                            _debugLog(_toString(), "Logging " + UNHANDLED_REJECTION);
-                            (theConsole["error"] || theConsole["log"])(UNHANDLED_REJECTION, _settledValue);
-                        }
+                        theConsole && (theConsole["error"] || theConsole["log"])(UNHANDLED_REJECTION, _settledValue);
+                        _debugLog(_toString(), "Logging " + UNHANDLED_REJECTION);
                     }
                 }
             }
@@ -271,7 +267,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
 
     if (_promiseDebugEnabled) {
         // eslint-disable-next-line brace-style
-        _addDebugState(_thePromise, _strState, () => { return objToString(_settledValue); }, _isHandled);
+        _addDebugState(_thePromise, _strState, () => { return objToString(_settledValue); }, () => _handled);
     }
 
     if (hasSymbol()) {

@@ -11,5 +11,4 @@
 !/LICENSE
 !dist-es**/**
 !dist/**
-!src/**
 !types/**
