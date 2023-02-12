@@ -8,7 +8,7 @@
 
 import * as sinon from "sinon";
 import { assert } from "chai";
-import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, scheduleTimeout } from "@nevware21/ts-utils";
+import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, scheduleTimeout, setBypassLazyCache } from "@nevware21/ts-utils";
 import { createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
 import { IPromise } from "../../../src/promise/interfaces/IPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
@@ -40,7 +40,7 @@ function _unhandledNodeRejection(reason: any, promise: any) {
     });
 
     if (!found) {
-        let prefix = promise.toString() + " :: ";
+        // let prefix = promise.toString() + " :: ";
         _unhandledEvents.push({
             reason,
             promise
@@ -125,7 +125,6 @@ function batchTests(testKey: string, definition: TestDefinition) {
     let createRejectedPromise = definition.rejected;
     let checkState = definition.checkState;
     let checkChainedState = definition.checkChainedState;
-    let clock: sinon.SinonFakeTimers;
 
     beforeEach(() => {
         // clock = sinon.useFakeTimers();
@@ -136,6 +135,9 @@ function batchTests(testKey: string, definition: TestDefinition) {
         }
 
         setPromiseDebugState(true, _debug);
+        
+        // Disable lazy caching
+        setBypassLazyCache(true);
 
         if (!isNode()) {
             let gbl = getGlobal();
@@ -159,6 +161,9 @@ function batchTests(testKey: string, definition: TestDefinition) {
             console.log("Removing Node Rejection Listener");
             process.off("unhandledRejection", _unhandledNodeRejection);
         }
+        
+        // Re-Ensable lazy caching
+        setBypassLazyCache(false);
     });
 
     it("Test pre-rejected promise with no handler", async () => {

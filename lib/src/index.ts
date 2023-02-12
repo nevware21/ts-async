@@ -22,7 +22,7 @@ export {
 } from "./promise/syncPromise";
 export {
     createIdlePromise, createIdleAllPromise, createIdleResolvedPromise, createIdleRejectedPromise,
-    setDetaultIdlePromiseTimeout as setDetaultIdleTimeout
+    setDetaultIdleTimeout
 } from "./promise/idlePromise";
 export {
     createAsyncPromise, createAsyncAllPromise, createAsyncResolvedPromise, createAsyncRejectedPromise

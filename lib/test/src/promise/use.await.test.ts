@@ -7,7 +7,7 @@
  */
 
 import { assert } from "chai";
-import { getGlobal, objHasOwn, isWebWorker, isNode, scheduleTimeout, dumpObj, arrForEach, objForEachKey } from "@nevware21/ts-utils";
+import { getGlobal, objHasOwn, isWebWorker, isNode, scheduleTimeout, dumpObj, arrForEach, objForEachKey, setBypassLazyCache } from "@nevware21/ts-utils";
 import { PolyPromise } from "../../../src/polyfills/promise";
 import { createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
@@ -49,7 +49,7 @@ function _unhandledNodeRejection(reason: any, promise: any) {
     });
 
     if (!found) {
-        let prefix = promise.toString() + " :: ";
+        //let prefix = promise.toString() + " :: ";
         _unhandledEvents.push({
             reason,
             promise
@@ -145,13 +145,21 @@ function batchTests(testKey: string, definition: TestDefinition) {
     let checkChainedState = definition.checkChainedState;
 
     beforeEach(() => {
+        createNewPromise = definition.creator;
+        createRejectedPromise = definition.rejected;
+        checkState = definition.checkState;
+        checkChainedState = definition.checkChainedState;
+
         _unhandledEvents = [];
         function _debug(id: string, message: string) {
-            //console && console.log && console.log("Debug[" + id + "]:" + message);
+            console && console.log && console.log("Debug[" + id + "]:" + message);
         }
 
-        setCreatePromiseImpl(createNewPromise);
+        setCreatePromiseImpl(definition.creator);
         setPromiseDebugState(true, _debug);
+        
+        // Disable lazy caching
+        setBypassLazyCache(true);
 
         if (!isNode()) {
             let gbl = getGlobal();
@@ -176,6 +184,9 @@ function batchTests(testKey: string, definition: TestDefinition) {
             console.log("Removing Node Rejection Listener");
             process.off("unhandledRejection", _unhandledNodeRejection);
         }
+        
+        // Re-Ensable lazy caching
+        setBypassLazyCache(false);
     });
 
     it("Test promise with missing resolver", () => {
@@ -268,7 +279,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
         if (checkState) {
             // The asynchronous promise should be resolved
-            assert.equal(promise.state, "resolved");
+            assert.equal(promise.state, "resolved", dumpObj(promise));
         }
 
         if (checkChainedState) {
@@ -1082,6 +1093,218 @@ function batchTests(testKey: string, definition: TestDefinition) {
         assert.equal(resolvedValue, 68, "Expected the promise to be resolved");
         assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
         assert.equal(result, resolvedValue, "Expected the promise to await with the resolved value");
+    });
+
+    it ("check initial resolve with another promise", async () => {
+        let executorResolved = false;
+        let resolvedValue : number | null= null;
+        let rejectedValue: Error | null = null;
+
+        let promise = createNewPromise<number>((resolve, reject) => {
+            resolve(createNewPromise((resolve2) => {
+                setTimeout(() => {
+                    executorResolved = true;
+                    resolve2(42);
+                }, 10);
+            }));
+        });
+
+        let chainedPromise2 = promise.then((value) => {
+            resolvedValue = value as any;
+            return value * 2;
+        },
+        (value) => {
+            rejectedValue = value;
+        });
+
+        // Should not be resolved or rejected yet as this should happen asynchronously
+        assert.equal(executorResolved, false, "The executor has not yet resolved");
+
+        assert.equal(resolvedValue, null, "Expected the promise to not be resolved yet");
+        assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
+
+        assert.equal(executorResolved, false, "The executor has not yet resolved");
+
+        // We need to call await to let the "real" new JS execution cycle to occur
+        let result = await chainedPromise2;
+
+        // The asynchronous promise should be resolved
+        assert.equal(executorResolved, true, "The executor has not yet resolved");
+
+        assert.equal(resolvedValue, 42, "Expected the promise to be resolved");
+        assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
+        assert.equal(result, 84, "Expected the promise to await with the resolved value");
+    });
+
+    it ("check initial resolve with another promise that is resolved with another promise", async () => {
+        let executorResolved = false;
+        let resolvedValue : number | null= null;
+        let rejectedValue: Error | null = null;
+
+        let promise = createNewPromise<number>((resolve, reject) => {
+            resolve(createNewPromise((resolve2) => {
+                setTimeout(() => {
+                    executorResolved = true;
+                    resolve2(createNewPromise((resolve2) => {
+                        setTimeout(() => {
+                            executorResolved = true;
+                            resolve2(42);
+                        }, 10);
+                    }));
+                }, 10);
+            }));
+        });
+
+        let chainedPromise2 = promise.then((value) => {
+            resolvedValue = value as any;
+            return value * 2;
+        },
+        (value) => {
+            rejectedValue = value;
+        });
+
+        // Should not be resolved or rejected yet as this should happen asynchronously
+        assert.equal(executorResolved, false, "The executor has not yet resolved");
+
+        assert.equal(resolvedValue, null, "Expected the promise to not be resolved yet");
+        assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
+
+        assert.equal(executorResolved, false, "The executor has not yet resolved");
+
+        // We need to call await to let the "real" new JS execution cycle to occur
+        let result = await chainedPromise2;
+
+        // The asynchronous promise should be resolved
+        assert.equal(executorResolved, true, "The executor has not yet resolved");
+
+        assert.equal(resolvedValue, 42, "Expected the promise to be resolved");
+        assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
+        assert.equal(result, 84, "Expected the promise to await with the resolved value");
+    });
+
+    it ("check initial resolve with another promise that gets rejected", async () => {
+        let executorResolved = false;
+        let resolvedValue : number | null= null;
+        let rejectedValue: any = null;
+        let finallyCalled = false;
+        let catchCalled = false;
+        let rejectError = new Error("Delay rejected!");
+
+        let promise = createNewPromise<number>((resolve) => {
+            resolve(createNewPromise((resolve, reject) => {
+                setTimeout(() => {
+                    executorResolved = true;
+                    reject(rejectError);
+                }, 10);
+            }));
+        });
+        
+        promise.catch((f1) => {
+            console.log("failed 1: " + dumpObj(f1));
+            catchCalled = true;
+        }).finally(() => {
+            finallyCalled = true;
+        });
+
+        let chainedPromise2 = promise.then((value) => {
+            resolvedValue = value as any;
+            return value;
+        },
+        (value) => {
+            rejectedValue = value;
+        });
+
+        // Should not be resolved or rejected yet as this should happen asynchronously
+        assert.equal(executorResolved, false, "The executor has not yet resolved");
+        assert.equal(catchCalled, false, "catch was not called");
+        assert.equal(finallyCalled, false, "finally was not called");
+
+        assert.equal(resolvedValue, null, "Expected the promise to not be resolved yet");
+        assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
+
+        assert.equal(executorResolved, false, "The executor has not yet resolved");
+
+        let result;
+        try {
+            // We need to call await to let the "real" new JS execution cycle to occur
+            result = await chainedPromise2;
+        } catch (e) {
+            assert.ok(true, dumpObj(e));
+        }
+
+        // The asynchronous promise should be resolved
+        assert.equal(executorResolved, true, "The executor has been resolved");
+        assert.equal(catchCalled, true, "catch called");
+        assert.equal(finallyCalled, true, "finally was called");
+
+        assert.equal(resolvedValue, null, "Expected the resolved value to not be set");
+        assert.equal(rejectedValue, rejectError, "Expected the promise to be rejected with an error");
+        assert.equal(result, undefined, "Expected the promise to await with undefined");
+    });
+
+    it ("check initial resolve with another promise that is resolved with another promise that gets rejected", async () => {
+        let executorResolved = 0;
+        let resolvedValue : number | null= null;
+        let rejectedValue: any = null;
+        let finallyCalled = false;
+        let catchCalled = false;
+        let rejectError = new Error("Delay rejected!");
+
+        let promise = createNewPromise<number>((resolve) => {
+            resolve(createNewPromise((resolve, reject) => {
+                setTimeout(() => {
+                    executorResolved = 1;
+                    resolve(createNewPromise((resolve, reject) => {
+                        setTimeout(() => {
+                            executorResolved++;
+                            reject(rejectError);
+                        }, 10);
+                    }));
+                }, 10);
+            }));
+        });
+        
+        promise.catch((f1) => {
+            console.log("failed 1: " + dumpObj(f1));
+            catchCalled = true;
+        }).finally(() => {
+            finallyCalled = true;
+        });
+
+        let chainedPromise2 = promise.then((value) => {
+            resolvedValue = value as any;
+            return value;
+        },
+        (value) => {
+            rejectedValue = value;
+        });
+
+        // Should not be resolved or rejected yet as this should happen asynchronously
+        assert.equal(executorResolved, 0, "The executor has not yet resolved");
+        assert.equal(catchCalled, false, "catch was not called");
+        assert.equal(finallyCalled, false, "finally was not called");
+
+        assert.equal(resolvedValue, null, "Expected the promise to not be resolved yet");
+        assert.equal(rejectedValue, null, "Expected the promise to not be rejected yet");
+
+        assert.equal(executorResolved, 0, "The executor has not yet resolved");
+
+        let result;
+        try {
+            // We need to call await to let the "real" new JS execution cycle to occur
+            result = await chainedPromise2;
+        } catch (e) {
+            assert.ok(true, dumpObj(e));
+        }
+
+        // The asynchronous promise should be resolved
+        assert.equal(executorResolved, 2, "The executor has been resolved");
+        assert.equal(catchCalled, true, "catch called");
+        assert.equal(finallyCalled, true, "finally was called");
+
+        assert.equal(resolvedValue, null, "Expected the resolved value to not be set");
+        assert.equal(rejectedValue, rejectError, "Expected the promise to be rejected with an error");
+        assert.equal(result, undefined, "Expected the promise to await with undefined");
     });
 
     it("check finally handling", async () => {

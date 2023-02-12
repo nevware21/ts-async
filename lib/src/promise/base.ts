@@ -17,15 +17,16 @@ import { IPromise } from "./interfaces/IPromise";
 import { PromisePendingProcessor } from "./itemProcessor";
 import { FinallyPromiseHandler, PromiseCreatorFn, PromiseExecutor, RejectedPromiseHandler, ResolvedPromiseHandler } from "./types";
 import { ePromiseState, STRING_STATES } from "../internal/state";
+import { emitEvent } from "./event";
 
-const UNHANDLED_REJECTION = "unhandledrejection";
-const DISPATCH_EVENT = "dispatchEvent";
+const NODE_UNHANDLED_REJECTION = "unhandledRejection";
+const UNHANDLED_REJECTION = NODE_UNHANDLED_REJECTION.toLowerCase();
+
 let _currentPromiseId: number[] = [];
 let _uniquePromiseId = 0;
 let _unhandledRejectionTimeout = 10;
 
 let _hasPromiseRejectionEvent: ILazyValue<boolean>;
-let _hasInitEvent: ILazyValue<boolean>;
 
 function dumpObj(value: any) {
     if (isFunction(value)) {
@@ -48,7 +49,8 @@ function dumpObj(value: any) {
  */
 export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: PromisePendingProcessor, executor: PromiseExecutor<T>, ...additionalArgs: any): IPromise<T> {
     let _state = ePromiseState.Pending;
-    let _settledValue: T = null;
+    let _hasResolved = false;
+    let _settledValue: T;
     let _queue: (() => void)[] = [];
     let _id = _uniquePromiseId++;
     let _parentId = _currentPromiseId.length > 0 ? _currentPromiseId[_currentPromiseId.length - 1] : undefined;
@@ -57,29 +59,14 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     let _thePromise: IPromise<T>;
 
     !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = getLazy(() => !!getInst("PromiseRejectionEvent")));
-    !_hasInitEvent && (_hasInitEvent = getLazy(() => {
-        let evt: any;
-        let doc = getDocument();
-        if (doc && doc.createEvent) {
-            evt = doc.createEvent("Event");
-        }
-        
-        return (!!evt && evt.initEvent);
-    }));
-
-    function _cancelRejectionHandler() {
-        if (_unHandledRejectionHandler) {
-            _unHandledRejectionHandler.cancel();
-            _unHandledRejectionHandler = null;
-        }
-    }
 
     // https://tc39.es/ecma262/#sec-promise.prototype.then
     function _then<TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2> {
         try {
             _currentPromiseId.push(_id);
             _handled = true;
-            _unHandledRejectionHandler && _cancelRejectionHandler();
+            _unHandledRejectionHandler && _unHandledRejectionHandler.cancel();
+            _unHandledRejectionHandler = null;
 
             _debugLog(_toString(), "then(" + dumpObj(onResolved)+ ", " + dumpObj(onResolved) +  ")");
             let thenPromise = newPromise<TResult1, TResult2>(function (resolve, reject) {
@@ -97,7 +84,6 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                         let value = isUndefined(handler) ? _settledValue : (isFunction(handler) ? handler(_settledValue) : handler);
                         _debugLog(_toString(), "Handling Result " + dumpObj(value));
     
-                        // https://tc39.es/ecma262/#sec-newpromiseresolvethenablejob
                         if (isPromiseLike(value)) {
                             // The called handlers returned a new promise, so the chained promise
                             // will follow the state of this promise.
@@ -123,7 +109,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     
                 // If this promise is already settled, then immediately process the callback we
                 // just added to the queue.
-                if (_state !== ePromiseState.Pending) {
+                if (_hasResolved) {
                     _processQueue();
                 }
             }, additionalArgs);
@@ -178,79 +164,54 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             _handled = true;
             processor(pending);
             _debugLog(_toString(), "Processing done");
-            _unHandledRejectionHandler && _cancelRejectionHandler();
+            _unHandledRejectionHandler && _unHandledRejectionHandler.cancel();
+            _unHandledRejectionHandler = null;
 
         } else {
             _debugLog(_toString(), "Empty Processing queue ");
         }
     }
 
-    function _resolve(value: T): void {
-        if (_state === ePromiseState.Pending) {
-            _settledValue = value;
-            _state = ePromiseState.Resolved;
-            _debugLog(_toString(), "Resolved");
-            _processQueue();
-        } else {
-            _debugLog(_toString(), "Already Resolved");
-        }
-    }
+    function _createSettleIfFn(newState: ePromiseState, allowState: ePromiseState) {
+        return function(theValue: T) {
+            if (_state === allowState) {
+                if (newState === ePromiseState.Resolved && isPromiseLike(theValue)) {
+                    _state = ePromiseState.Resolving;
+                    _debugLog(_toString(), "Resolving");
+                    theValue.then(
+                        _createSettleIfFn(ePromiseState.Resolved, ePromiseState.Resolving),
+                        _createSettleIfFn(ePromiseState.Rejected, ePromiseState.Resolving));
+                    return;
+                }
 
-    function _reject(reason: any): void {
-        if (_state === ePromiseState.Pending) {
-            _settledValue = reason;
-            _state = ePromiseState.Rejected;
-            _debugLog(_toString(), "Rejected");
-            _processQueue();
-            if (!_handled && !_unHandledRejectionHandler) {
-                _unHandledRejectionHandler = scheduleTimeout(_notifyUnhandledRejection, _unhandledRejectionTimeout)
+                _state = newState;
+                _hasResolved = true;
+                _settledValue = theValue;
+                _debugLog(_toString(), _strState());
+                _processQueue();
+                if (!_handled && newState === ePromiseState.Rejected && !_unHandledRejectionHandler) {
+                    _unHandledRejectionHandler = scheduleTimeout(_notifyUnhandledRejection, _unhandledRejectionTimeout)
+                }
+            } else {
+                _debugLog(_toString(), "Already " + _strState());
             }
-        } else {
-            _debugLog(_toString(), "Already Rejected");
-        }
+        };
     }
 
     function _notifyUnhandledRejection() {
         if (!_handled) {
             if (isNode()) {
-                _debugLog(_toString(), "Emitting unhandledRejection");
-                process.emit("unhandledRejection", _settledValue, _thePromise);
+                _debugLog(_toString(), "Emitting " + NODE_UNHANDLED_REJECTION);
+                process.emit(NODE_UNHANDLED_REJECTION, _settledValue, _thePromise);
             } else {
                 let gbl = getWindow() || getGlobal();
-                let theEvt: any;
-            
-                if (_hasInitEvent.v) {
-                    let doc = getDocument();
-                    theEvt = doc.createEvent("Event");
+    
+                _debugLog(_toString(), "Emitting " + UNHANDLED_REJECTION);
+                emitEvent(gbl, UNHANDLED_REJECTION, (theEvt: any) => {
                     objDefine(theEvt, "promise", { g: () => _thePromise });
                     theEvt.reason = _settledValue;
-                    theEvt.initEvent(UNHANDLED_REJECTION, false, true);
-                } else if (_hasPromiseRejectionEvent.v) {
-                    // Web worker
-                    theEvt = new Event(UNHANDLED_REJECTION);
-                    objDefine(theEvt, "promise", { g: () => _thePromise });
-                    theEvt.reason = _settledValue;
-                }
-    
-                if (theEvt && gbl[DISPATCH_EVENT]) {
-                    _debugLog(_toString(), "Dispatching unhandledRejection");
-                    gbl[DISPATCH_EVENT](theEvt);
-                } else {
-                    theEvt = {
-                        promise: _thePromise,
-                        reason: _settledValue
-                    };
-    
-                    let handler = gbl["on" + UNHANDLED_REJECTION];
-                    if (handler) {
-                        _debugLog(_toString(), "Calling on" + UNHANDLED_REJECTION);
-                        handler(theEvt);
-                    } else {
-                        let theConsole = getInst("console");
-                        theConsole && (theConsole["error"] || theConsole["log"])(UNHANDLED_REJECTION, _settledValue);
-                        _debugLog(_toString(), "Logging " + UNHANDLED_REJECTION);
-                    }
-                }
+                    return theEvt;
+                }, _hasPromiseRejectionEvent.v);
             }
         }
     }
@@ -275,7 +236,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     }
 
     function _toString() {
-        return "IPromise" + (_promiseDebugEnabled ? "[" + _id + (!isUndefined(_parentId) ? (":" + _parentId) : "") + "]" : "") + " " + _strState() + (_state !== ePromiseState.Pending ? (" - " + dumpObj(_settledValue)) : "");
+        return "IPromise" + (_promiseDebugEnabled ? "[" + _id + (!isUndefined(_parentId) ? (":" + _parentId) : "") + "]" : "") + " " + _strState() + (_hasResolved ? (" - " + dumpObj(_settledValue)) : "");
     }
 
     _thePromise.toString = _toString;
@@ -285,11 +246,15 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             throwTypeError("Promise: executor is not a function - " + dumpObj(executor));
         }
 
+        const _rejectFn = _createSettleIfFn(ePromiseState.Rejected, ePromiseState.Pending);
         try {
             _debugLog(_toString(), "Executing");
-            executor.call(_thePromise, _resolve, _reject);
+            executor.call(
+                _thePromise,
+                _createSettleIfFn(ePromiseState.Resolved, ePromiseState.Pending),
+                _rejectFn);
         } catch (e) {
-            _reject(e);
+            _rejectFn(e);
         }
     })();
 

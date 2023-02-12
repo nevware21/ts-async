@@ -11,49 +11,9 @@ import { _createAllPromise, _createRejectedPromise, _createResolvedPromise } fro
 import { IPromise } from "./interfaces/IPromise";
 import { ePromiseState, STRING_STATES } from "../internal/state";
 import { PromiseExecutor } from "./types";
-import { dumpObj, isFunction, objDefineProp, throwTypeError } from "@nevware21/ts-utils";
+import { dumpObj, getInst, getLazy, ILazyValue, isFunction, objDefineProp, throwTypeError } from "@nevware21/ts-utils";
 
-const _isPromiseSupported = (typeof Promise !== "undefined");
-const _promiseCls = Promise;
-
-/**
- * @internal
- * @ignore
- * @param executor - The executor
- * @returns A promise implementation
- */
-function _createNativePromise<T>(executor: PromiseExecutor<T>): IPromise<T> {
-    if (!isFunction(executor)) {
-        throwTypeError("Promise: executor is not a function - " + dumpObj(executor));
-    }
-
-    let _state = ePromiseState.Pending;
-
-    function _strState() {
-        return STRING_STATES[_state];
-    }
-
-    let thePromise = new _promiseCls<T>((resolve, reject) => {
-        function _resolve(value: T) {
-            _state = ePromiseState.Resolved;
-            return resolve && resolve(value);
-        }
-
-        function _reject(reason: any) {
-            _state = ePromiseState.Rejected;
-            return reject && reject(reason);
-        }
-
-        executor(_resolve, _reject);
-
-    }) as IPromise<T>;
-
-    objDefineProp(thePromise, "state", {
-        get: _strState
-    });
-
-    return thePromise;
-}
+let _isPromiseSupported: ILazyValue<boolean>;
 
 /**
  * Creates a Promise instance that when resolved or rejected will execute it's pending chained operations using the
@@ -67,7 +27,43 @@ function _createNativePromise<T>(executor: PromiseExecutor<T>): IPromise<T> {
  * cause the promise to be rejected. The return value of the executor is always ignored
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createNativePromise: <T>(executor: PromiseExecutor<T>, timeout?: number) => IPromise<T> = _isPromiseSupported ? _createNativePromise : createAsyncPromise;
+export function createNativePromise<T>(executor: PromiseExecutor<T>, timeout?: number): IPromise<T> {
+    !_isPromiseSupported && (_isPromiseSupported = getLazy(() => !!getInst("Promise")));
+    if (!_isPromiseSupported.v) {
+        return createAsyncPromise(executor);
+    }
+
+    if (!isFunction(executor)) {
+        throwTypeError("Promise: executor is not a function - " + dumpObj(executor));
+    }
+
+    let _state = ePromiseState.Pending;
+
+    function _strState() {
+        return STRING_STATES[_state];
+    }
+
+    let thePromise = new Promise<T>((resolve, reject) => {
+        function _resolve(value: T) {
+            _state = ePromiseState.Resolved;
+            resolve(value);
+        }
+
+        function _reject(reason: any) {
+            _state = ePromiseState.Rejected;
+            reject(reason);
+        }
+
+        executor(_resolve, _reject);
+
+    }) as IPromise<T>;
+
+    objDefineProp(thePromise, "state", {
+        get: _strState
+    });
+
+    return thePromise;
+}
 
 /**
  * Returns a single asynchronous Promise instance that resolves to an array of the results from the input promises.
@@ -88,7 +84,7 @@ export const createNativePromise: <T>(executor: PromiseExecutor<T>, timeout?: nu
  * promises reject.
  * </ul>
  */
-export const createNativeAllPromise: <T>(input: PromiseLike<T>[], timeout?: number) => Promise<T[]> = (_isPromiseSupported && _promiseCls.all) ? _promiseCls.all.bind(_promiseCls) : _createAllPromise(createNativePromise);
+export const createNativeAllPromise: <T>(input: PromiseLike<T>[], timeout?: number) => IPromise<T[]> = _createAllPromise(createNativePromise);
 
 /**
  * Returns a single asynchronous Promise instance that is already resolved with the given value. If the value passed is
@@ -100,7 +96,7 @@ export const createNativeAllPromise: <T>(input: PromiseLike<T>[], timeout?: numb
  * @param value - The value to be used by this `Promise`. Can also be a `Promise` or a thenable to resolve.
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createNativeResolvedPromise: <T>(value: T, timeout?: number) => Promise<T> = (_isPromiseSupported && _promiseCls.resolve) ? _promiseCls.resolve.bind(_promiseCls) : _createResolvedPromise(createNativePromise);
+export const createNativeResolvedPromise: <T>(value: T, timeout?: number) => Promise<T> =  _createResolvedPromise(createNativePromise);
 
 /**
  * Returns a single asynchronous Promise instance that is already rejected with the given reason.
@@ -111,4 +107,4 @@ export const createNativeResolvedPromise: <T>(value: T, timeout?: number) => Pro
  * @param reason - The rejection reason
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createNativeRejectedPromise: <T = unknown>(reason: any, timeout?: number) => Promise<T> = (_isPromiseSupported && _promiseCls.reject) ? _promiseCls.reject.bind(_promiseCls) : _createRejectedPromise(createNativePromise);
+export const createNativeRejectedPromise: <T = unknown>(reason: any, timeout?: number) => Promise<T> = _createRejectedPromise(createNativePromise);

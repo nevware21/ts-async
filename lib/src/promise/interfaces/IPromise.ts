@@ -112,7 +112,7 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
      * });
      * ```
      */
-     then<TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): Promise<TResult1 | TResult2>;
+    then<TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): Promise<TResult1 | TResult2>;
 
     /**
      * Attaches a callback for only the rejection of the Promise.
