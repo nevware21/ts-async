@@ -16,17 +16,17 @@ import { FinallyPromiseHandler, RejectedPromiseHandler, ResolvedPromiseHandler }
  * @param value - The value or promise like value to wait for
  * @param cb - The callback to call with the response of the promise as an IAwaitResponse object.
  */
-export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | Promise<T>, cb: (response: AwaitResponse<T>) => void): Promise<T | TResult1 | TResult2>;
-export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | PromiseLike<T>, cb: (response: AwaitResponse<T>) => void): PromiseLike<T | TResult1 | TResult2>;
-export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T>, cb: (response: AwaitResponse<T>) => void): IPromise<T | TResult1 | TResult2> {
+export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | Promise<T>, cb: (response: AwaitResponse<T>) => void): T | Promise<T | TResult1 | TResult2>;
+export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | PromiseLike<T>, cb: (response: AwaitResponse<T>) => void): T | PromiseLike<T | TResult1 | TResult2>;
+export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T>, cb: (response: AwaitResponse<T>) => void): T | IPromise<T | TResult1 | TResult2> {
     return doAwait(value as any, (value) => {
-        cb({
+        cb && cb({
             value: value,
             rejected: false
         });
     },
     (reason) => {
-        cb({
+        cb && cb({
             rejected: true,
             reason: reason
         });
@@ -63,17 +63,17 @@ export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | PromiseLik
  */
 export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T>, resolveFn: ResolvedPromiseHandler<T, TResult1>, rejectFn?: RejectedPromiseHandler<TResult2>, finallyFn?: FinallyPromiseHandler): T | IPromise<T | TResult1 | TResult2> {
     let result = value;
-    let chainedPromise = value;
+    
     if (isPromiseLike<T>(value)) {
         if (resolveFn || rejectFn) {
-            chainedPromise = value.then(resolveFn, rejectFn) as any;
+            result = value.then(resolveFn, rejectFn) as any;
         }
     } else {
-        resolveFn(value as T);
+        resolveFn && resolveFn(value as T);
     }
 
     if (finallyFn) {
-        result = doFinally(chainedPromise as any, finallyFn);
+        result = doFinally(result as any, finallyFn);
     }
 
     return result as any;

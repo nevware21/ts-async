@@ -8,7 +8,7 @@
 
 import * as sinon from "sinon";
 import { assert } from "chai";
-import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, scheduleTimeout } from "@nevware21/ts-utils";
+import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, scheduleTimeout, setBypassLazyCache } from "@nevware21/ts-utils";
 import { IPromise } from "../../../src/promise/interfaces/IPromise";
 import { createSyncAllPromise, createSyncPromise, createSyncRejectedPromise, createSyncResolvedPromise } from "../../../src/promise/syncPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
@@ -44,7 +44,7 @@ function _unhandledNodeRejection(reason: any, promise: any) {
     });
 
     if (!found) {
-        let prefix = promise.toString() + " :: ";
+        //let prefix = promise.toString() + " :: ";
         _unhandledEvents.push({
             reason,
             promise
@@ -65,6 +65,9 @@ describe("Validate createSyncPromise() timeout usages", () => {
         }
 
         setPromiseDebugState(true, _debug);
+        
+        // Disable lazy caching
+        setBypassLazyCache(true);
 
         if (!isNode()) {
             let gbl = getGlobal();
@@ -91,6 +94,9 @@ describe("Validate createSyncPromise() timeout usages", () => {
             console.log("Removing Node Rejection Listener");
             process.off("unhandledRejection", _unhandledNodeRejection);
         }
+        
+        // Re-Ensable lazy caching
+        setBypassLazyCache(false);
     });
 
     it("Test promise with missing resolver", () => {
