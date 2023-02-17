@@ -66,6 +66,7 @@ test-dist/
 test-esm/
 browser/
 types/
+build/
 dist/
 dist-es**/
 

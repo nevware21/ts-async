@@ -34,17 +34,16 @@ module.exports = function (grunt) {
         ts: {
             options: {
                 debug: true,
-                logOutput: true,
-                additionalFlags: "--removeComments"
+                logOutput: true
             },
             "ts_async": {
                 // Default ES5
                 tsconfig: "./lib/tsconfig.json",
-                outDir: "./lib/dist-es5"
+                outDir: "./lib/build/es5"
             },
             "ts_async_es6": {
                 tsconfig: "./lib/tsconfig.es6.json",
-                outDir: "./lib/dist-es6"
+                outDir: "./lib/build/es6"
             },
             "ts_async-test": {
                 tsconfig: "./lib/test/tsconfig.test.json",
