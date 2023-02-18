@@ -26,8 +26,8 @@
         "sync promise"
     ],
     "main": "dist/es5/umd/ts-async.js",
-    "module": "dist-es5/index.js",
-    "esnext": "dist-es6/index.js",
+    "module": "dist-es5/ts-async.js",
+    "esnext": "dist-es6/ts-async.js",
     "types": "types/index.d.ts",    
     "repository": {
         "type": "git",
@@ -44,7 +44,7 @@
         }
     ],
     "scripts": {
-        "build": "grunt ts_async --verbose && npm run package",
+        "build": "grunt ts_async --verbose && npm run package && npm run dtsgen",
         "rebuild": "npm run build && npm run test",
         "package": "rollup -c rollup.config.js --bundleConfigAsCjs",
         "test": "grunt ts_async-test && npm run test:node && npm run test:worker && npm run test:browser && npm run coverage:report",
@@ -61,7 +61,8 @@
         "clean": "git clean -xdf && npm install",
         "cleanBuild": "npm run clean && npm run rebuild && npm run docs",
         "docs": "cd .. && npx typedoc",
-        "rush-update": "rush update --recheck --purge --full"
+        "rush-update": "rush update --recheck --purge --full",
+        "dtsgen": "api-extractor run --local --verbose"
     },
 
     "dependencies": {
@@ -71,6 +72,7 @@
         "typescript": ">=1"
     },
     "devDependencies": {
+        "@microsoft/api-extractor": "^7.34.4",
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@rollup/plugin-commonjs": "^24.0.0",
         "@rollup/plugin-json": "^6.0.0",
@@ -100,6 +102,7 @@
         "rollup": "^3.8.1",
         "rollup-plugin-minify-es": "^1.1.1",
         "rollup-plugin-istanbul": "^4.0.0",
+        "rollup-plugin-cleanup": "^3.2.1",
         "sinon": "^15.0.0",
         "ts-mocha": "^10.0.0",
         "typedoc": "^0.23.10",
