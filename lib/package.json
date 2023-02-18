@@ -1,7 +1,7 @@
 {
     "name": "@nevware21/ts-async",
     "description": "Promise support utilites and helpers for TypeScript",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "homepage": "https://github.com/nevware21/ts-async",
     "license": "MIT",
     "author": {
@@ -28,7 +28,7 @@
     "main": "dist/es5/umd/ts-async.js",
     "module": "dist-es5/ts-async.js",
     "esnext": "dist-es6/ts-async.js",
-    "types": "types/index.d.ts",    
+    "types": "types/ts-async.d.ts",    
     "repository": {
         "type": "git",
         "url": "https://github.com/nevware21/ts-async.git"
