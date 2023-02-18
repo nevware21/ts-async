@@ -1,3 +1,10 @@
+# v0.1.2 Feb 17th, 2023
+
+## Changelog
+
+- #18 [Bug] Version 0.1.1 does not support resolving a promise with a promise properly.
+- #20 Update Packaging to create single rollup packages
+
 # v0.1.1 Feb 5th, 2023
 
 ## Changelog
