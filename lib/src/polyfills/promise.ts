@@ -8,8 +8,8 @@
 
 import { getKnownSymbol, objDefineProp, WellKnownSymbols } from "@nevware21/ts-utils";
 import { createAsyncAllPromise, createAsyncPromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../promise/asyncPromise";
-import { IPromise } from "../promise/interfaces/IPromise";
-import { PromiseExecutor } from "../promise/types";
+import { IPromise } from "../interfaces/IPromise";
+import { PromiseExecutor } from "../interfaces/types";
 
 const toStringTagSymbol: symbol = getKnownSymbol(WellKnownSymbols.toStringTag) as typeof Symbol.toStringTag;
 

@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import { assert } from "chai";
 import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, scheduleTimeout, setBypassLazyCache } from "@nevware21/ts-utils";
 import { createAsyncAllPromise, createAsyncPromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";
-import { IPromise } from "../../../src/promise/interfaces/IPromise";
+import { IPromise } from "../../../src/interfaces/IPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
 
 function _expectException(cb: () => void, message: string) {
@@ -76,7 +76,7 @@ describe("Validate createAsyncPromise() timeout usages", () => {
             }
         } else {
             //EventEmitter.captureRejections = false;
-            console.log("Adding Node Rejection Listener");
+            //console.log("Adding Node Rejection Listener");
             process.on("unhandledRejection", _unhandledNodeRejection);
         }
     });
@@ -91,7 +91,7 @@ describe("Validate createAsyncPromise() timeout usages", () => {
                 gbl.removeEventListener("unhandledrejection", _unhandledrejection);
             }
         } else {
-            console.log("Removing Node Rejection Listener");
+            //console.log("Removing Node Rejection Listener");
             process.off("unhandledRejection", _unhandledNodeRejection);
         }
         
@@ -429,10 +429,10 @@ describe("Validate createAsyncPromise() timeout usages", () => {
 
         let finalResolve = false;
         let chainedPromise = promise.then((value) => {
-            console.log("Intervening:" + value);
+            //console.log("Intervening:" + value);
             // Don't return anything
         }).then((value) => {
-            console.log("Final:" + value);
+            //console.log("Final:" + value);
             resolvedValue = value;
             finalResolve = true;
         });

@@ -9,29 +9,12 @@
 
 ## Description
 
-This library provides Promise implementations (synchronous, idle, asynchronous and native), helpers and aliases built and tested using TypeScript. Apart from providing idle and synchronous implementations the primary focus is on supporting the creation of production code that can be better minified (resulting in a smaller runtime payload).
+This package provides support for asynchronous development with a Promise based task Scheduler, several different Promise implementations (synchronous, idle, asynchronous and native runtime wrappers), await helpers, and aliases all built and tested using TypeScript.
+One of the primary focuses of this package is to provide support for the creation of code that can be better minified, resulting in a smaller runtime payload which can directly assist with Page Load performance.
 
-Provided implementations:
-- Idle processing
-- Synchronous processing
-- Asynchronous processing
-- Native runtime wrapper
+The Promise based Task Scheduler supports the serialized execution of tasks using promises to control when the next task should be executed (after the previous task completes), this leverages the supplied Promise implementations so that you can easily create an Idle Task Scheduler which executes the tasks using `requestIdleCallback` when using the `createIdlePromise` implementation.
 
-The primary helpers are
-- `createPromise` - Uses the current promise implementation set via `setCreatePromiseImpl` (defaults to createNativePromise)
-- `createNativePromise` - This is a wrapper around the runtime `Promise` class that adds a `status` property, so this is effectivly the same as `new Promise(...)` but as a non-namespaced function it can be heavily minified to something like `a(...)`
-- `createAsyncPromise` - Implements the `Promise` contract and uses timeouts (defaults to 0ms, but can also be provided) to process any chained promises (of any type)
-- `createSyncPromise` - Also implements the `Promise` contract but will immediately execute any chained promises at the point of the original promise getting resolved or rejected, or if already resolved, rejected then at the point of registering the `then`, `catch` or `finally`
-- `createIdlePromise` - Implements the `Promise` contract and will process any chained promises using the available `requestIdleCallback` (with no timeout by default - but can also be changes by `setDetaultIdlePromiseTimeout`). And when `requestIdleCallback` is not supported this will default to using a timeout via the [`scheduleIdleCallback` from `@nevware21/ts-utils`](https://nevware21.github.io/ts-utils/typedoc/functions/scheduleIdleCallback.html)
-- `doAwait` - Helper which handles `await` "handling" via callback functions to avoid the TypeScript boilerplate code that is added for multiple branches. Has 3 callback options for `resolved`, `rejected` and `finally` cases all are optional.
-- `doAwaitResponse` - Helper which handles `await` "handling" via a single callback where `resolved` and `rejected` cases are handled by the same callback, this receives an `AwaitResponse` object that provides the `value` or `reason` and a flag indicating whether the Promise was `rejected`)
-- `doFinally` - Helper to provide `finally` handling for any promise using a callback implementation, analogous to using `try` / `finally` around an `await` function or using the `finally` on the promise directly
-
-All promise implementations are validated using TypeScript with `async` / `await` and the internal helper functions `doAwait`, `doFinally` and `doAwaitResponse` helpers. Usage of the `doAwait` is recommended as this will avoids the additional boiler plate code that is added by TypeScript when handling the branches in an `async` / `await` functions, this does of course mean that your calling functions will also need to handle this `async` operations via callbacks rather than just causing the code path to "halt" at the `await` and can therefore may be a little more complex (depending on your implementation), however, you are not restricted to only using `await` or `doAwait` they can be used together.
-
-Also of note is that all implementations will "emit/dispatch" the unhandled promise rejections event (if supported by the runtime) using the standard runtime mechanisms. So any existing handlers for native (`new Promise`) unhandled rejections will also receive them from the `idle`, `sync` and `async` implementations. The only exception to this is when the runtime (like IE) doesn't support this event in those cases "if" an `onunhandledrejection` function is registered it will be called or failing that it will logged to the console (if possible).
-
-The provided polyfill wrapper is build around the `asynchronous` promise implementation which is tested and validated against the standard native (`Promise()`) implementations for node, browser and web-worker to ensure compatibility.
+> All of the provided Promise implementations support usage patterns via either `await` or with the included helper functions (`doAwait`, `doFinally`, `doAwaitresponse`), you can also mix and match them (use both helper and `await`) as required by your use cases.
 
 ### Test Environments 
 - Node (12, 14, 16, 18)
@@ -40,7 +23,48 @@ The provided polyfill wrapper is build around the `asynchronous` promise impleme
 
 ### Documentation and details
 
-See the documentation [generated from source code](https://nevware21.github.io/ts-async/typedoc/index.html) via typedoc for a full list and details of all of the available types,  functions and interfaces.
+See the documentation [generated from source code](https://nevware21.github.io/ts-async/typedoc/index.html) via typedoc for a full list and details of all of the available types, functions, interfaces with included examples.
+
+See [Browser Support](#browser-support) for details on the supported browser environments.
+
+
+| Type / Function       | Details
+|-----------------------|------------------------------
+| **Scheduler** <td colspan=2>
+| [`createTaskScheduler`](https://nevware21.github.io/ts-async/typedoc/functions/createTaskScheduler.html) | Create a Task Scheduler using the optional promise implementation and scheduler name. The newPromise can be any value promise creation function, where the execution of the queued tasks will be processed based on how the promise implementation processes it's chained promises (asynchrounsly; synchronously; idle processing, etc)<br />There is no limit on the number of schedulers that you can create, when using more than one scheduler it is recommended that you provide a `name` to each scheduler to help identify / group promises during debugging.
+| **Interfaces** <td colspan=2>
+| [`IPromise`](https://nevware21.github.io/ts-async/typedoc/interfaces/IPromise.html) | This package uses and exports the `IPromise<T>` interface which extends both the `PromiseLike<T>` and `Promise<T>` to provide type compatibility when passing the Promises created with this package to any function that expects a `Promise` (including returning from an `async function`). As part of it's definition it exposes an [optional] string `status` to represent the current state of the `Promise`. These values include `pending`, `resolved` `rejected` and `resolving` which is a special case when a Promise is being `resolved` via another Promise returned via the `thenable` onResolved / onRejected functions.
+| [`AwaitResponse`](https://nevware21.github.io/ts-async/typedoc/interfaces/AwaitResponse.html) | This interface is used to represent the result whether resolved or rejected when using the [`doAwaitResponse`](https://nevware21.github.io/ts-async/typedoc/functions/doAwaitResponse.html), this function is useful when you want to avoid creating both a `resolved` and `rejected` functions, as this function only requires a single callback function to be used which will receive an object that conforms to this interface. 
+| **Alias** <td colspan=2>
+| [`createPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createPromise.html)<br/> [`createAllPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createAllPromise.html) <br/> [`createRejectedPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createRejectedPromise.html) <br/> [`createResolvedPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createResolvedPromise.html) <br/> <br/> [`setCreatePromiseImpl`](https://nevware21.github.io/ts-async/typedoc/functions/setCreatePromiseImpl.html) | These function use the current promise creator implementation that can be set via `setCreatePromiseImpl(creator: <T>(executor: PromiseExecutor<T>, timeout?: number) => IPromise<T>`{:.language-ts}<br/>Unless otherwise set this defaults to the `createNativePromise` implementation, to provide a simplified wrapper around any native runtime Promise support
+| [`createNativePromise`](https://nevware21.github.io/ts-async/typedoc/functions/createNativePromise.html) <br/> [`createNativeAllPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createNativeAllPromise.html) <br/> [`createNativeRejectedPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createNativeRejectedPromise.html) <br/> [`createNativeResolvedPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createNativeResolvedPromise.html) <br/> | These are effectively wrappers around the runtime `Promise` class, so this is effectivly the same as `new Promise(...)` but as a non-global class name it can be heavily minified to something like `a(...)`. These wrappers also add an accessible `status` property for identifying the current status of this promise. However, the `status` property is NOT available on any returned chained Promise (from calling `then`, `catch` or `finally`) 
+| **Asynchronous** <td colspan=2>
+| [`createAsyncPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createAsyncPromise.html) <br/> [`createAsyncAllPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createAsyncAllPromise.html) <br/> [`createAsyncRejectedPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createAsyncRejectedPromise.html) <br/> [`createAsyncResolvedPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createAsyncResolvedPromise.html) <br/> | Provides an implementation of the `Promise` contract that uses timeouts to process any chained promises (returned by `then(...)`, `catch(...)`, `finally(...)`), when creating the initial promise you can also provide (override) the default duration of the timeout (defaults to 0ms) to further delay the execution of the chained Promises.<br/>, but can also be provided) to process any chained promises (of any type)
+| **Synchronous** <td colspan=2>
+| [`createSyncPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createSyncPromise.html) <br/> [`createSyncAllPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createSyncAllPromise.html) <br/> [`createSyncRejectedPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createSyncRejectedPromise.html) <br/> [`createSyncResolvedPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createSyncResolvedPromise.html) <br/>    | Also implements the `Promise` contract but will immediately execute any chained promises at the point of the original promise getting resolved or rejected, or if already resolved, rejected then at the point of registering the `then`, `catch` or `finally`
+| **Idle** <td colspan=2>
+| [`createIdlePromise`](https://nevware21.github.io/ts-async/typedoc/functions/createIdlePromise.html) <br/> [`createIdleAllPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createIdleAllPromise.html) <br/> [`createIdleRejectedPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createIdleRejectedPromise.html) <br/> [`createIdleResolvedPromise`](https://nevware21.github.io/ts-async/typedoc/functions/createIdleResolvedPromise.html) <br/>   | Implements the `Promise` contract and will process any chained promises using the available `requestIdleCallback` (with no timeout by default - but can also be changes by `setDetaultIdlePromiseTimeout`). And when `requestIdleCallback` is not supported this will default to using a timeout via the [`scheduleIdleCallback` from `@nevware21/ts-utils`](https://nevware21.github.io/ts-utils/typedoc/functions/scheduleIdleCallback.html)
+| **Helpers** <td colspan=2>
+| [`doAwait`](https://nevware21.github.io/ts-async/typedoc/functions/doAwait.html)             | Helper which handles `await` "handling" via callback functions to avoid the TypeScript boilerplate code that is added for multiple branches. Internal it handles being passed an `IPromise` or a result value so you avoid needing to test whether the result you have is also a `Promise`.<br />It takes three (3) optional callback functions for `resolved`, `rejected` and `finally`.
+| [`doAwaitResponse`](https://nevware21.github.io/ts-async/typedoc/functions/doAwaitResponse.html)     | Helper which handles `await` "handling" via a single callback where `resolved` and `rejected` cases are handled by the same callback, this receives an `AwaitResponse` object that provides the `value` or `reason` and a flag indicating whether the Promise was `rejected`)
+| [`doFinally`](https://nevware21.github.io/ts-async/typedoc/functions/doFinally.html)           | Helper to provide `finally` handling for any promise using a callback implementation, analogous to using `try` / `finally` around an `await` function or using the `finally` on the promise directly
+
+All promise implementations are validated using TypeScript with `async` / `await` and the internal helper functions `doAwait`, `doFinally` and `doAwaitResponse` helpers. Usage of the `doAwait` or `doAwaitResponse` is recommended as this avoids the additional boiler plate code that is added by TypeScript when handling the branches in an `async` / `await` operations, this does however, mean that your calling functions will also need to handle this `async` operations via callbacks rather than just causing the code path to "halt" at the `await` and can therefore may be a little more complex (depending on your implementation).
+> However, you are NOT restricted to only using `await` OR `doAwait` they can be used together. For example your public API can still be defined as asynchronous, but internally you could use `doAwait`
+```ts
+async function myApi() 
+{
+    await doAwait(thePromise, (result) => { ... }, (reason) => { ... });
+}
+```
+
+### Unhandled Promise Rejection Event
+
+All implementations will "emit/dispatch" the unhandled promise rejections event (`unhandledRejection` (node) or `unhandledrejection`) (if supported by the runtime) using the standard runtime mechanisms. So any existing handlers for native (`new Promise`) unhandled rejections will also receive them from the `idle`, `sync` and `async` implementations. The only exception to this is when the runtime (like IE) doesn't support this event in those cases "if" an `onunhandledrejection` function is registered it will be called and if that also doesn't exist it will logged to the console (if possible).
+
+### Pollyfill
+
+The package provides a simple polyfill wrapper which is built around the `asynchronous` promise implementation which is tested and validated against the standard native (`Promise()`) implementations for node, browser and web-worker to ensure compatibility.
 
 ## Quickstart
 
@@ -49,6 +73,47 @@ Install the npm packare: `npm install @nevware21/ts-async --save`
 And then just import the helpers and use them.
 
 ### Simple Examples
+
+#### Using Task Scheduler
+
+```TypeScript
+import { createTaskScheduler } from "@nevware21/ts-async";
+import { scheduleTimeout } from "@nevware21/ts-utils";
+
+let scheduler = createTaskScheduler();
+
+// Schedule (and start) task 1 using native promise
+// Because this is a new scheduler there are no other
+// pending tasks so this will be started synchronously
+let task1 = scheduler.queue(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(42);
+    }, 100);
+  });
+});
+
+// task1.status; => "pending" (and running)
+
+// Schedule task 2 using helper function
+// The startTask function for task2 will not be called
+// until task1 has completed
+let task2 = scheduler.queue(() => {
+  return createPromise((resolve) => {
+    scheduleTimeout(() => {
+      resolve(21);
+    }, 100);
+  });
+});
+
+// task2.status; => "pending" (not running)
+
+await task1;
+// task1.status => "resolved"
+// task2.status => "pending" (but running)
+```
+
+#### Using Promise Helpers
 
 ```TypeScript
 import { createPromise } from "@nevware21/ts-async";

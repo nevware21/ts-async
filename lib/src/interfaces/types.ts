@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { IPromise } from "./interfaces/IPromise";
+import { IPromise } from "./IPromise";
 
 /**
  * A function to be executed during the creation of a promise instance. It receives two functions as parameters: resolve and reject.
@@ -56,3 +56,44 @@ export type RejectPromiseHandler = (reason?: any) => void;
  * @returns A Promise `IPromise` implemenetation
  */
 export type PromiseCreatorFn = <T, TResult2 = never>(newExecutor: PromiseExecutor<T>, ...extraArgs: any) => IPromise<T | TResult2>;
+
+/**
+ * Identifies the function to call to start and execute the task when its
+ * ready to be executed.
+ * @since 0.2.0
+ * @group Scheduler
+ * @param taskName - The optional task name that was assigned to this task, it is passed by the task scheduler.
+ * @returns The result or a IPromise that will be resolved / rejected when the task
+ * was completed.
+ * @example
+ * ```ts
+ * function taskFunc1() {
+ *     return 42;
+ * }
+ * 
+ * function taskFunc2(taskName: string) {
+ *     console.log("Running Task: " + taskName);
+ *     return fetch("https://example.com/xxxx").then((response) => {
+ *         // ...
+ *     });
+ * }
+ * 
+ * function taskFunc3() {
+ *     return Promise.all([...]);
+ * }
+ * 
+ * function taskFunc4() {
+ *     return createAllPromise([...]);
+ * }
+ * 
+ * function taskFunc5(taskName: string) {
+ *     return createPromise(() => {
+ *         scheduleTimeout(() => {
+ *             console.log("Completing task: " + taskName);
+ *             resolve(true);
+ *         }, 100);
+ *     });
+ * }
+ * ```
+ */
+export type StartQueuedTaskFn<T> = (taskName?: string) => T | IPromise<T>;

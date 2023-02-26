@@ -8,9 +8,9 @@
 
 import { isUndefined } from "@nevware21/ts-utils";
 import { _createAllPromise, _createPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
-import { IPromise } from "./interfaces/IPromise";
+import { IPromise } from "../interfaces/IPromise";
 import { idleItemProcessor } from "./itemProcessor";
-import { PromiseExecutor } from "./types";
+import { PromiseExecutor } from "../interfaces/types";
 
 let _defaultIdleTimeout:  number;
 

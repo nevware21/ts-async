@@ -9,7 +9,6 @@
 import { assert } from "chai";
 import { doAwait, doAwaitResponse } from "../../../src/promise/await";
 import { arrForEach } from "@nevware21/ts-utils";
-import { createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";
 import { isPromiseLike } from "@nevware21/ts-utils";
 
 describe("Validate doAwait", () => {
@@ -83,7 +82,7 @@ describe("Validate doAwait", () => {
 
         let finallyCalled = false;
         let resolveCalled = false;
-        let value = doAwait(testPromiseLike, (value) => {
+        doAwait(testPromiseLike, (value) => {
             resolveCalled = true;
             assert.equal(value, 42, "resolve should receive the resolved value");
         }, (reason) => {
@@ -103,7 +102,7 @@ describe("Validate doAwait", () => {
         let finallyCalled = false;
         let rejectCalled = false;
         try {
-            let value = doAwait(testPromiseLike, (value) => {
+            doAwait(testPromiseLike, (value) => {
                 assert.fail("Should not be called");
             }, (reason) => {
                 rejectCalled = true;
@@ -165,7 +164,7 @@ describe("Validate doAwaitResponse", () => {
         });
 
         let responseCalled = false;
-        let value = doAwaitResponse(testPromiseLike, (response) => {
+        doAwaitResponse(testPromiseLike, (response) => {
             responseCalled = true;
             assert.equal(response.rejected, false);
             assert.equal(response.value, 42, "response value should receive the resolved value");
@@ -180,7 +179,7 @@ describe("Validate doAwaitResponse", () => {
 
         let responseCalled = false;
         try {
-            let value = doAwaitResponse(testPromiseLike, (response) => {
+            doAwaitResponse(testPromiseLike, (response) => {
                 responseCalled = true;
                 assert.equal(response.rejected, true);
                 assert.equal(response.value, undefined, "response value should be undefined");

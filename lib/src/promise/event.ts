@@ -1,9 +1,24 @@
+/*
+ * @nevware21/ts-async
+ * https://github.com/nevware21/ts-async
+ *
+ * Copyright (c) 2022 Nevware21
+ * Licensed under the MIT license.
+ */
+
 import { dumpObj, getDocument, getInst, getLazy, ILazyValue } from "@nevware21/ts-utils";
-import { _debugLog } from "./debug";
 
 const DISPATCH_EVENT = "dispatchEvent";
 let _hasInitEvent: ILazyValue<boolean>;
 
+/**
+ * @internal
+ * @ignore
+ * @param target
+ * @param evtName
+ * @param populateEvent
+ * @param useNewEvent
+ */
 export function emitEvent(target: any, evtName: string, populateEvent: (theEvt: Event | any) => Event | any, useNewEvent: boolean) {
 
     let doc = getDocument();

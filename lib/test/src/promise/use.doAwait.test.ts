@@ -8,15 +8,15 @@
 
 import { assert } from "chai";
 import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objForEachKey, objHasOwn, scheduleTimeout, setBypassLazyCache } from "@nevware21/ts-utils";
-import { createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
+import { createAsyncAllPromise, createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
 import { doAwait, doAwaitResponse } from "../../../src/promise/await";
 import { setPromiseDebugState } from "../../../src/promise/debug";
-import { createIdlePromise, createIdleRejectedPromise } from "../../../src/promise/idlePromise";
-import { createNativePromise, createNativeRejectedPromise } from "../../../src/promise/nativePromise";
-import { createSyncPromise, createSyncRejectedPromise } from "../../../src/promise/syncPromise";
-import { PromiseExecutor } from "../../../src/promise/types";
+import { createIdleAllPromise, createIdlePromise, createIdleRejectedPromise } from "../../../src/promise/idlePromise";
+import { createNativeAllPromise, createNativePromise, createNativeRejectedPromise } from "../../../src/promise/nativePromise";
+import { createSyncAllPromise, createSyncPromise, createSyncRejectedPromise } from "../../../src/promise/syncPromise";
+import { PromiseExecutor } from "../../../src/interfaces/types";
 import { PolyPromise } from "../../../src/polyfills/promise";
-import { IPromise } from "../../../src/promise/interfaces/IPromise";
+import { IPromise } from "../../../src/interfaces/IPromise";
 
 function _expectException(cb: () => void, message: string) {
     try {
@@ -65,6 +65,7 @@ function _fail(reason: any) {
 interface TestDefinition {
     creator: <T>(executor: PromiseExecutor<T>) => IPromise<T>;
     rejected: <T>(reason: any) => IPromise<T>;
+    all: <T>(input: PromiseLike<T>[], timeout?: number) => IPromise<T[]>;
     checkState: boolean;
     checkChainedState: boolean;
 }
@@ -77,6 +78,7 @@ let testImplementations: TestImplementations = {
             return new Promise<T>(executor);
         },
         rejected: Promise.reject.bind(Promise),
+        all: Promise.all.bind(Promise),
         checkState: false,
         checkChainedState: false
     },
@@ -85,6 +87,7 @@ let testImplementations: TestImplementations = {
             return createNativePromise<T>(executor);
         },
         rejected: createNativeRejectedPromise,
+        all: createNativeAllPromise,
         checkState: true,
         checkChainedState: false
     },
@@ -93,6 +96,7 @@ let testImplementations: TestImplementations = {
             return createAsyncPromise<T>(executor, 1);
         },
         rejected: createAsyncRejectedPromise,
+        all: createAsyncAllPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -101,6 +105,7 @@ let testImplementations: TestImplementations = {
             return createIdlePromise<T>(executor, 1);
         },
         rejected: createIdleRejectedPromise,
+        all: createIdleAllPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -109,6 +114,7 @@ let testImplementations: TestImplementations = {
             return createSyncPromise<T>(executor);
         },
         rejected: createSyncRejectedPromise,
+        all: createSyncAllPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -117,6 +123,7 @@ let testImplementations: TestImplementations = {
             return new PolyPromise(executor);
         },
         rejected: PolyPromise.reject,
+        all: PolyPromise.all,
         checkState: true,
         checkChainedState: true
     }
@@ -124,7 +131,7 @@ let testImplementations: TestImplementations = {
 
 function _log(message: string) {
     if (console && console.log) {
-        console.log(message);
+        //console.log(message);
     }
 }
 
@@ -144,6 +151,7 @@ describe("Validate Promise with doAwait and doAwaitResponse Usage tests", () => 
 function batchTests(testKey: string, definition: TestDefinition) {
 
     let createNewPromise = definition.creator;
+    let createNewAllPromise = definition.all;
     let checkState = definition.checkState;
     let checkChainedState = definition.checkChainedState;
 
@@ -165,7 +173,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
             }
         } else {
             //EventEmitter.captureRejections = false;
-            console.log("Adding Node Rejection Listener");
+            //console.log("Adding Node Rejection Listener");
             process.on("unhandledRejection", _unhandledNodeRejection);
         }
     });
@@ -178,7 +186,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
                 gbl.removeEventListener("unhandledrejection", _unhandledrejection);
             }
         } else {
-            console.log("Removing Node Rejection Listener");
+            //console.log("Removing Node Rejection Listener");
             process.off("unhandledRejection", _unhandledNodeRejection);
         }
         
@@ -879,10 +887,10 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
         let finalResolve = false;
         let chainedPromise2 = promise.then((value) => {
-            console.log("Intervening:" + value);
+            //console.log("Intervening:" + value);
             // Don't return anything
         }).then((value) => {
-            console.log("Final:" + value);
+            //console.log("Final:" + value);
             resolvedValue = value;
             finalResolve = true;
         });
@@ -1047,14 +1055,66 @@ function batchTests(testKey: string, definition: TestDefinition) {
         });
     });
 
-    it("check finally handling", async () => {
+    it("check finally handling", (done) => {
 
-        assert.equal(await createNewPromise((resolve, reject) => {
+        doAwait(createNewPromise((resolve, reject) => {
             resolve(2);
-        }).then(()=> 77), 77, "Expect the result to be 77");
+        }).then(() => 77), (value) => {
+            assert.equal(value, 77, "Expect the result to be 77");
 
-        assert.equal(await createNewPromise((resolve, reject) => {
-            resolve(2);
-        }).finally(()=> 77), 2, "Expect the result to be 2");
+            doAwait(createNewPromise((resolve, reject) => {
+                resolve(2);
+            }).finally(() => 77), (value) => {
+                assert.equal(value, 2, "Expect the result to be 2");
+                done();
+            });
+        });
+    });
+  
+    it("check create all with nothing", (done) => {
+        let promise = createNewAllPromise([]);
+
+        doAwait(promise, (values) => {
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 0, "No elements should have been returned");
+
+            doAwait(promise, (values2) => {
+                assert.ok(values2, "A values object should have been returned");
+                assert.equal(values2.length, 0, "No elements should have been returned");
+        
+                assert.ok(values === values2);
+                done();
+            });
+        });
+    });
+
+    it("check create all with values resolved in the reverse order", (done) => {
+        let promise = createNewAllPromise([
+            createNewPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    resolve(21);
+                }, 5)
+            }),
+            createNewPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    resolve(42);
+                }, 0)
+            })
+        ]);
+
+        doAwait(promise, (values) => {
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 2, "No elements should have been returned");
+            assert.equal(values[0], 21);
+            assert.equal(values[1], 42);
+
+            doAwait(promise, (values2) => {
+                assert.ok(values, "A values object should have been returned");
+                assert.equal(values.length, 2, "No elements should have been returned");
+        
+                assert.ok(values === values2);
+                done();
+            });
+        });
     });
 }

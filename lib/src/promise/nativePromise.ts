@@ -8,9 +8,9 @@
 
 import { createAsyncPromise } from "./asyncPromise";
 import { _createAllPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
-import { IPromise } from "./interfaces/IPromise";
+import { IPromise } from "../interfaces/IPromise";
 import { ePromiseState, STRING_STATES } from "../internal/state";
-import { PromiseExecutor } from "./types";
+import { PromiseExecutor } from "../interfaces/types";
 import { dumpObj, getInst, getLazy, ILazyValue, isFunction, objDefineProp, throwTypeError } from "@nevware21/ts-utils";
 
 let _isPromiseSupported: ILazyValue<boolean>;
@@ -23,6 +23,7 @@ let _isPromiseSupported: ILazyValue<boolean>;
  * schedule when the chained items will be ececuted.
  * @group Alias
  * @group Promise
+ * @group Native
  * @param executor - The function to be executed during the creation of the promise. Any errors thrown in the executor will
  * cause the promise to be rejected. The return value of the executor is always ignored
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
@@ -74,6 +75,7 @@ export function createNativePromise<T>(executor: PromiseExecutor<T>, timeout?: n
  * If the runtime doesn't support the Promise.all it will fallback back to an asynchronous Promise implementation.
  * @group Alias
  * @group All
+ * @group Native
  * @param input - The array of promises to wait to be resolved / rejected before resolving or rejecting the new promise
  * @param timeout
  * @returns
@@ -91,8 +93,9 @@ export const createNativeAllPromise: <T>(input: PromiseLike<T>[], timeout?: numb
  * a promise then that promise is returned instead of creating a new asynchronous promise instance.
  * If a new instance is returned then any chained operations will execute __asynchronously__ using the optional
  * timeout value to schedule when the chained items will be executed.(eg. `then()`; `finally()`).
- * @group Async
+ * @group Alias
  * @group Resolved
+ * @group Native
  * @param value - The value to be used by this `Promise`. Can also be a `Promise` or a thenable to resolve.
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
@@ -102,8 +105,9 @@ export const createNativeResolvedPromise: <T>(value: T, timeout?: number) => Pro
  * Returns a single asynchronous Promise instance that is already rejected with the given reason.
  * Any chained operations will execute __asynchronously__ using the optional timeout value to schedule
  * when then chained items will be executed. (eg. `catch()`; `finally()`).
- * @group Async
+ * @group Alias
  * @group Rejected
+ * @group Native
  * @param reason - The rejection reason
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
