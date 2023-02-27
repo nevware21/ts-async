@@ -56,11 +56,11 @@ export function _addDebugState(thePromise: any, stateFn: () => string, resultFn:
 
 /**
  * Debug helper to enable internal debugging of the promise implementations. Disabled by default.
- * For the generated packages included in the npm package the `logger` will not be called as the 
+ * For the generated packages included in the npm package the `logger` will not be called as the
  * `_debugLog` function that uses this logger is removed during packaging.
- * 
+ *
  * It is available directly from the repository for unit testing.
- * 
+ *
  * @group Debug
  * @param enabled - Should debugging be enabled (defaults `false`, when `true` promises will have
  * additional debug properties and the `toString` will include extra details.
@@ -75,9 +75,9 @@ export function _addDebugState(thePromise: any, stateFn: () => string, resultFn:
  *         console.log(id, message);
  *     }
  * }
- * 
+ *
  * setPromiseDebugState(true, promiseDebugLogger);
- * 
+ *
  * // While the logger will not be called for the production packages
  * // Setting the `enabled` flag to tru will cause each promise to have
  * // the following additional properties added

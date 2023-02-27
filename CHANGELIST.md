@@ -1,3 +1,11 @@
+# v0.2.0 Feb 26th, 2023
+
+## Changelog
+
+- #23 [Feature] Migrate Promise based Task Scheduler
+  - Migrated the task scheduler from internal usage to public
+  - Uses promises to sequence tasks
+
 # v0.1.2 Feb 17th, 2023
 
 ## Changelog
