@@ -70,22 +70,22 @@ export type PromiseCreatorFn = <T, TResult2 = never>(newExecutor: PromiseExecuto
  * function taskFunc1() {
  *     return 42;
  * }
- * 
+ *
  * function taskFunc2(taskName: string) {
  *     console.log("Running Task: " + taskName);
  *     return fetch("https://example.com/xxxx").then((response) => {
  *         // ...
  *     });
  * }
- * 
+ *
  * function taskFunc3() {
  *     return Promise.all([...]);
  * }
- * 
+ *
  * function taskFunc4() {
  *     return createAllPromise([...]);
  * }
- * 
+ *
  * function taskFunc5(taskName: string) {
  *     return createPromise(() => {
  *         scheduleTimeout(() => {
