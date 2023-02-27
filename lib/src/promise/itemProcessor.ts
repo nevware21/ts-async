@@ -7,8 +7,8 @@
  */
 
 import { arrForEach, isNumber, scheduleIdleCallback, scheduleTimeout } from "@nevware21/ts-utils";
-import { IPromise } from "./interfaces/IPromise";
-import { PromiseExecutor } from "./types";
+import { IPromise } from "../interfaces/IPromise";
+import { PromiseExecutor } from "../interfaces/types";
 
 export type PromisePendingProcessor = (pending: PromisePendingFn[]) => void;
 export type PromisePendingFn = () => void;
@@ -26,6 +26,8 @@ function _processPendingItems(pending: PromisePendingFn[]) {
 }
 
 /**
+ * @internal
+ * @ignore
  * Return an item processor that processes all of the pending items synchronously
  * @return An item processor
  */
@@ -34,6 +36,8 @@ export function syncItemProcessor(): (pending: PromisePendingFn[]) => void {
 }
 
 /**
+ * @internal
+ * @ignore
  * Return an item processor that processes all of the pending items asynchronously using the optional timeout.
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  * @return An item processor
@@ -49,6 +53,8 @@ export function timeoutItemProcessor(timeout?: number): (pending: PromisePending
 }
 
 /**
+ * @internal
+ * @ignore
  * Return an item processor that processes all of the pending items using an idle callback (if available) or based on
  * a timeout (when `requestIdenCallback` is not supported) using the optional timeout.
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.

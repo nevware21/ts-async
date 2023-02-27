@@ -8,9 +8,9 @@
 
 import { getLazy, ILazyValue } from "@nevware21/ts-utils";
 import { _createAllPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
-import { IPromise } from "./interfaces/IPromise";
+import { IPromise } from "../interfaces/IPromise";
 import { createNativePromise } from "./nativePromise";
-import { PromiseExecutor } from "./types";
+import { PromiseExecutor } from "../interfaces/types";
 
 let _promiseCreator: ILazyValue<<T>(executor: PromiseExecutor<T>, timeout?: number) => IPromise<T>>;
 
@@ -20,6 +20,8 @@ let _promiseCreator: ILazyValue<<T>(executor: PromiseExecutor<T>, timeout?: numb
  * functions, as such these functions should only be used when switching implementations would have not unexpected
  * consequences like switching from a `createSyncPromise` to `createIdlePromise` where idle promises have a possibility
  * of never getting called during application shutdown or during an expected timeframe.
+ * @group Alias
+ * @group Promise
  * @param creator - The creator function to call when a new promise is required.
  */
 export function setCreatePromiseImpl(
@@ -31,6 +33,8 @@ export function setCreatePromiseImpl(
 /**
  * Creates a Promise instance using the current default promise creator that when resolved or rejected will execute
  * it's pending chained operations.
+ * @group Alias
+ * @group Promise
  * @param executor - The function to be executed during the creation of the promise. Any errors thrown in the executor will
  * cause the promise to be rejected. The return value of the executor is always ignored
  * @param timeout - [Optional] timeout to wait before processing the items, defaults to zero.
@@ -48,6 +52,8 @@ export function createPromise<T>(executor: PromiseExecutor<T>, timeout?: number)
  * It rejects immediately upon any of the input promises rejected or non-promises throwing an error,
  * and will reject with this first rejection message / error.
  * If the runtime doesn't support the Promise.all it will fallback back to an asynchronous Promise implementation.
+ * @group Alias
+ * @group All
  * @param input - The array of promises to wait to be resolved / rejected before resolving or rejecting the new promise
  * @param timeout
  * @returns
@@ -65,6 +71,8 @@ export const createAllPromise: <T>(input: PromiseLike<T>[], timeout?: number) =>
  * a promise then that promise is returned instead of creating a new asynchronous promise instance.
  * If a new instance is returned then any chained operations will execute __asynchronously__ using the optional
  * timeout value to schedule when the chained items will be executed.(eg. `then()`; `finally()`).
+ * @group Alias
+ * @group Resolved
  * @param value - The value to be used by this `Promise`. Can also be a `Promise` or a thenable to resolve.
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
@@ -74,6 +82,8 @@ export const createResolvedPromise: <T>(value: T, timeout?: number) => IPromise<
  * Returns a single asynchronous Promise instance that is already rejected with the given reason.
  * Any chained operations will execute __asynchronously__ using the optional timeout value to schedule
  * when then chained items will be executed. (eg. `catch()`; `finally()`).
+ * @group Alias
+ * @group Rejected
  * @param reason - The rejection reason
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */

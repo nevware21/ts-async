@@ -7,9 +7,9 @@
  */
 
 import { _createAllPromise, _createPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
-import { IPromise } from "./interfaces/IPromise";
+import { IPromise } from "../interfaces/IPromise";
 import { timeoutItemProcessor } from "./itemProcessor";
-import { PromiseExecutor } from "./types";
+import { PromiseExecutor } from "../interfaces/types";
 
 /**
  * Creates an asynchronous Promise instance that when resolved or rejected will execute it's pending chained operations

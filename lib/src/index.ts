@@ -6,12 +6,13 @@
  * Licensed under the MIT license.
  */
 
-export { AwaitResponse } from "./promise/interfaces/await-response";
-export { IPromise } from "./promise/interfaces/IPromise";
+export { AwaitResponse } from "./interfaces/await-response";
+export { IPromise } from "./interfaces/IPromise";
+export { ITaskScheduler } from "./interfaces/ITaskScheduler";
 export {
     ResolvedPromiseHandler, RejectedPromiseHandler, FinallyPromiseHandler, ResolvePromiseHandler, RejectPromiseHandler, PromiseExecutor,
-    PromiseCreatorFn
-} from "./promise/types"
+    PromiseCreatorFn, StartQueuedTaskFn
+} from "./interfaces/types"
 export { doAwaitResponse, doAwait, doFinally } from "./promise/await";
 export { setPromiseDebugState } from "./promise/debug";
 export {
@@ -31,3 +32,6 @@ export {
     createPromise, createAllPromise, createRejectedPromise, createResolvedPromise,
     setCreatePromiseImpl
 } from "./promise/promise";
+
+// Task Scheduler
+export { createTaskScheduler } from "./scheduler/taskScheduler";

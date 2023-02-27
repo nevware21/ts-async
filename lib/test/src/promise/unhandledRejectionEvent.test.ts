@@ -6,11 +6,10 @@
  * Licensed under the MIT license.
  */
 
-import * as sinon from "sinon";
 import { assert } from "chai";
 import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, scheduleTimeout, setBypassLazyCache } from "@nevware21/ts-utils";
 import { createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
-import { IPromise } from "../../../src/promise/interfaces/IPromise";
+import { IPromise } from "../../../src/interfaces/IPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
 import { PolyPromise } from "../../../src/polyfills/promise";
 import { createSyncRejectedPromise } from "../../../src/promise/syncPromise";
@@ -146,7 +145,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
             }
         } else {
             //EventEmitter.captureRejections = false;
-            console.log("Adding Node Rejection Listener");
+            //console.log("Adding Node Rejection Listener");
             process.on("unhandledRejection", _unhandledNodeRejection);
         }
     });
@@ -158,7 +157,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
                 gbl.removeEventListener("unhandledrejection", _unhandledrejection);
             }
         } else {
-            console.log("Removing Node Rejection Listener");
+            //console.log("Removing Node Rejection Listener");
             process.off("unhandledRejection", _unhandledNodeRejection);
         }
         

@@ -8,14 +8,16 @@
 
 import {
     arrForEach, dumpObj as libDumpObj, getKnownSymbol, hasSymbol, isFunction, isPromiseLike, isUndefined,
-    throwTypeError, WellKnownSymbols, objToString, scheduleTimeout, ITimerHandler, getWindow, getDocument,
-    isNode, getGlobal, ILazyValue, getLazy, getInst, objDefine, objDefineProp
+    throwTypeError, WellKnownSymbols, objToString, scheduleTimeout, ITimerHandler, getWindow, isNode,
+    getGlobal, ILazyValue, getLazy, getInst, objDefine, objDefineProp
 } from "@nevware21/ts-utils";
 import { doAwait } from "./await";
 import { _addDebugState, _debugLog, _promiseDebugEnabled } from "./debug";
-import { IPromise } from "./interfaces/IPromise";
+import { IPromise } from "../interfaces/IPromise";
 import { PromisePendingProcessor } from "./itemProcessor";
-import { FinallyPromiseHandler, PromiseCreatorFn, PromiseExecutor, RejectedPromiseHandler, ResolvedPromiseHandler } from "./types";
+import {
+    FinallyPromiseHandler, PromiseCreatorFn, PromiseExecutor, RejectedPromiseHandler, ResolvedPromiseHandler
+} from "../interfaces/types";
 import { ePromiseState, STRING_STATES } from "../internal/state";
 import { emitEvent } from "./event";
 
@@ -61,7 +63,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = getLazy(() => !!getInst("PromiseRejectionEvent")));
 
     // https://tc39.es/ecma262/#sec-promise.prototype.then
-    function _then<TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2> {
+    const _then = <TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2> => {
         try {
             _currentPromiseId.push(_id);
             _handled = true;
@@ -124,13 +126,13 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     }
 
     // https://tc39.es/ecma262/#sec-promise.prototype.catch
-    function _catch<TResult1 = T>(onRejected: RejectedPromiseHandler<TResult1>) {
+    const _catch = <TResult1 = T>(onRejected: RejectedPromiseHandler<TResult1>) => {
         // Reuse then onRejected to support rejection
         return _then(undefined, onRejected);
     }
 
     // https://tc39.es/ecma262/#sec-promise.prototype.finally
-    function _finally<TResult1 = T, TResult2 = never>(onFinally: FinallyPromiseHandler): IPromise<TResult1 | TResult2> {
+    const _finally = <TResult1 = T, TResult2 = never>(onFinally: FinallyPromiseHandler): IPromise<TResult1 | TResult2> => {
         let thenFinally: any = onFinally;
         let catchFinally: any = onFinally;
         if (isFunction(onFinally)) {
@@ -148,11 +150,11 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         return _then<TResult1, TResult2>(thenFinally as any, catchFinally as any);
     }
 
-    function _strState() {
+    const _strState = () => {
         return STRING_STATES[_state];
     }
 
-    function _processQueue() {
+    const _processQueue = () => {
         if (_queue.length > 0) {
             // The onFulfilled and onRejected handlers must be called asynchronously. Thus,
             // we make a copy of the queue and work on it once the current call stack unwinds.
@@ -172,8 +174,8 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         }
     }
 
-    function _createSettleIfFn(newState: ePromiseState, allowState: ePromiseState) {
-        return function(theValue: T) {
+    const _createSettleIfFn = (newState: ePromiseState, allowState: ePromiseState) => {
+        return (theValue: T) => {
             if (_state === allowState) {
                 if (newState === ePromiseState.Resolved && isPromiseLike(theValue)) {
                     _state = ePromiseState.Resolving;
@@ -198,7 +200,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         };
     }
 
-    function _notifyUnhandledRejection() {
+    const _notifyUnhandledRejection = () => {
         if (!_handled) {
             if (isNode()) {
                 _debugLog(_toString(), "Emitting " + NODE_UNHANDLED_REJECTION);
@@ -235,7 +237,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         _thePromise[getKnownSymbol<symbol>(WellKnownSymbols.toStringTag)] = "IPromise";
     }
 
-    function _toString() {
+    const _toString = () => {
         return "IPromise" + (_promiseDebugEnabled ? "[" + _id + (!isUndefined(_parentId) ? (":" + _parentId) : "") + "]" : "") + " " + _strState() + (_hasResolved ? (" - " + dumpObj(_settledValue)) : "");
     }
 

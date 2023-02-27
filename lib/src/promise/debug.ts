@@ -33,13 +33,18 @@ export function _debugLog(id: string, message: string) {
 
 /**
  * @internal
- * @ignore Internal function to add the debug state to the promise, this code is removed from the production artifacts
- * @param thePromise
- * @param stateFn
- * @param resultFn
- * @param handledFn
+ * @ignore
+ * Internal function to add the debug state to the promise so that it provides simular visibility as you would
+ * see from native promises
+ * @param thePromise - The Promise implementation
+ * @param stateFn - The function to return the state of the promise
+ * @param resultFn - The function to return the result (settled value) of the promise
+ * @param handledFn - The function to return whether the promise has been handled (used for throwing
+ * unhandled rejection events)
  */
 export function _addDebugState(thePromise: any, stateFn: () => string, resultFn: () => string, handledFn: () => boolean) {
+    // While the IPromise implementations provide a `state` property, keeping the `[[PromiseState]]`
+    // as native promises also have a non-enumerable property of the same name
     _debugState = _debugState || { toString: () => "[[PromiseState]]" };
     _debugResult = _debugResult || { toString: () => "[[PromiseResult]]" };
     _debugHandled = _debugHandled || { toString: () => "[[PromiseIsHandled]]" };
@@ -51,9 +56,37 @@ export function _addDebugState(thePromise: any, stateFn: () => string, resultFn:
 
 /**
  * Debug helper to enable internal debugging of the promise implementations. Disabled by default.
- * @param enabled - Should debugging be enabled
- * @param logger - Optional logger that will log internal state changes, only called in debug builds as the calling function
- * is removed is the production artifacts
+ * For the generated packages included in the npm package the `logger` will not be called as the 
+ * `_debugLog` function that uses this logger is removed during packaging.
+ * 
+ * It is available directly from the repository for unit testing.
+ * 
+ * @group Debug
+ * @param enabled - Should debugging be enabled (defaults `false`, when `true` promises will have
+ * additional debug properties and the `toString` will include extra details.
+ * @param logger - Optional logger that will log internal state changes, only called in debug
+ * builds as the calling function is removed is the production artifacts.
+ * @example
+ * ```ts
+ * // The Id is the id of the promise
+ * // The message is the internal debug message
+ * function promiseDebugLogger(id: string, message: string) {
+ *     if (console && console.log) {
+ *         console.log(id, message);
+ *     }
+ * }
+ * 
+ * setPromiseDebugState(true, promiseDebugLogger);
+ * 
+ * // While the logger will not be called for the production packages
+ * // Setting the `enabled` flag to tru will cause each promise to have
+ * // the following additional properties added
+ * // [[PromiseState]]; => Same as the `state` property
+ * // [[PromiseResult]]; => The settled value
+ * // [[PromiseIsHandled]] => Identifies if the promise has been handled
+ * // It will also cause the `toString` for the promise to include additional
+ * // debugging information
+ * ```
  */
 export function setPromiseDebugState(enabled: boolean, logger?: (id: string, message: string) => void) {
     _promiseDebugEnabled = enabled;

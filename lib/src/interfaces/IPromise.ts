@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { FinallyPromiseHandler, RejectedPromiseHandler, ResolvedPromiseHandler } from "../types";
+import { FinallyPromiseHandler, RejectedPromiseHandler, ResolvedPromiseHandler } from "./types";
 
 /**
  * Create a Promise object that represents the eventual completion (or failure) of an asynchronous operation and its resulting value.

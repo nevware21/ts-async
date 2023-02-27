@@ -1,6 +1,6 @@
 {
     "name": "@nevware21/ts-async",
-    "description": "Promise support utilites and helpers for TypeScript",
+    "description": "support for asynchronous development with a Promise based task Scheduler, several different Promise implementations (synchronous, idle, asynchronous and native runtime wrappers), await helpers, and aliases all built and tested using TypeScript.",
     "version": "0.1.2",
     "homepage": "https://github.com/nevware21/ts-async",
     "license": "MIT",
@@ -17,13 +17,18 @@
         "asynchronous",
         "sync",
         "synchronous",
+        "sync promise",
+        "synchronous promise",
         "idle",
+        "idle promise",
         "minification",
         "browser",
         "promise polyfill",
         "idle promise",
         "synchronous promise",
-        "sync promise"
+        "sync promise",
+        "scheduler",
+        "task scheduler"
     ],
     "main": "dist/es5/umd/ts-async.js",
     "module": "dist-es5/ts-async.js",
@@ -66,7 +71,7 @@
     },
 
     "dependencies": {
-        "@nevware21/ts-utils": ">= 0.7 < 2.x"
+        "@nevware21/ts-utils": ">= 0.8 < 2.x"
     },
     "peerDependencies": {
         "typescript": ">=1"

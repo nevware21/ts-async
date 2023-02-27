@@ -12,11 +12,11 @@ import { PolyPromise } from "../../../src/polyfills/promise";
 import { createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
 import { createIdlePromise, createIdleRejectedPromise } from "../../../src/promise/idlePromise";
-import { IPromise } from "../../../src/promise/interfaces/IPromise";
+import { IPromise } from "../../../src/interfaces/IPromise";
 import { createNativePromise, createNativeRejectedPromise } from "../../../src/promise/nativePromise";
 import { createSyncPromise, createSyncRejectedPromise } from "../../../src/promise/syncPromise";
-import { PromiseExecutor } from "../../../src/promise/types";
-import { createPromise, createResolvedPromise, setCreatePromiseImpl } from "../../../src/promise/promise";
+import { PromiseExecutor } from "../../../src/interfaces/types";
+import { createAllPromise, createPromise, createResolvedPromise, setCreatePromiseImpl } from "../../../src/promise/promise";
 
 function _expectException(cb: () => void, message: string) {
     try {
@@ -120,7 +120,7 @@ let testImplementations: TestImplementations = {
 
 function _log(message: string) {
     if (console && console.log) {
-        console.log(message);
+        //console.log(message);
     }
 }
 
@@ -152,7 +152,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
         _unhandledEvents = [];
         function _debug(id: string, message: string) {
-            console && console.log && console.log("Debug[" + id + "]:" + message);
+            //console && console.log && console.log("Debug[" + id + "]:" + message);
         }
 
         setCreatePromiseImpl(definition.creator);
@@ -168,7 +168,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
             }
         } else {
             //EventEmitter.captureRejections = false;
-            console.log("Adding Node Rejection Listener");
+            //console.log("Adding Node Rejection Listener");
             process.on("unhandledRejection", _unhandledNodeRejection);
         }
     });
@@ -181,7 +181,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
                 gbl.removeEventListener("unhandledrejection", _unhandledrejection);
             }
         } else {
-            console.log("Removing Node Rejection Listener");
+            //console.log("Removing Node Rejection Listener");
             process.off("unhandledRejection", _unhandledNodeRejection);
         }
         
@@ -876,10 +876,10 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
         let finalResolve = false;
         let chainedPromise2 = promise.then((value) => {
-            console.log("Intervening:" + value);
+            //console.log("Intervening:" + value);
             // Don't return anything
         }).then((value) => {
-            console.log("Final:" + value);
+            //console.log("Final:" + value);
             resolvedValue = value;
             finalResolve = true;
         });
@@ -1200,7 +1200,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
         });
         
         promise.catch((f1) => {
-            console.log("failed 1: " + dumpObj(f1));
+            //console.log("failed 1: " + dumpObj(f1));
             catchCalled = true;
         }).finally(() => {
             finallyCalled = true;
@@ -1265,7 +1265,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
         });
         
         promise.catch((f1) => {
-            console.log("failed 1: " + dumpObj(f1));
+            //console.log("failed 1: " + dumpObj(f1));
             catchCalled = true;
         }).finally(() => {
             finallyCalled = true;
@@ -1331,5 +1331,46 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
         let result = await promise;
         assert.equal(result, 21);
+    });
+
+    it("check create all with nothing", async () => {
+        let promise = createAllPromise([]);
+
+        let values = await promise;
+        assert.ok(values, "A values object should have been returned");
+        assert.equal(values.length, 0, "No elements should have been returned");
+
+        let values2 = await promise;
+        assert.ok(values, "A values object should have been returned");
+        assert.equal(values.length, 0, "No elements should have been returned");
+
+        assert.ok(values === values2);
+    });
+
+    it("check create all with values resolved in the reverse order", async () => {
+        let promise = createAllPromise([
+            createPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    resolve(21);
+                }, 5)
+            }),
+            createPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    resolve(42);
+                }, 0)
+            })
+        ]);
+
+        let values = await promise;
+        assert.ok(values, "A values object should have been returned");
+        assert.equal(values.length, 2, "No elements should have been returned");
+        assert.equal(values[0], 21);
+        assert.equal(values[1], 42);
+
+        let values2 = await promise;
+        assert.ok(values2, "A values object should have been returned");
+        assert.equal(values2.length, 2, "No elements should have been returned");
+
+        assert.ok(values === values2);
     });
 }
