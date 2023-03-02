@@ -176,26 +176,25 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
     newPromise = newPromise || createPromise;
 
     const _startBlockedTimer = () => {
-        if (_staleTimeoutPeriod > 0 && (getLength(_running) + getLength(_waiting)) > 0) {
+        let hasTasks = (getLength(_running) + getLength(_waiting)) > 0;
+        if (_staleTimeoutPeriod > 0) {
             if (!_blockedTimer) {
                 // Only attempt to drop stale / blocked tasks if the timeout period is defined
                 _blockedTimer = scheduleTimeout(() => {
                     _abortStaleTasks(_running, _staleTimeoutPeriod);
                     _abortStaleTasks(_waiting, _staleTimeoutPeriod);
-                    if (getLength(_running) + getLength(_waiting)) {
-                        _blockedTimer.refresh();
-                    } else {
-                        _blockedTimer = null;
-                    }
+                    _blockedTimer && (_blockedTimer.enabled = ((getLength(_running) + getLength(_waiting)) > 0));
                 }, _staleTimeoutCheckPeriod);
 
                 _blockedTimer.unref();
-            } else {
-                _blockedTimer.refresh();
             }
+
+            _blockedTimer && (_blockedTimer.enabled = hasTasks);
         } else {
             _debugLog(_schedulerName, "No running or waiting tasks");
         }
+
+        
     }
 
     const _startQueueTask = <T>(startAction: StartQueuedTaskFn<T>, taskName?: string, timeout?: number): IPromise<T> => {
