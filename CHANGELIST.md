@@ -1,3 +1,10 @@
+# v0.2.1 Mar 2nd, 2023
+
+## Changelog
+
+- #27 [Bug] v0.2.0 of the scheduler is throwing an error when a waited task rejects
+- #28 Update to ts-utils@0.8.1
+
 # v0.2.0 Feb 26th, 2023
 
 ## Changelog
