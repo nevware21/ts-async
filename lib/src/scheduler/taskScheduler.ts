@@ -6,8 +6,8 @@
  * Licensed under the MIT license.
  */
 
-import { arrForEach, arrIndexOf, getLength, isPromiseLike, ITimerHandler, objDefine, objDefineProp, scheduleTimeout, utcNow } from "@nevware21/ts-utils";
-import { doAwait, doFinally } from "../promise/await";
+import { arrForEach, arrIndexOf, createCustomError, CustomErrorConstructor, getLength, isPromiseLike, ITimerHandler, objDefine, objDefineProp, scheduleTimeout, utcNow } from "@nevware21/ts-utils";
+import { doAwait, doAwaitResponse, doFinally } from "../promise/await";
 import { _debugLog } from "../promise/debug";
 import { IPromise } from "../interfaces/IPromise";
 import { PromiseExecutor, RejectPromiseHandler, ResolvePromiseHandler,StartQueuedTaskFn } from "../interfaces/types";
@@ -16,10 +16,17 @@ import { ITaskScheduler } from "../interfaces/ITaskScheduler";
 import { createPromise } from "../promise/promise";
 
 const REJECT = "reject";
+const REJECTED_ERROR = "Rejected";
 
 let _schedulerId: number = 0;
 let _debugName: any;
 let _debugIntState: any;
+
+/**
+ * @internal
+ * @ignore
+ */
+let _customErrors: { [type: string]: CustomErrorConstructor } = {};
 
 /**
  * @internal
@@ -41,6 +48,26 @@ function _rejectDone() {
     // A Do nothing function
 }
 
+var _createError = (type: string, evt: ITaskDetail, message?: string): Error => {
+    // Lazily create the class
+    !_customErrors[type] && (_customErrors[type] = createCustomError(type));
+
+    let now = utcNow();
+    return new (_customErrors[type])(`Task [${evt.id}] ${message||""}- ${(evt.st ? "Running" : "Waiting")}: ${_calcTime(now, evt.st || evt.cr)}`);
+}
+
+/**
+ * @internal
+ * @ignore
+ * Internal function used for displaying the time in milliseconds (during debugging)
+ * @param now - The current time
+ * @param start - The start time to subtract
+ * @returns A string representation of the time difference
+ */
+function _calcTime(now: number, start: number) {
+    return ((now - start) || "0") + " ms";
+}
+
 /**
  * Abort any stale tasks in the provided task Queue
  * @param taskQueue - The Task Queue to search
@@ -51,7 +78,7 @@ function _abortStaleTasks(taskQueue: ITaskDetail[], staleTimeoutPeriod: number):
     let expired = now - staleTimeoutPeriod;
     arrForEach(taskQueue, (evt) => {
         if (evt && !evt.rj && (evt.st && evt.st < expired) || (!evt.st && evt.cr && evt.cr < expired)) {
-            evt && evt[REJECT](evt.rj || new Error("Aborted -- Stale"));
+            evt && evt[REJECT](evt.rj || _createError("Aborted", evt, "Stale "));
         }
     });
 }
@@ -68,18 +95,6 @@ function _removeTask(queue: ITaskDetail[], taskDetail: ITaskDetail): void {
     if (idx !== -1) {
         queue.splice(idx, 1);
     }
-}
-
-/**
- * @internal
- * @ignore
- * Internal function used for displaying the time in milliseconds (during debugging)
- * @param now - The current time
- * @param start - The start time to subtract
- * @returns A string representation of the time difference
- */
-function _calcTime(now: number, start: number) {
-    return ((now - start) || "0") + " ms";
 }
 
 /**
@@ -191,13 +206,11 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
 
             _blockedTimer && (_blockedTimer.enabled = hasTasks);
         } else {
-            _debugLog(_schedulerName, "No running or waiting tasks");
+            _debugLog(_schedulerName, "Stale Timer disabled");
         }
-
-        
     }
 
-    const _startQueueTask = <T>(startAction: StartQueuedTaskFn<T>, taskName?: string, timeout?: number): IPromise<T> => {
+    const _queueTask = <T>(startAction: StartQueuedTaskFn<T>, taskName?: string, timeout?: number): IPromise<T> => {
         let taskId: string = _schedulerName + "." + _taskCount++;
         if (taskName) {
             taskId += "-(" + taskName + ")";
@@ -208,7 +221,7 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
             cr: utcNow(),
             to: timeout,
             [REJECT]: (reason: any) => {
-                newTask.rj = reason || new Error("Rejected");
+                newTask.rj = reason || _createError(REJECTED_ERROR, newTask);
                 newTask[REJECT] = _rejectDone;
             }
         };
@@ -240,7 +253,7 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
         // Create and return the promise executor for this action
         return function <T>(onTaskResolve: ResolvePromiseHandler<T>, onTaskReject: RejectPromiseHandler) {
             function _promiseReject(reason: any) {
-                taskDetail.rj = taskDetail.rj || reason || new Error("Rejected");
+                taskDetail.rj = taskDetail.rj || reason || _createError(REJECTED_ERROR, taskDetail);
                 taskDetail[REJECT] = _rejectDone;
                 _doCleanup(taskDetail);
                 onTaskResolve = null;
@@ -260,10 +273,9 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
                 try {
                     let startResult = startAction(taskId);
                     if (taskDetail.to && isPromiseLike(startResult)) {
-                        taskDetail.t = scheduleTimeout(
-                            _promiseReject,
-                            taskDetail.to,
-                            new Error("Task [" + taskId + "] Timeout - " + taskDetail.to + " ms"));
+                        taskDetail.t = scheduleTimeout(() => {
+                            _promiseReject(_createError("Timeout", taskDetail));
+                        }, taskDetail.to);
                     }
 
                     doAwait(startResult, (theResult) => {
@@ -292,7 +304,7 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
             // Wait for the previous tasks to complete before starting this one.
             // This ensures the queue execution order and avoids removing tasks that
             // have not yet been started.
-            doFinally(prevTask.p, () => {
+            doAwaitResponse(prevTask.p, () => {
                 _removeTask(_waiting, taskDetail);
                 _runTask(taskDetail, startAction)(onWaitResolve, onWaitReject);
             });
@@ -318,7 +330,7 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
 
     let theScheduler: ITaskScheduler =  {
         idle: true,
-        queue: _startQueueTask,
+        queue: _queueTask,
         setStaleTimeout: (staleTimeout: number, staleCheckPeriod?: number) => {
             _blockedTimer && _blockedTimer.cancel();
             _blockedTimer = null;
