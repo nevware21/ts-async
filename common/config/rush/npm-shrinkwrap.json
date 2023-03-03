@@ -1658,9 +1658,9 @@
       }
     },
     "node_modules/caniuse-lite": {
-      "version": "1.0.30001458",
-      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001458.tgz",
-      "integrity": "sha512-lQ1VlUUq5q9ro9X+5gOEyH7i3vm+AYVT1WDCVB69XOZ17KZRhnZ9J0Sqz7wTHQaLBJccNCHq8/Ww5LlOIZbB0w==",
+      "version": "1.0.30001459",
+      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001459.tgz",
+      "integrity": "sha512-WmuS7UmOyuMxDquiA3BUKrKPBcpaIHrFnlEzlIYKecjmHMABYsqp6eeZLjcLCW5aFb/dRJNYCiuGNEssQgLfaA==",
       "funding": [
         {
           "type": "opencollective",
@@ -8845,9 +8845,9 @@
       "integrity": "sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg=="
     },
     "caniuse-lite": {
-      "version": "1.0.30001458",
-      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001458.tgz",
-      "integrity": "sha512-lQ1VlUUq5q9ro9X+5gOEyH7i3vm+AYVT1WDCVB69XOZ17KZRhnZ9J0Sqz7wTHQaLBJccNCHq8/Ww5LlOIZbB0w=="
+      "version": "1.0.30001459",
+      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001459.tgz",
+      "integrity": "sha512-WmuS7UmOyuMxDquiA3BUKrKPBcpaIHrFnlEzlIYKecjmHMABYsqp6eeZLjcLCW5aFb/dRJNYCiuGNEssQgLfaA=="
     },
     "chai": {
       "version": "4.3.7",
