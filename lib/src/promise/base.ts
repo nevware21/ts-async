@@ -7,7 +7,7 @@
  */
 
 import {
-    arrForEach, dumpObj as libDumpObj, getKnownSymbol, hasSymbol, isFunction, isPromiseLike, isUndefined,
+    arrForEach, arrSlice, dumpObj, getKnownSymbol, hasSymbol, isFunction, isPromiseLike, isUndefined,
     throwTypeError, WellKnownSymbols, objToString, scheduleTimeout, ITimerHandler, getWindow, isNode,
     getGlobal, ILazyValue, getLazy, getInst, objDefine, objDefineProp
 } from "@nevware21/ts-utils";
@@ -30,12 +30,12 @@ let _unhandledRejectionTimeout = 10;
 
 let _hasPromiseRejectionEvent: ILazyValue<boolean>;
 
-function dumpObj(value: any) {
+function dumpFnObj(value: any) {
     if (isFunction(value)) {
         return value.toString();
     }
 
-    return libDumpObj(value);
+    return dumpObj(value);
 }
 
 /**
@@ -49,7 +49,9 @@ function dumpObj(value: any) {
  * @param executor - The resolve function
  * @param additionalArgs - [Optional] Additional arguments that will be passed to the PromiseCreatorFn
  */
-export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: PromisePendingProcessor, executor: PromiseExecutor<T>, ...additionalArgs: any): IPromise<T> {
+export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: PromisePendingProcessor, executor: PromiseExecutor<T>, ...additionalArgs: any): IPromise<T>;
+export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: PromisePendingProcessor, executor: PromiseExecutor<T>): IPromise<T> {
+    let additionalArgs = arrSlice(arguments, 3);
     let _state = ePromiseState.Pending;
     let _hasResolved = false;
     let _settledValue: T;
@@ -70,7 +72,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             _unHandledRejectionHandler && _unHandledRejectionHandler.cancel();
             _unHandledRejectionHandler = null;
 
-            _debugLog(_toString(), "then(" + dumpObj(onResolved)+ ", " + dumpObj(onResolved) +  ")");
+            _debugLog(_toString(), "then(" + dumpFnObj(onResolved)+ ", " + dumpFnObj(onResolved) +  ")");
             let thenPromise = newPromise<TResult1, TResult2>(function (resolve, reject) {
                 // Queue the new promise returned to be resolved or rejected
                 // when this promise settles.
@@ -81,10 +83,10 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                         // First call the onFulfilled or onRejected handler, on the settled value
                         // of this promise. If the corresponding `handler` does not exist, simply
                         // pass through the settled value.
-                        _debugLog(_toString(), "Handling settled value " + dumpObj(_settledValue));
+                        _debugLog(_toString(), "Handling settled value " + dumpFnObj(_settledValue));
                         let handler = _state === ePromiseState.Resolved ? onResolved : onRejected;
                         let value = isUndefined(handler) ? _settledValue : (isFunction(handler) ? handler(_settledValue) : handler);
-                        _debugLog(_toString(), "Handling Result " + dumpObj(value));
+                        _debugLog(_toString(), "Handling Result " + dumpFnObj(value));
     
                         if (isPromiseLike(value)) {
                             // The called handlers returned a new promise, so the chained promise
@@ -238,14 +240,14 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     }
 
     const _toString = () => {
-        return "IPromise" + (_promiseDebugEnabled ? "[" + _id + (!isUndefined(_parentId) ? (":" + _parentId) : "") + "]" : "") + " " + _strState() + (_hasResolved ? (" - " + dumpObj(_settledValue)) : "");
+        return "IPromise" + (_promiseDebugEnabled ? "[" + _id + (!isUndefined(_parentId) ? (":" + _parentId) : "") + "]" : "") + " " + _strState() + (_hasResolved ? (" - " + dumpFnObj(_settledValue)) : "");
     }
 
     _thePromise.toString = _toString;
 
     (function _initialize() {
         if (!isFunction(executor)) {
-            throwTypeError("Promise: executor is not a function - " + dumpObj(executor));
+            throwTypeError("Promise: executor is not a function - " + dumpFnObj(executor));
         }
 
         const _rejectFn = _createSettleIfFn(ePromiseState.Rejected, ePromiseState.Pending);
@@ -275,7 +277,8 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
  * @returns A function to create a promise that will be resolved when all arguments are resolved.
  */
 export function _createAllPromise(newPromise: PromiseCreatorFn): <T>(input: PromiseLike<T>[], ...additionalArgs: any) => IPromise<T[]> {
-    return function all<T>(input: PromiseLike<T>[], ...additionalArgs: any): IPromise<T[]> {
+    return function <T>(input: PromiseLike<T>[]): IPromise<T[]> {
+        let additionalArgs = arrSlice(arguments, 1);
         return newPromise<T[]>((resolve, reject) => {
             try {
                 let values = [] as any;
@@ -320,7 +323,8 @@ export function _createAllPromise(newPromise: PromiseCreatorFn): <T>(input: Prom
  * the new promise instance.
  */
 export function _createResolvedPromise(newPromise: PromiseCreatorFn): <T>(value: T, ...additionalArgs: any) => IPromise<T> {
-    return function <T>(value: T, ...additionalArgs: any): IPromise<T> {
+    return function <T>(value: T): IPromise<T> {
+        let additionalArgs = arrSlice(arguments, 1);
         if (isPromiseLike<T>(value)) {
             return value as unknown as IPromise<T>;
         }
@@ -341,7 +345,8 @@ export function _createResolvedPromise(newPromise: PromiseCreatorFn): <T>(value:
  * the new promise instance.
  */
 export function _createRejectedPromise(newPromise: PromiseCreatorFn): <T>(reason: any, ...additionalArgs: any) => IPromise<T> {
-    return function <T>(reason: any, ...additionalArgs: any): IPromise<T> {
+    return function <T>(reason: any): IPromise<T> {
+        let additionalArgs = arrSlice(arguments, 1);
         return newPromise((_resolve, reject) => {
             reject(reason);
         }, additionalArgs);
