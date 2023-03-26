@@ -1,3 +1,11 @@
+# v0.2.2 Mar 25th, 2023
+
+## Changelog
+
+- #36 [Packaging] The single module file is causing some packagere issues
+  - Update ts-utils version to 0.9.3
+  - Update rush to 5.95.0
+
 # v0.2.1 Mar 2nd, 2023
 
 ## Changelog
