@@ -44,7 +44,7 @@ interface _InternalDebugState {
  * @ignore
  * Empty reject function to avoid trying to re-reject
  */
-function _rejectDone() {
+const _rejectDone = () => {
     // A Do nothing function
 }
 
@@ -251,8 +251,8 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
         _startBlockedTimer();
 
         // Create and return the promise executor for this action
-        return function <T>(onTaskResolve: ResolvePromiseHandler<T>, onTaskReject: RejectPromiseHandler) {
-            function _promiseReject(reason: any) {
+        return <T>(onTaskResolve: ResolvePromiseHandler<T>, onTaskReject: RejectPromiseHandler) => {
+            const _promiseReject = (reason: any) => {
                 taskDetail.rj = taskDetail.rj || reason || _createError(REJECTED_ERROR, taskDetail);
                 taskDetail[REJECT] = _rejectDone;
                 _doCleanup(taskDetail);

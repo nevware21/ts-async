@@ -14,7 +14,7 @@ export type PromisePendingProcessor = (pending: PromisePendingFn[]) => void;
 export type PromisePendingFn = () => void;
 export type PromiseCreatorFn = <T, TResult2 = never>(newExecutor: PromiseExecutor<T>, ...extraArgs: any) => IPromise<T | TResult2>;
 
-function _processPendingItems(pending: PromisePendingFn[]) {
+const _processPendingItems = (pending: PromisePendingFn[]) => {
     arrForEach(pending, (fn: PromisePendingFn) => {
         try {
             fn();
@@ -45,7 +45,7 @@ export function syncItemProcessor(): (pending: PromisePendingFn[]) => void {
 export function timeoutItemProcessor(timeout?: number): (pending: PromisePendingFn[]) => void {
     let callbackTimeout = isNumber(timeout) ? timeout : 0;
 
-    return function (pending: PromisePendingFn[]) {
+    return (pending: PromisePendingFn[]) => {
         scheduleTimeout(() => {
             _processPendingItems(pending);
         }, callbackTimeout);
@@ -68,7 +68,7 @@ export function idleItemProcessor(timeout?: number): (pending: PromisePendingFn[
         };
     }
 
-    return function (pending: PromisePendingFn[]) {
+    return (pending: PromisePendingFn[]) => {
         scheduleIdleCallback((deadline: IdleDeadline) => {
             _processPendingItems(pending);
         }, options);
