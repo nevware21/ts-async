@@ -1,0 +1,12 @@
+// ------------------------------
+// NPM Publish group definitions
+// ------------------------------
+{
+    "repoRoot": "../../..",
+    "default": "ts-async",
+    "groups": {
+        "ts-async": [
+            "./lib"
+        ]
+    }
+}
