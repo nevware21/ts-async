@@ -55,8 +55,9 @@
         "test:worker": "cd lib && npm run test:worker",
         "debug:browser": "cd lib && npm run debug:browser",
         "debug:worker": "cd lib && npm run debug:worker",
-        "prep_release": "npm run cleanBuild && npm run npm_pack",
-        "npm_pack": "copyfiles README.md LICENSE lib && cd lib && npm pack"
+        "prep_release": "npm run cleanBuild && npm run npm-pack",
+        "npm-pack": "copyfiles README.md LICENSE lib && cd lib && npm pack",
+        "npm-publish": "cd tools/release-tools/npm-publish && npm install && cd ../../.. && npm run do-npm-publish --prefix tools/release-tools/npm-publish --"
     },
     "repository": {
         "type": "git",
