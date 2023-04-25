@@ -13,6 +13,7 @@ import { ePromiseState, STRING_STATES } from "../internal/state";
 import { PromiseExecutor } from "../interfaces/types";
 import { dumpObj, getInst, getLazy, ILazyValue, isFunction, objDefineProp, throwTypeError } from "@nevware21/ts-utils";
 
+const PrmCls = Promise;
 let _isPromiseSupported: ILazyValue<boolean>;
 
 /**
@@ -44,7 +45,7 @@ export function createNativePromise<T>(executor: PromiseExecutor<T>, timeout?: n
         return STRING_STATES[_state];
     }
 
-    let thePromise = new Promise<T>((resolve, reject) => {
+    let thePromise = new PrmCls<T>((resolve, reject) => {
         function _resolve(value: T) {
             _state = ePromiseState.Resolved;
             resolve(value);
