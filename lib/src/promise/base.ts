@@ -20,6 +20,7 @@ import {
 } from "../interfaces/types";
 import { ePromiseState, STRING_STATES } from "../internal/state";
 import { emitEvent } from "./event";
+import { STR_PROMISE } from "../internal/constants";
 
 const NODE_UNHANDLED_REJECTION = "unhandledRejection";
 const UNHANDLED_REJECTION = NODE_UNHANDLED_REJECTION.toLowerCase();
@@ -62,7 +63,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     let _unHandledRejectionHandler: ITimerHandler = null;
     let _thePromise: IPromise<T>;
 
-    !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = getLazy(() => !!getInst("PromiseRejectionEvent")));
+    !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = getLazy(() => !!getInst(STR_PROMISE + "RejectionEvent")));
 
     // https://tc39.es/ecma262/#sec-promise.prototype.then
     const _then = <TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2> => {
@@ -247,7 +248,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
 
     (function _initialize() {
         if (!isFunction(executor)) {
-            throwTypeError("Promise: executor is not a function - " + dumpFnObj(executor));
+            throwTypeError(STR_PROMISE + ": executor is not a function - " + dumpFnObj(executor));
         }
 
         const _rejectFn = _createSettleIfFn(ePromiseState.Rejected, ePromiseState.Pending);

@@ -12,16 +12,16 @@ import { IPromise } from "../interfaces/IPromise";
 import { ePromiseState, STRING_STATES } from "../internal/state";
 import { PromiseExecutor } from "../interfaces/types";
 import { dumpObj, getInst, getLazy, ILazyValue, isFunction, objDefineProp, throwTypeError } from "@nevware21/ts-utils";
+import { STR_PROMISE } from "../internal/constants";
 
-const PrmCls = Promise;
-let _isPromiseSupported: ILazyValue<boolean>;
+let _isPromiseSupported: ILazyValue<PromiseConstructor>;
 
 /**
  * Creates a Promise instance that when resolved or rejected will execute it's pending chained operations using the
  * available native Promise implementation.
  * If runtime does not support native `Promise` class (or no polyfill is available) this function will fallback to using
  * `createAsyncPromise` which will resolve them __asynchronously__ using the optional provided timeout value to
- * schedule when the chained items will be ececuted.
+ * schedule when the chained items will be executed.
  * @group Alias
  * @group Promise
  * @group Native
@@ -30,13 +30,21 @@ let _isPromiseSupported: ILazyValue<boolean>;
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
 export function createNativePromise<T>(executor: PromiseExecutor<T>, timeout?: number): IPromise<T> {
-    !_isPromiseSupported && (_isPromiseSupported = getLazy(() => !!getInst("Promise")));
-    if (!_isPromiseSupported.v) {
+    !_isPromiseSupported && (_isPromiseSupported = getLazy(() => {
+        try {
+            return getInst(STR_PROMISE);
+        } catch(e) {
+            // eslint-disable-next-line no-empty
+        }
+    }));
+
+    const PrmCls = _isPromiseSupported.v;
+    if (!PrmCls) {
         return createAsyncPromise(executor);
     }
 
     if (!isFunction(executor)) {
-        throwTypeError("Promise: executor is not a function - " + dumpObj(executor));
+        throwTypeError(STR_PROMISE + ": executor is not a function - " + dumpObj(executor));
     }
 
     let _state = ePromiseState.Pending;
