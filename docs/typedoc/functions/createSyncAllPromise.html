@@ -26,16 +26,10 @@ It rejects immediately upon any of the input promises rejected or non-promises t
 and will reject with this first rejection message / error.
 When resolved or rejected any additional chained operations will execute <strong>synchronously</strong> at the point of
 being added (eg. <code>then()</code>; <code>catch()</code>; <code>finally()</code>).</p>
-
-<h3>Returns</h3><ul>
-<li> An already resolved `Promise`, if the input passed is empty.
-<li> A pending `Promise` in all other cases. This returned promise is then resolved/rejected __synchronously__
-(as soon as the pending items is empty) when all the promises in the given input have resolved, or if any of the
-promises reject.
-</ul></div>
-<section class="tsd-panel tsd-type-parameters">
+</div>
+<section class="tsd-panel">
 <h4>Type Parameters</h4>
-<ul class="tsd-type-parameters">
+<ul class="tsd-type-parameter-list">
 <li>
 <h4><span class="tsd-kind-type-parameter">T</span></h4></li></ul></section>
 <div class="tsd-parameters">
@@ -45,7 +39,12 @@ promises reject.
 <h5><span class="tsd-kind-parameter">input</span>: <span class="tsd-signature-type ">PromiseLike</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 <div class="tsd-comment tsd-typography"><p>The array of promises to wait to be resolved / rejected before resolving or rejecting the new promise</p>
 </div></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="../interfaces/IPromise.html" class="tsd-signature-type tsd-kind-interface">IPromise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<h4 class="tsd-returns-title">Returns <a href="../interfaces/IPromise.html" class="tsd-signature-type tsd-kind-interface">IPromise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4><ul>
+<li> An already resolved `Promise`, if the input passed is empty.
+<li> A pending `Promise` in all other cases. This returned promise is then resolved/rejected __synchronously__
+(as soon as the pending items is empty) when all the promises in the given input have resolved, or if any of the
+promises reject.
+</ul><aside class="tsd-sources">
 <ul>
 <li>Defined in <a href="https://github.com/nevware21/ts-async/blob/main/lib/src/promise/syncPromise.ts#L46">lib/src/promise/syncPromise.ts:46</a></li></ul></aside></li></ul></section></div>
 <div class="col-sidebar">

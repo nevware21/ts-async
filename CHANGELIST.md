@@ -1,3 +1,13 @@
+# v0.2.3 Apr 24th, 2023
+
+## Changelog
+
+- #47 Add alias for Promise to avoid matching "new Promise"
+- #46 Bump typedoc to ^0.24.4
+- #45 Update release packaging and publishing steps
+- #44 Bump @microsoft/rush from 5.97.0 to 5.97.1
+- #39 Bump @microsoft/rush from 5.95.0 to 5.97.0
+
 # v0.2.2 Mar 25th, 2023
 
 ## Changelog
