@@ -93,7 +93,7 @@ function getGroupProjects() {
     var groupText = removeComments(removeTrailingComma(fs.readFileSync(publishGroupDef, "utf-8")));
 
     let groupJson = JSON.parse(groupText);
-    repoRoot = path.join(process.cwd(), (groupJson.repoRoot || ""));
+    repoRoot = path.join(process.cwd(), (groupJson.repoRoot || "")).replace(/\\/g, "/");
     console.log("Repo: " + repoRoot);
 
     if (!publishGroup) {
@@ -112,17 +112,17 @@ if (parseArgs()) {
         let packageJsonFile = path.join(repoRoot, packageRoot + "/package.json");
 
         if (!fs.existsSync(packageJsonFile)) {
-            console.error("!!! Source package.json doesn't exist [" + packageJsonFile + "]");
-            throw new Error("!!! Source package.json doesn't exist [" + packageJsonFile + "]");
+            console.error("!!! Source package.json doesn't exist [" + packageJsonFile + "] - [" + repoRoot + ", " + packageRoot + "]");
+            throw new Error("!!! Source package.json doesn't exist [" + packageJsonFile + "] - [" + repoRoot + ", " + packageRoot + "]");
         }
 
         console.log("\n\n##################################################################");
         console.log("Publishing - " + getNpmPackageName(packageJsonFile));
         console.log("##################################################################");
-        let npmPackageName = packageRoot + "/" + getNpmPackageName(packageJsonFile);
+        let npmPackageName = path.join(repoRoot, packageRoot + "/" + getNpmPackageName(packageJsonFile));
         if (!fs.existsSync(npmPackageName)) {
-            console.error("!!! NPM Package not found [" + npmPackageName + "]");
-            throw new Error("!!! NPM Package not found [" + npmPackageName + "]");
+            console.error("!!! NPM Package not found [" + npmPackageName + "] - [" + repoRoot + ", " + packageRoot + "]");
+            throw new Error("!!! NPM Package not found [" + npmPackageName + "] - [" + repoRoot + ", " + packageRoot + "]");
         }
         
         console.log(`npm package present ${npmPackageName}`);
