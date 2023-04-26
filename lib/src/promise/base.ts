@@ -9,7 +9,7 @@
 import {
     arrForEach, arrSlice, dumpObj, getKnownSymbol, hasSymbol, isFunction, isPromiseLike, isUndefined,
     throwTypeError, WellKnownSymbols, objToString, scheduleTimeout, ITimerHandler, getWindow, isNode,
-    getGlobal, ILazyValue, getLazy, getInst, objDefine, objDefineProp
+    getGlobal, ILazyValue, objDefine, objDefineProp, lazySafeGetInst
 } from "@nevware21/ts-utils";
 import { doAwait } from "./await";
 import { _addDebugState, _debugLog, _promiseDebugEnabled } from "./debug";
@@ -29,7 +29,7 @@ let _currentPromiseId: number[] = [];
 let _uniquePromiseId = 0;
 let _unhandledRejectionTimeout = 10;
 
-let _hasPromiseRejectionEvent: ILazyValue<boolean>;
+let _hasPromiseRejectionEvent: ILazyValue<any>;
 
 function dumpFnObj(value: any) {
     if (isFunction(value)) {
@@ -63,7 +63,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     let _unHandledRejectionHandler: ITimerHandler = null;
     let _thePromise: IPromise<T>;
 
-    !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = getLazy(() => !!getInst(STR_PROMISE + "RejectionEvent")));
+    !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = lazySafeGetInst(STR_PROMISE + "RejectionEvent"));
 
     // https://tc39.es/ecma262/#sec-promise.prototype.then
     const _then = <TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2> => {
@@ -216,7 +216,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                     objDefine(theEvt, "promise", { g: () => _thePromise });
                     theEvt.reason = _settledValue;
                     return theEvt;
-                }, _hasPromiseRejectionEvent.v);
+                }, !!_hasPromiseRejectionEvent.v);
             }
         }
     }

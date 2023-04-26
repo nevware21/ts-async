@@ -11,7 +11,7 @@ import { _createAllPromise, _createRejectedPromise, _createResolvedPromise } fro
 import { IPromise } from "../interfaces/IPromise";
 import { ePromiseState, STRING_STATES } from "../internal/state";
 import { PromiseExecutor } from "../interfaces/types";
-import { dumpObj, getInst, getLazy, ILazyValue, isFunction, objDefineProp, throwTypeError } from "@nevware21/ts-utils";
+import { dumpObj, lazySafeGetInst, ILazyValue, isFunction, objDefineProp, throwTypeError } from "@nevware21/ts-utils";
 import { STR_PROMISE } from "../internal/constants";
 
 let _isPromiseSupported: ILazyValue<PromiseConstructor>;
@@ -30,13 +30,7 @@ let _isPromiseSupported: ILazyValue<PromiseConstructor>;
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
 export function createNativePromise<T>(executor: PromiseExecutor<T>, timeout?: number): IPromise<T> {
-    !_isPromiseSupported && (_isPromiseSupported = getLazy(() => {
-        try {
-            return getInst(STR_PROMISE);
-        } catch(e) {
-            // eslint-disable-next-line no-empty
-        }
-    }));
+    !_isPromiseSupported && (_isPromiseSupported = lazySafeGetInst(STR_PROMISE));
 
     const PrmCls = _isPromiseSupported.v;
     if (!PrmCls) {

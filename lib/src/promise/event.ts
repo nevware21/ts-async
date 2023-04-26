@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { dumpObj, getDocument, getInst, getLazy, ILazyValue } from "@nevware21/ts-utils";
+import { dumpObj, getDocument, safeGetLazy, ILazyValue, getInst } from "@nevware21/ts-utils";
 
 const DISPATCH_EVENT = "dispatchEvent";
 let _hasInitEvent: ILazyValue<boolean>;
@@ -22,14 +22,14 @@ let _hasInitEvent: ILazyValue<boolean>;
 export function emitEvent(target: any, evtName: string, populateEvent: (theEvt: Event | any) => Event | any, useNewEvent: boolean) {
 
     let doc = getDocument();
-    !_hasInitEvent && (_hasInitEvent = getLazy(() => {
+    !_hasInitEvent && (_hasInitEvent = safeGetLazy(() => {
         let evt: any;
         if (doc && doc.createEvent) {
             evt = doc.createEvent("Event");
         }
         
         return (!!evt && evt.initEvent);
-    }));
+    }, null));
 
     let theEvt: Event = _hasInitEvent.v ? doc.createEvent("Event") : (useNewEvent ? new Event(evtName) : {} as Event);
     populateEvent && populateEvent(theEvt);
