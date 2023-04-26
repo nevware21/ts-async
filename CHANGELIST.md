@@ -1,3 +1,10 @@
+# v0.2.4 Apr 25th, 2023
+
+## Changelog
+
+- #50 [Bug] SCRIPT5009: 'Promise' is undefined
+- #52 Update ts-utils to 0.9.5
+
 # v0.2.3 Apr 24th, 2023
 
 ## Changelog

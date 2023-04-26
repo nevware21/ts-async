@@ -1,7 +1,7 @@
 {
     "name": "@nevware21/ts-async",
     "description": "support for asynchronous development with a Promise based task Scheduler, several different Promise implementations (synchronous, idle, asynchronous and native runtime wrappers), await helpers, and aliases all built and tested using TypeScript.",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "homepage": "https://github.com/nevware21/ts-async",
     "sideEffects": false,
     "license": "MIT",
