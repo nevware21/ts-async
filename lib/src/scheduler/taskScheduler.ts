@@ -206,7 +206,9 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
 
             _blockedTimer && (_blockedTimer.enabled = hasTasks);
         } else {
+            //#ifdef DEBUG
             _debugLog(_schedulerName, "Stale Timer disabled");
+            //#endif
         }
     }
 
@@ -267,7 +269,9 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
                 // Already aborted / pre-rejected
                 _promiseReject(taskDetail.rj);
             } else {
+                //#ifdef DEBUG
                 _debugLog(_schedulerName, "Task [" + taskId + "] Started after " + _calcTime(taskDetail.st, taskDetail.cr));
+                //#endif
                 taskDetail[REJECT] = _promiseReject;
 
                 try {
@@ -299,7 +303,9 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
             let taskId = taskDetail.id;
             let prevTaskId = prevTask.id;
 
+            //#ifdef DEBUG
             _debugLog(_schedulerName, "[" + taskId + "] is waiting for [" + prevTaskId + "] to complete before starting -- [" + _waiting.length + "] waiting");
+            //#endif
 
             // Wait for the previous tasks to complete before starting this one.
             // This ensures the queue execution order and avoids removing tasks that

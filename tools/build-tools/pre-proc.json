@@ -1,0 +1,22 @@
+// ------------------------------
+// Pre-processing group definitions
+// ------------------------------
+{
+    "repoRoot": "../../..",
+    "default": {
+        "group": "ts-async",
+        "definition": "prod"
+    },
+    "groups": {
+        "ts-async": [
+            "./lib/src"
+        ]
+    },
+    "definitions": {
+        "prod": {
+        },
+        "debug": {
+            "DEBUG": true
+        }
+    }
+}

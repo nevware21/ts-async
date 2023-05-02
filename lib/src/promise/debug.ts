@@ -26,9 +26,11 @@ let _theLogger: (id: string, message: string) => void = null;
  * removed from the production artifacts
  */
 export function _debugLog(id: string, message: string) {
+    //#ifdef DEBUG
     if (_theLogger) {
         _theLogger(id, message);
     }
+    //#endif
 }
 
 /**
