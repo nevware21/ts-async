@@ -39,7 +39,7 @@
     "scripts": {
         "postinstall": "node common/scripts/install-run-rush.js update",
         "build": "rush build",
-        "rebuild": "rush rebuild",
+        "rebuild": "rush rebuild && npm run pre-proc -- -restore",
         "test": "rush test",
         "lint": "grunt ts_async-lint",
         "coverage:report": "npm run coverage:nyc && npm run coverage:merge",
@@ -57,7 +57,8 @@
         "debug:worker": "cd lib && npm run debug:worker",
         "prep-release": "npm run cleanBuild && npm run npm-pack",
         "npm-pack": "copyfiles README.md LICENSE lib && cd lib && npm pack",
-        "npm-publish": "cd tools/release-tools/npm-publish && npm install && cd ../../.. && npm run do-npm-publish --prefix tools/release-tools/npm-publish --"
+        "npm-publish": "cd tools/release-tools/npm-publish && npm install && cd ../../.. && npm run do-npm-publish --prefix tools/release-tools/npm-publish --",
+        "pre-proc": "cd tools/build-tools/pre-proc && npm install && cd ../../../ && npm run do-pre-proc --prefix tools/build-tools/pre-proc --"
     },
     "repository": {
         "type": "git",

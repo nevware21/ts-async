@@ -73,7 +73,9 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             _unHandledRejectionHandler && _unHandledRejectionHandler.cancel();
             _unHandledRejectionHandler = null;
 
+            //#ifdef DEBUG
             _debugLog(_toString(), "then(" + dumpFnObj(onResolved)+ ", " + dumpFnObj(onResolved) +  ")");
+            //#endif
             let thenPromise = newPromise<TResult1, TResult2>(function (resolve, reject) {
                 // Queue the new promise returned to be resolved or rejected
                 // when this promise settles.
@@ -84,10 +86,14 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                         // First call the onFulfilled or onRejected handler, on the settled value
                         // of this promise. If the corresponding `handler` does not exist, simply
                         // pass through the settled value.
+                        //#ifdef DEBUG
                         _debugLog(_toString(), "Handling settled value " + dumpFnObj(_settledValue));
+                        //#endif
                         let handler = _state === ePromiseState.Resolved ? onResolved : onRejected;
                         let value = isUndefined(handler) ? _settledValue : (isFunction(handler) ? handler(_settledValue) : handler);
+                        //#ifdef DEBUG
                         _debugLog(_toString(), "Handling Result " + dumpFnObj(value));
+                        //#endif
     
                         if (isPromiseLike(value)) {
                             // The called handlers returned a new promise, so the chained promise
@@ -110,7 +116,9 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                     }
                 });
     
+                //#ifdef DEBUG
                 _debugLog(_toString(), "Added to Queue " + _queue.length);
+                //#endif
     
                 // If this promise is already settled, then immediately process the callback we
                 // just added to the queue.
@@ -119,7 +127,9 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                 }
             }, additionalArgs);
     
+            //#ifdef DEBUG
             _debugLog(_toString(), "Created -> " + thenPromise.toString());
+            //#endif
     
             return thenPromise;
     
@@ -164,16 +174,22 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             let pending = _queue.slice();
             _queue = [];
 
+            //#ifdef DEBUG
             _debugLog(_toString(), "Processing queue " + pending.length);
+            //#endif
 
             _handled = true;
             processor(pending);
+            //#ifdef DEBUG
             _debugLog(_toString(), "Processing done");
+            //#endif
             _unHandledRejectionHandler && _unHandledRejectionHandler.cancel();
             _unHandledRejectionHandler = null;
 
         } else {
+            //#ifdef DEBUG
             _debugLog(_toString(), "Empty Processing queue ");
+            //#endif
         }
     }
 
@@ -182,7 +198,9 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             if (_state === allowState) {
                 if (newState === ePromiseState.Resolved && isPromiseLike(theValue)) {
                     _state = ePromiseState.Resolving;
+                    //#ifdef DEBUG
                     _debugLog(_toString(), "Resolving");
+                    //#endif
                     theValue.then(
                         _createSettleIfFn(ePromiseState.Resolved, ePromiseState.Resolving),
                         _createSettleIfFn(ePromiseState.Rejected, ePromiseState.Resolving));
@@ -192,13 +210,17 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                 _state = newState;
                 _hasResolved = true;
                 _settledValue = theValue;
+                //#ifdef DEBUG
                 _debugLog(_toString(), _strState());
+                //#endif
                 _processQueue();
                 if (!_handled && newState === ePromiseState.Rejected && !_unHandledRejectionHandler) {
                     _unHandledRejectionHandler = scheduleTimeout(_notifyUnhandledRejection, _unhandledRejectionTimeout)
                 }
             } else {
+                //#ifdef DEBUG
                 _debugLog(_toString(), "Already " + _strState());
+                //#endif
             }
         };
     }
@@ -206,12 +228,16 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     const _notifyUnhandledRejection = () => {
         if (!_handled) {
             if (isNode()) {
+                //#ifdef DEBUG
                 _debugLog(_toString(), "Emitting " + NODE_UNHANDLED_REJECTION);
+                //#endif
                 process.emit(NODE_UNHANDLED_REJECTION, _settledValue, _thePromise);
             } else {
                 let gbl = getWindow() || getGlobal();
     
+                //#ifdef DEBUG
                 _debugLog(_toString(), "Emitting " + UNHANDLED_REJECTION);
+                //#endif
                 emitEvent(gbl, UNHANDLED_REJECTION, (theEvt: any) => {
                     objDefine(theEvt, "promise", { g: () => _thePromise });
                     theEvt.reason = _settledValue;
@@ -253,7 +279,9 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
 
         const _rejectFn = _createSettleIfFn(ePromiseState.Rejected, ePromiseState.Pending);
         try {
+            //#ifdef DEBUG
             _debugLog(_toString(), "Executing");
+            //#endif
             executor.call(
                 _thePromise,
                 _createSettleIfFn(ePromiseState.Resolved, ePromiseState.Pending),
@@ -263,7 +291,9 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         }
     })();
 
+    //#ifdef DEBUG
     _debugLog(_toString(), "Returning");
+    //#endif
     return _thePromise;
 }
 
