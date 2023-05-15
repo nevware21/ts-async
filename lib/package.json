@@ -82,7 +82,7 @@
     "devDependencies": {
         "@microsoft/api-extractor": "^7.34.4",
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
-        "@rollup/plugin-commonjs": "^24.0.0",
+        "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
         "@rollup/plugin-strip": "^3.0.2",
