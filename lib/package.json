@@ -3,30 +3,32 @@
     "description": "support for asynchronous development with a Promise based task Scheduler, several different Promise implementations (synchronous, idle, asynchronous and native runtime wrappers), await helpers, and aliases all built and tested using TypeScript.",
     "version": "0.2.4",
     "homepage": "https://github.com/nevware21/ts-async",
+    "sideEffects": false,
     "license": "MIT",
     "author": {
         "name": "Nevware21",
-        "email": "github@nevware21.com"
+        "email": "github+ts_async@nevware21.com"
     },
     "keywords": [
         "typescript",
         "javascript",
+        "es5",
         "promise",
         "es6.promise",
         "async",
         "asynchronous",
+        "async promise",
+        "asynchronous promise",
         "sync",
         "synchronous",
         "sync promise",
         "synchronous promise",
         "idle",
         "idle promise",
+        "requestIdleCallback",
         "minification",
         "browser",
         "promise polyfill",
-        "idle promise",
-        "synchronous promise",
-        "sync promise",
         "scheduler",
         "task scheduler"
     ],
@@ -42,7 +44,6 @@
     "bugs": {
         "url": "https://github.com/nevware21/ts-async/issues"
     },
-    "sideEffects": false,
     "licenses": [
         {
             "type": "MIT",
@@ -82,7 +83,7 @@
     "devDependencies": {
         "@microsoft/api-extractor": "^7.34.4",
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
-        "@rollup/plugin-commonjs": "^24.0.0",
+        "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
         "@rollup/plugin-strip": "^3.0.2",
