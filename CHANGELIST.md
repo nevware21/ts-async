@@ -1,3 +1,15 @@
+# v0.2.5 June 11th, 2023
+
+## Changelog
+
+- #54 Add Pre-Processor to remove _debugLog from modules
+  - This removes the debug / test code from the final generated packages (resulting in smaller production bundles)
+- #57 Bump @rollup/plugin-commonjs from 24.1.0 to 25.0.0 in /lib
+- #60 Bump @nevware21/ts-utils min version from 0.9.5 to 0.9.7
+- #61 Bump @microsoft/rush from 5.98.0 to 5.99.0
+- #62 Create SECURITY.md
+- #63 Add Issue Templates
+
 # v0.2.4 Apr 25th, 2023
 
 ## Changelog
