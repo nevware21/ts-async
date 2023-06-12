@@ -1,3 +1,9 @@
+# v0.2.6 June 12th, 2023
+
+## Changelog
+
+- #65 [Bug] Dependency @nevware21/tools-pre-proc@0.1.0 cannot be resolved
+
 # v0.2.5 June 11th, 2023
 
 ## Changelog
