@@ -1,3 +1,12 @@
+# v0.3.0 Aug 17th, 2023
+
+## Changelog
+
+- #79 [Bug] remove typescript should not be a peer dependency
+- #82 Bump @nevware21/ts-utils to minimum of 0.10.0
+- #81 Bump @microsoft/rush to 5.102.0
+- #74 Bump @typescript-eslint/eslint-plugin from 5.62.0 to 6.1.0
+
 # v0.2.6 June 12th, 2023
 
 ## Changelog
