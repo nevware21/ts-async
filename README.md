@@ -66,9 +66,28 @@ All implementations will "emit/dispatch" the unhandled promise rejections event 
 
 The package provides a simple polyfill wrapper which is built around the `asynchronous` promise implementation which is tested and validated against the standard native (`Promise()`) implementations for node, browser and web-worker to ensure compatibility.
 
+## Language ECMAScript Support
+
+### ES5
+
+This library plans to maintain ES5 compatibility for all versions of v0.x and v1.x releases
+
+### ES(future [6 next, etc])
+
+Future versions of this library starting at version 2.x are planned to lift and remove the internal polyfills to support the new targetted baseline once it is defined.
+ie. It may or may not be ES6 depending on the runtime landscape and requests received.
+
+When we release v2.x the supported browser matrix will also shift as required to match the defined language level supported at that time. 
+
 ## Quickstart
 
 Install the npm packare: `npm install @nevware21/ts-async --save`
+
+> It is suggested / recommended that you use the following definition in your `package.json` so that you are compatible with any future releases as they become available
+> we do not intend to make ANY known breaking changes moving forward until v2.x 
+> ```json
+> "@nevware21/ts-async": ">= 0.3.0 < 2.x"
+> ```
 
 And then just import the helpers and use them.
 
@@ -158,7 +177,7 @@ While the examples above are using the `createPromise` you can directly use the 
 
 ## Browser Support
 
-General support is currently set to ES5 supported runtimes higher.
+General support is currently set to ES5 supported runtimes and higher.
 
 Internal polyfills are used to backfill ES5 functionality which is not provided by older browsers.
 
