@@ -17,7 +17,7 @@ The Promise based Task Scheduler supports the serialized execution of tasks usin
 > All of the provided Promise implementations support usage patterns via either `await` or with the included helper functions (`doAwait`, `doFinally`, `doAwaitresponse`), you can also mix and match them (use both helper and `await`) as required by your use cases.
 
 ### Test Environments 
-- Node (12, 14, 16, 18)
+- Node (16, 18, 20)
 - Browser (Chromium - headless)
 - Web Worker (Chromium - headless)
 
