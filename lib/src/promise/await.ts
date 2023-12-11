@@ -14,23 +14,127 @@ import { FinallyPromiseHandler, RejectedPromiseHandler, ResolvedPromiseHandler }
 /**
  * Helper to coallesce the promise resolved / reject into a single callback to simplify error handling.
  * @group Await Helper
- * @param value - The value or promise like value to wait for
- * @param cb - The callback to call with the response of the promise as an IAwaitResponse object.
+ * @param value - The value or promise like value to wait
+ * @param cb - The callback function to call with the resulting value, if the value is not a 
+ * promise like value then the callback is called synchronously, if the value is a promise then
+ * the callback will be called once the promise completes the resulting value will be passed as an
+ * IAwaitResponse instance, it will be called whether any promise resolves or rejects.
+ * @returns The value returned by the `cb` callback function, if the value is a promise then the return value
+ * of the callback will be returned as a promise whether the callback returns a promise or not.
+ * @example
+ * ```ts
+ * let promise = createPromise<number>((resolve, reject) => {
+ *     resolve(42);
+ * });
+ *
+ * // Handle via doAwaitResponse
+ * doAwaitResponse(promise, (value) => {
+ *     if (!value.rejected) {
+ *          // Do something with the value
+ *     } else {
+ *         // Do something with the reason
+ *     }
+ * });
+ *
+ * // It can also handle the raw value, so you could process the result of either a
+ * // synchrounous return of the value or a Promise
+ * doAwaitResponse(42, (value) => {
+ *     if (!value.rejected) {
+ *         // Do something with the value
+ *     } else {
+ *        // This will never be true as the value is not a promise
+ *     }
+ * });
+ * ```
  */
-export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | Promise<T>, cb: (response: AwaitResponse<T>) => void): T | Promise<T | TResult1 | TResult2>;
-export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | PromiseLike<T>, cb: (response: AwaitResponse<T>) => void): T | PromiseLike<T | TResult1 | TResult2>;
-export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T>, cb: (response: AwaitResponse<T>) => void): T | IPromise<T | TResult1 | TResult2> {
-    return doAwait(value as any, (value) => {
-        cb && cb({
+export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | Promise<T>, cb: (response: AwaitResponse<T | TResult1>) => T | TResult1 | TResult2 | Promise<T | TResult1 | TResult2>): T | TResult1 | TResult2 | Promise<T | TResult1 | TResult2>;
+
+/**
+ * Helper to coallesce the promise resolved / reject into a single callback to simplify error handling.
+ * @group Await Helper
+ * @param value - The value or promise like value to wait for
+ * @param cb - The callback function to call with the resulting value, if the value is not a 
+ * promise like value then the callback is called synchronously, if the value is a promise then
+ * the callback will be called once the promise completes the resulting value will be passed as an
+ * IAwaitResponse instance, it will be called whether any promise resolves or rejects.
+ * @returns The value returned by the `cb` callback function, if the value is a promise then the return value
+ * of the callback will be returned as a promise whether the callback returns a promise or not.
+ * @example
+ * ```ts
+ * let promise = createPromise<number>((resolve, reject) => {
+ *     resolve(42);
+ * });
+ *
+ * // Handle via doAwaitResponse
+ * doAwaitResponse(promise, (value) => {
+ *     if (!value.rejected) {
+ *          // Do something with the value
+ *     } else {
+ *         // Do something with the reason
+ *     }
+ * });
+ *
+ * // It can also handle the raw value, so you could process the result of either a
+ * // synchrounous return of the value or a Promise
+ * doAwaitResponse(42, (value) => {
+ *     if (!value.rejected) {
+ *         // Do something with the value
+ *     } else {
+ *        // This will never be true as the value is not a promise
+ *     }
+ * });
+ * ```
+ */
+export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | PromiseLike<T>, cb: (response: AwaitResponse<T | TResult1>) => T | TResult1 | TResult2 | PromiseLike<T | TResult1 | TResult2>): T | TResult1 | TResult2 | PromiseLike<T | TResult1 | TResult2>;
+
+/**
+ * Helper to coallesce the promise resolved / reject into a single callback to simplify error handling.
+ * @group Await Helper
+ * @param value - The value or promise like value to wait to be resolved or rejected.
+ * @param cb - The callback function to call with the resulting value, if the value is not a 
+ * promise like value then the callback is called synchronously, if the value is a promise then
+ * the callback will be called once the promise completes the resulting value will be passed as an
+ * IAwaitResponse instance, it will be called whether any promise resolves or rejects.
+ * @returns The value returned by the `cb` callback function, if the value is a promise then the return value
+ * of the callback will be returned as a promise whether the callback returns a promise or not.
+ * @example
+ * ```ts
+ * let promise = createPromise<number>((resolve, reject) => {
+ *     resolve(42);
+ * });
+ *
+ * // Handle via doAwaitResponse
+ * doAwaitResponse(promise, (value) => {
+ *     if (!value.rejected) {
+ *          // Do something with the value
+ *     } else {
+ *         // Do something with the reason
+ *     }
+ * });
+ *
+ * // It can also handle the raw value, so you could process the result of either a
+ * // synchrounous return of the value or a Promise
+ * doAwaitResponse(42, (value) => {
+ *     if (!value.rejected) {
+ *         // Do something with the value
+ *     } else {
+ *        // This will never be true as the value is not a promise
+ *     }
+ * });
+ * ```
+ */
+export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T>, cb: (response: AwaitResponse<T | TResult1>) => T | TResult1 | TResult2 | IPromise<T | TResult1 | TResult2>): T | TResult1 | TResult2 | IPromise<T | TResult1 | TResult2> {
+    return doAwait(value as T, (value) => {
+        return cb ? cb({
             value: value,
             rejected: false
-        });
+        }) : value;
     },
     (reason) => {
-        cb && cb({
+        return cb ? cb({
             rejected: true,
             reason: reason
-        });
+        }) : reason;
     });
 }
 
@@ -69,7 +173,7 @@ export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | IP
  * });
  * ```
  */
-export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | Promise<T>, resolveFn: ResolvedPromiseHandler<T, TResult1>, rejectFn?: RejectedPromiseHandler<TResult2>, finallyFn?: FinallyPromiseHandler): T | Promise<T | TResult1 | TResult2>;
+export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | Promise<T>, resolveFn: ResolvedPromiseHandler<T, TResult1>, rejectFn?: RejectedPromiseHandler<TResult2>, finallyFn?: FinallyPromiseHandler): T | TResult1 | Promise<T | TResult1 | TResult2>;
 
 /**
  * Wait for the promise to resolve or reject, if resolved the callback function will be called with it's value and if
@@ -106,7 +210,7 @@ export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | Promise<T>
  * });
  * ```
  */
-export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | PromiseLike<T>, resolveFn: ResolvedPromiseHandler<T, TResult1>, rejectFn?: RejectedPromiseHandler<TResult2>, finallyFn?: FinallyPromiseHandler): T | PromiseLike<T | TResult1 | TResult2>;
+export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | PromiseLike<T>, resolveFn: ResolvedPromiseHandler<T, TResult1>, rejectFn?: RejectedPromiseHandler<TResult2>, finallyFn?: FinallyPromiseHandler): T | TResult1 | PromiseLike<T | TResult1 | TResult2>;
 
 /**
  * Wait for the promise to resolve or reject, if resolved the callback function will be called with it's value and if
@@ -142,19 +246,21 @@ export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | PromiseLik
  * });
  * ```
  */
-export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T>, resolveFn: ResolvedPromiseHandler<T, TResult1>, rejectFn?: RejectedPromiseHandler<TResult2>, finallyFn?: FinallyPromiseHandler): T | IPromise<T | TResult1 | TResult2> {
-    let result = value;
+export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T>, resolveFn: ResolvedPromiseHandler<T, TResult1>, rejectFn?: RejectedPromiseHandler<TResult2>, finallyFn?: FinallyPromiseHandler): T | TResult1 | IPromise<T | TResult1 | TResult2> {
+    let result: T | TResult1 | IPromise<T | TResult1> | PromiseLike<TResult1> = value;
     
     if (isPromiseLike<T>(value)) {
         if (resolveFn || rejectFn) {
             result = value.then(resolveFn, rejectFn) as any;
         }
     } else {
-        resolveFn && resolveFn(value as T);
+        if (resolveFn) {
+            result = resolveFn(value);
+        }
     }
 
     if (finallyFn) {
-        result = doFinally(result as any, finallyFn);
+        doFinally(result as any, finallyFn);
     }
 
     return result as any;
