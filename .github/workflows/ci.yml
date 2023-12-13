@@ -27,6 +27,8 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node }}
+    - name: Update rush shrinkwrap dependencies
+      run: node common/scripts/install-run-rush.js update --full
     - run: npm install
     - name: Build
       run: npm run build --verbose
