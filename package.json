@@ -37,7 +37,7 @@
     "esnext": "lib/dist-es6/index.js",
     "types": "lib/types/index.d.ts",    
     "scripts": {
-        "postinstall": "node common/scripts/install-run-rush.js update",
+        "postinstall": "node common/scripts/install-run-rush.js update --full",
         "build": "rush build",
         "rebuild": "rush rebuild && npm run pre-proc -- -restore",
         "test": "rush test",

@@ -6,10 +6,11 @@
  * Licensed under the MIT license.
  */
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { doAwait, doAwaitResponse } from "../../../src/promise/await";
 import { arrForEach } from "@nevware21/ts-utils";
 import { isPromiseLike } from "@nevware21/ts-utils";
+import sinon from "sinon";
 
 describe("Validate doAwait", () => {
     it("Invalid/missing callbacks", () => {
@@ -172,25 +173,175 @@ describe("Validate doAwaitResponse", () => {
         assert.equal(responseCalled, true, "response should have been called");
     });
 
-    it("with synchronous rejected PromiseLike value but not Promise", () => {
+    it("with synchronous rejected PromiseLike value but not Promise", async () => {
         let testPromiseLike: PromiseLike<number> = new TestRejectedPromiseLike<number>((reject) => {
             reject(42);
         });
 
         let responseCalled = false;
         try {
-            doAwaitResponse(testPromiseLike, (response) => {
+            await doAwaitResponse(testPromiseLike, (response) => {
                 responseCalled = true;
                 assert.equal(response.rejected, true);
                 assert.equal(response.value, undefined, "response value should be undefined");
                 assert.equal(response.reason, 42, "response.reason should receive the rejected value");
+
+                throw response.reason;
             });
             assert.fail("Expected an exception to have been thrown");
         } catch (e) {
             assert.ok(true, "Expected an exception");
+            assert.equal(e, 42);
         }
 
         assert.equal(responseCalled, true, "response should have been called");
+    });
+
+    it("should handle resolved promises", async () => {
+        const mockCallback = sinon.fake();
+        const promise = Promise.resolve("resolved");
+
+        await doAwaitResponse(promise, mockCallback);
+
+        expect(mockCallback.calledOnce).to.be.true;
+        expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            value: "resolved",
+            rejected: false
+        });
+    });
+
+    it("should handle rejected promises", async () => {
+        const mockCallback = sinon.fake();
+        const promise = Promise.reject("rejected");
+
+        try {
+            await doAwaitResponse(promise, mockCallback);
+        } catch (e) {
+            // Handle error
+        }
+
+        expect(mockCallback.calledOnce).to.be.true;
+        expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            rejected: true,
+            reason: "rejected"
+        });
+    });
+
+    it("should handle callbacks that return values", async () => {
+        const mockCallback = sinon.fake.returns("callback return value");
+        const promise = Promise.resolve("resolved");
+
+        const result = await doAwaitResponse(promise, mockCallback);
+
+        expect(mockCallback.calledOnce).to.be.true;
+        expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            value: "resolved",
+            rejected: false
+        });
+        expect(result).to.equal("callback return value");
+    });
+
+    it ("should handle callbacks that return promises", async () => {
+        const mockCallback = sinon.fake.returns(Promise.resolve("callback return value"));
+        const promise = Promise.resolve("resolved");
+
+        const result = await doAwaitResponse(promise, mockCallback);
+
+        expect(mockCallback.calledOnce).to.be.true;
+        expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            value: "resolved",
+            rejected: false
+        });
+        expect(result).to.equal("callback return value");
+    });
+
+    it("should handle callbacks that throw errors", async () => {
+        const mockCallback = sinon.fake.throws("callback error");
+        const promise = Promise.resolve("resolved");
+
+        try {
+            await doAwaitResponse(promise, mockCallback);
+            assert.fail("Expected an exception to have been thrown");
+        } catch (e) {
+            // Handle error
+            assert.ok(true, "Expected an exception");
+        }
+
+        expect(mockCallback.calledOnce).to.be.true;
+        expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            value: "resolved",
+            rejected: false
+        });
+    });
+
+    it ("should handle callbacks that return rejected promises", async () => {
+        const mockCallback = sinon.fake.returns(Promise.reject("callback error"));
+        const promise = Promise.resolve("resolved");
+
+        try {
+            await doAwaitResponse(promise, mockCallback);
+            assert.fail("Expected an exception to have been thrown");
+        } catch (e) {
+            // Handle error
+            assert.ok(true, "Expected an exception");
+        }
+
+        expect(mockCallback.calledOnce).to.be.true;
+        expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            value: "resolved",
+            rejected: false
+        });
+    });
+
+    it ("Example with value", async () => {
+        let value = doAwaitResponse(42, (value) => {
+            if (!value.rejected) {
+                assert.equal(value.value, 42, "The passed value is returned");
+                return 53;
+            } else {
+                assert.fail("Should not be called");
+            }
+        });
+
+        assert.equal(value, 53);
+    });
+
+    it("Example with synchronous resolved PromiseLike value but not Promise", async () => {
+        let testPromiseLike: PromiseLike<number> = new TestPromiseLike<number>((resolve) => {
+            resolve(42);
+        });
+
+        let value = await doAwaitResponse(testPromiseLike, (value) => {
+            if (!value.rejected) {
+                assert.equal(value.value, 42, "The passed value is returned");
+                return 53;
+            } else {
+                assert.fail("Should not be called");
+            }
+        });
+
+        assert.equal(value, 53);
+    });
+
+    it("Example with synchronous rejected PromiseLike value but not Promise", async () => {
+        let testPromiseLike: PromiseLike<number> = new TestRejectedPromiseLike<number>((reject) => {
+            reject(42);
+        });
+
+        try {
+            await doAwaitResponse(testPromiseLike, (value) => {
+                if (!value.rejected) {
+                    assert.fail("Should not be called");
+                } else {
+                    assert.equal(value.reason, 42, "The passed value is returned");
+                    throw 53;
+                }
+            });
+            assert.fail("Expected an exception to have been thrown");
+        } catch (e) {
+            assert.ok(true, "Expected an exception");
+            assert.equal(e, 53);
+        }
     });
 });
 
