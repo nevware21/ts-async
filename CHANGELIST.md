@@ -1,3 +1,9 @@
+# v0.4.0 Dec 13th, 2023
+
+## Changelog
+
+- #108 [Bug] doAwaitResponse should return / handle any additional value returned by the callback function
+
 # v0.3.0 Aug 17th, 2023
 
 ## Changelog
