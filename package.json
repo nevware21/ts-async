@@ -93,7 +93,7 @@
         "@typescript-eslint/eslint-plugin": "^6.1.0",
         "@typescript-eslint/parser": "^6.1.0",
         "eslint": "^8.16.0",
-        "eslint-plugin-security": "^1.5.0",
+        "eslint-plugin-security": "^2.1.0",
         "eslint-formatter-codeframe": "^7.32.1",
         "grunt": "^1.5.3",
         "grunt-cli": "^1.4.3",
