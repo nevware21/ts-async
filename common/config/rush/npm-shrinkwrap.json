@@ -10,7 +10,7 @@
       "dependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.34.4",
-        "@nevware21/ts-utils": ">= 0.10.0 < 2.x",
+        "@nevware21/ts-utils": ">= 0.10.3 < 2.x",
         "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
@@ -26,6 +26,7 @@
         "chromium": "^3.0.3",
         "codecov": "^3.8.3",
         "copyfiles": "^2.4.1",
+        "cross-env": "^7.0.3",
         "globby": "^11.0.0",
         "grunt": "^1.5.3",
         "grunt-cli": "^1.4.3",
@@ -684,9 +685,9 @@
       }
     },
     "node_modules/@nevware21/ts-utils": {
-      "version": "0.10.2",
-      "resolved": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.10.2.tgz",
-      "integrity": "sha512-lfjXoPjxCgMvhQuCCe+TbiQrZFkTHTdpUvFuIPmMdYOwRxAh90RhUzSkrfXMDlk7Qj+5r7z6oJLkWn0U7gmyTQ=="
+      "version": "0.10.3",
+      "resolved": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.10.3.tgz",
+      "integrity": "sha512-tr386H8iI9DsqF8DcmdrcTFusU2BgiAX+OrLJcka6G/AOBwauVwIbAR0asuKDjKy/5Tu9jAozPxGgwP9CMx7LA=="
     },
     "node_modules/@nodelib/fs.scandir": {
       "version": "2.1.5",
@@ -934,9 +935,9 @@
     "node_modules/@rush-temp/tools-pre-proc": {
       "version": "0.0.0",
       "resolved": "file:projects/tools-pre-proc.tgz",
-      "integrity": "sha512-WFRNJkqkyqpOFh3XNxNVHkEApzj8NXE0S5PP2huQ60RuhQFK7c+6yQsN49glaoXaCZuGl33YzRXFVVcHUrkUTg==",
+      "integrity": "sha512-dx1eS4JEDrq4+oM2ANtUwRufiEit32HWM+2zM/vQvSnSffaC66UQ6+W0NfVBLUf9L7yOdfQlWvTYIjBbBOJcXQ==",
       "dependencies": {
-        "@nevware21/ts-utils": ">= 0.10.0 < 2.x",
+        "@nevware21/ts-utils": ">= 0.10.3 < 2.x",
         "@types/node": "^18.14.2",
         "globby": "^11.0.0",
         "typescript": "^4.9.5"
@@ -945,11 +946,11 @@
     "node_modules/@rush-temp/ts-async": {
       "version": "0.0.0",
       "resolved": "file:projects/ts-async.tgz",
-      "integrity": "sha512-xCd0D7ZWn84uGcFjhC6nMBzWDchR1+/aDWI7BDGM8pOfoh0cGs60un6gbyJrxyPFNTWQX9v3jbfO4+4p81wwMg==",
+      "integrity": "sha512-lSGjxQDws1e79k14vLvwlD+ON+ZK8sZa1+UZAHX/kqxhCOMpvD8SUaYn2/dU5UH5egvBB6uVFA99qY1wQGfXEQ==",
       "dependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.34.4",
-        "@nevware21/ts-utils": ">= 0.10.0 < 2.x",
+        "@nevware21/ts-utils": ">= 0.10.3 < 2.x",
         "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
@@ -962,6 +963,7 @@
         "chromium": "^3.0.3",
         "codecov": "^3.8.3",
         "copyfiles": "^2.4.1",
+        "cross-env": "^7.0.3",
         "grunt": "^1.5.3",
         "grunt-cli": "^1.4.3",
         "karma": "^6.3.20",
@@ -2336,6 +2338,23 @@
         "ripemd160": "^2.0.0",
         "safe-buffer": "^5.0.1",
         "sha.js": "^2.4.8"
+      }
+    },
+    "node_modules/cross-env": {
+      "version": "7.0.3",
+      "resolved": "https://registry.npmjs.org/cross-env/-/cross-env-7.0.3.tgz",
+      "integrity": "sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==",
+      "dependencies": {
+        "cross-spawn": "^7.0.1"
+      },
+      "bin": {
+        "cross-env": "src/bin/cross-env.js",
+        "cross-env-shell": "src/bin/cross-env-shell.js"
+      },
+      "engines": {
+        "node": ">=10.14",
+        "npm": ">=6",
+        "yarn": ">=1"
       }
     },
     "node_modules/cross-fetch": {
@@ -8819,9 +8838,9 @@
       }
     },
     "@nevware21/ts-utils": {
-      "version": "0.10.2",
-      "resolved": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.10.2.tgz",
-      "integrity": "sha512-lfjXoPjxCgMvhQuCCe+TbiQrZFkTHTdpUvFuIPmMdYOwRxAh90RhUzSkrfXMDlk7Qj+5r7z6oJLkWn0U7gmyTQ=="
+      "version": "0.10.3",
+      "resolved": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.10.3.tgz",
+      "integrity": "sha512-tr386H8iI9DsqF8DcmdrcTFusU2BgiAX+OrLJcka6G/AOBwauVwIbAR0asuKDjKy/5Tu9jAozPxGgwP9CMx7LA=="
     },
     "@nodelib/fs.scandir": {
       "version": "2.1.5",
@@ -8967,9 +8986,9 @@
     },
     "@rush-temp/tools-pre-proc": {
       "version": "file:projects\\tools-pre-proc.tgz",
-      "integrity": "sha512-WFRNJkqkyqpOFh3XNxNVHkEApzj8NXE0S5PP2huQ60RuhQFK7c+6yQsN49glaoXaCZuGl33YzRXFVVcHUrkUTg==",
+      "integrity": "sha512-dx1eS4JEDrq4+oM2ANtUwRufiEit32HWM+2zM/vQvSnSffaC66UQ6+W0NfVBLUf9L7yOdfQlWvTYIjBbBOJcXQ==",
       "requires": {
-        "@nevware21/ts-utils": ">= 0.10.0 < 2.x",
+        "@nevware21/ts-utils": ">= 0.10.3 < 2.x",
         "@types/node": "^18.14.2",
         "globby": "^11.0.0",
         "typescript": "^4.9.5"
@@ -8977,11 +8996,11 @@
     },
     "@rush-temp/ts-async": {
       "version": "file:projects\\ts-async.tgz",
-      "integrity": "sha512-xCd0D7ZWn84uGcFjhC6nMBzWDchR1+/aDWI7BDGM8pOfoh0cGs60un6gbyJrxyPFNTWQX9v3jbfO4+4p81wwMg==",
+      "integrity": "sha512-lSGjxQDws1e79k14vLvwlD+ON+ZK8sZa1+UZAHX/kqxhCOMpvD8SUaYn2/dU5UH5egvBB6uVFA99qY1wQGfXEQ==",
       "requires": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.34.4",
-        "@nevware21/ts-utils": ">= 0.10.0 < 2.x",
+        "@nevware21/ts-utils": ">= 0.10.3 < 2.x",
         "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
@@ -8994,6 +9013,7 @@
         "chromium": "^3.0.3",
         "codecov": "^3.8.3",
         "copyfiles": "^2.4.1",
+        "cross-env": "^7.0.3",
         "grunt": "^1.5.3",
         "grunt-cli": "^1.4.3",
         "karma": "^6.3.20",
@@ -10072,6 +10092,14 @@
         "ripemd160": "^2.0.0",
         "safe-buffer": "^5.0.1",
         "sha.js": "^2.4.8"
+      }
+    },
+    "cross-env": {
+      "version": "7.0.3",
+      "resolved": "https://registry.npmjs.org/cross-env/-/cross-env-7.0.3.tgz",
+      "integrity": "sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==",
+      "requires": {
+        "cross-spawn": "^7.0.1"
       }
     },
     "cross-fetch": {

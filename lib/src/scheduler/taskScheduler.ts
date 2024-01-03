@@ -7,13 +7,16 @@
  */
 
 import { arrForEach, arrIndexOf, createCustomError, CustomErrorConstructor, getLength, isPromiseLike, ITimerHandler, objDefine, objDefineProp, scheduleTimeout, utcNow } from "@nevware21/ts-utils";
-import { doAwait, doAwaitResponse, doFinally } from "../promise/await";
-import { _debugLog } from "../promise/debug";
+import { doAwait, doAwaitResponse } from "../promise/await";
 import { IPromise } from "../interfaces/IPromise";
 import { PromiseExecutor, RejectPromiseHandler, ResolvePromiseHandler,StartQueuedTaskFn } from "../interfaces/types";
 import { ITaskDetail } from "../internal/ITaskDetail";
 import { ITaskScheduler } from "../interfaces/ITaskScheduler";
 import { createPromise } from "../promise/promise";
+
+//#ifdef DEBUG
+import { _debugLog } from "../promise/debug";
+//#endif
 
 const REJECT = "reject";
 const REJECTED_ERROR = "Rejected";
@@ -284,8 +287,12 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
 
                     doAwait(startResult, (theResult) => {
                         _doCleanup(taskDetail);
+                        try {
+                            onTaskResolve && onTaskResolve(theResult as any);
+                        } catch (e) {
+                            onTaskReject && onTaskReject(e);
+                        }
                         onTaskReject = null;
-                        onTaskResolve && onTaskResolve(theResult as any);
                         onTaskResolve = null;
                     }, _promiseReject);
                 } catch (e) {
@@ -300,10 +307,9 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
         _startBlockedTimer();
 
         return newPromise((onWaitResolve, onWaitReject) => {
+            //#ifdef DEBUG
             let taskId = taskDetail.id;
             let prevTaskId = prevTask.id;
-
-            //#ifdef DEBUG
             _debugLog(_schedulerName, "[" + taskId + "] is waiting for [" + prevTaskId + "] to complete before starting -- [" + _waiting.length + "] waiting");
             //#endif
 

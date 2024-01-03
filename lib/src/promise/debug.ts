@@ -18,14 +18,16 @@ let _debugHandled: any;
  */
 export let _promiseDebugEnabled = false;
 
+//#ifdef DEBUG
 let _theLogger: (id: string, message: string) => void = null;
+//#endif
 
 /**
  * @internal
  * @ignore Internal function enable logging the internal state of the promise during execution, this code and references are
  * removed from the production artifacts
  */
-export function _debugLog(id: string, message: string) {
+export const _debugLog = (id: string, message: string) => {
     //#ifdef DEBUG
     if (_theLogger) {
         _theLogger(id, message);
@@ -92,5 +94,7 @@ export function _addDebugState(thePromise: any, stateFn: () => string, resultFn:
  */
 export function setPromiseDebugState(enabled: boolean, logger?: (id: string, message: string) => void) {
     _promiseDebugEnabled = enabled;
+    //#ifdef DEBUG
     _theLogger = logger;
+    //#endif
 }
