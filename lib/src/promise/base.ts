@@ -26,7 +26,6 @@ import { STR_PROMISE } from "../internal/constants";
 import { _debugLog } from "./debug";
 //#endif
 
-
 const NODE_UNHANDLED_REJECTION = "unhandledRejection";
 const UNHANDLED_REJECTION = NODE_UNHANDLED_REJECTION.toLowerCase();
 
@@ -69,7 +68,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     let _thePromise: IPromise<T>;
 
     !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = lazySafeGetInst(STR_PROMISE + "RejectionEvent"));
-
+    
     // https://tc39.es/ecma262/#sec-promise.prototype.then
     const _then = <TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2> => {
         try {

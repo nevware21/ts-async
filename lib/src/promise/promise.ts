@@ -6,13 +6,12 @@
  * Licensed under the MIT license.
  */
 
-import { getLazy, ILazyValue } from "@nevware21/ts-utils";
 import { _createAllPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
 import { IPromise } from "../interfaces/IPromise";
 import { createNativePromise } from "./nativePromise";
 import { PromiseExecutor } from "../interfaces/types";
 
-let _promiseCreator: ILazyValue<<T>(executor: PromiseExecutor<T>, timeout?: number) => IPromise<T>>;
+let _promiseCreator: <T>(executor: PromiseExecutor<T>, timeout?: number) => IPromise<T>;
 
 /**
  * Set the default promise implementation to use when calling `createPromise`; `createAllPromise`; `createResolvedPromise`
@@ -27,7 +26,7 @@ let _promiseCreator: ILazyValue<<T>(executor: PromiseExecutor<T>, timeout?: numb
 export function setCreatePromiseImpl(
     creator: <T>(executor: PromiseExecutor<T>, timeout?: number) => IPromise<T>
 ) {
-    _promiseCreator = creator ? getLazy(() => creator) : null;
+    _promiseCreator = creator || null;
 }
 
 /**
@@ -40,9 +39,9 @@ export function setCreatePromiseImpl(
  * @param timeout - [Optional] timeout to wait before processing the items, defaults to zero.
  */
 export function createPromise<T>(executor: PromiseExecutor<T>, timeout?: number): IPromise<T>  {
-    !_promiseCreator && (_promiseCreator = getLazy(() => createNativePromise));
+    !_promiseCreator && (_promiseCreator = createNativePromise);
 
-    return _promiseCreator.v.call(this, executor, timeout);
+    return _promiseCreator.call(this, executor, timeout);
 }
 
 /**

@@ -38,8 +38,8 @@
     "types": "lib/types/index.d.ts",    
     "scripts": {
         "postinstall": "node common/scripts/install-run-rush.js update --full",
-        "build": "rush build",
-        "rebuild": "rush rebuild && npm run pre-proc -- -restore",
+        "build": "rush build && npm run pre-proc -- -restore && npm run size",
+        "rebuild": "rush rebuild && npm run pre-proc -- -restore && npm run size",
         "test": "rush test",
         "lint": "grunt ts_async-lint",
         "coverage:report": "npm run coverage:nyc && npm run coverage:merge",
@@ -58,7 +58,8 @@
         "prep-release": "npm run cleanBuild && npm run npm-pack",
         "npm-pack": "copyfiles README.md LICENSE lib && cd lib && npm pack",
         "npm-publish": "cd tools/release-tools/npm-publish && npm install && cd ../../.. && npm run do-npm-publish --prefix tools/release-tools/npm-publish --",
-        "pre-proc": "cd tools/build-tools/pre-proc && npm install && cd ../../../ && npm run do-pre-proc --prefix tools/build-tools/pre-proc --"
+        "pre-proc": "cd tools/build-tools/pre-proc && npm install && cd ../../../ && npm run do-pre-proc --prefix tools/build-tools/pre-proc --",
+        "size": "size-limit"
     },
     "repository": {
         "type": "git",
@@ -84,6 +85,9 @@
         "@microsoft/rush": "5.112.2",
         "@nevware21/grunt-eslint-ts": "0.2.4",
         "@nevware21/grunt-ts-plugin": "0.4.5",
+        "@size-limit/preset-small-lib": "^11.0.1",
+        "@size-limit/time": "^11.0.1",
+        "@size-limit/esbuild-why": "^11.0.1",
         "@types/eslint": "^8.4.2",
         "@types/estree": "^1.0.0",
         "@types/jquery": "^3.5.14",
@@ -101,6 +105,60 @@
         "nyc": "^15.1.0",
         "codecov": "^3.8.3",
         "typedoc": "^0.25.0",
-        "copyfiles": "^2.4.1"
-    }
+        "copyfiles": "^2.4.1",
+        "size-limit": "^11.0.1"
+    },
+    "size-limit": [
+        {
+            "name": "es5-full",
+            "path": "lib/dist-es5/index.js",
+            "limit": "14 kb",
+            "brotli": false,
+            "ignore": [
+                "lib/dist-es5/polyfills.js",
+                "lib/dist-es5/polyfills.*.js"
+            ]
+        },
+        {
+            "name": "es6-full",
+            "path": "lib/dist-es6/index.js",
+            "limit": "14 kb",
+            "brotli": false,
+            "ignore": [
+                "lib/dist-es6/polyfills.js",
+                "lib/dist-es6/polyfills.*.js"
+            ]
+        },
+        {
+            "name": "es5-zip",
+            "path": "lib/dist-es5/index.js",
+            "limit": "6 Kb",
+            "gzip": true,
+            "ignore": [
+                "lib/dist-es5/polyfills.js",
+                "lib/dist-es5/polyfills.*.js"
+            ]
+        },
+        {
+            "name": "es6-zip",
+            "path": "lib/dist-es6/index.js",
+            "limit": "6 Kb",
+            "gzip": true,
+            "ignore": [
+                "lib/dist-es6/polyfills.js",
+                "lib/dist-es6/polyfills.*.js"
+            ]
+        },
+        {
+            "name": "es5-promise",
+            "path": "lib/dist-es5/index.js",
+            "limit": "8 kb",
+            "import": "{ createAsyncPromise }",
+            "brotli": false,
+            "ignore": [
+                "lib/dist-es5/polyfills.js",
+                "lib/dist-es5/polyfills.*.js"
+            ]
+        } 
+    ]
 }
