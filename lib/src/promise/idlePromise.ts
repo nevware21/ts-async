@@ -20,7 +20,7 @@ let _defaultIdleTimeout:  number;
  * outstanding chained items should be executed.
  * @group Idle
  */
-export function setDetaultIdleTimeout(idleDeadline: number) {
+export function setDefaultIdleTimeout(idleDeadline: number) {
     _defaultIdleTimeout = idleDeadline;
 }
 

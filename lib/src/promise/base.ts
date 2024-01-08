@@ -12,7 +12,7 @@ import {
     getGlobal, ILazyValue, objDefine, objDefineProp, lazySafeGetInst
 } from "@nevware21/ts-utils";
 import { doAwait } from "./await";
-import { _addDebugState, _debugLog, _promiseDebugEnabled } from "./debug";
+import { _addDebugState, _promiseDebugEnabled } from "./debug";
 import { IPromise } from "../interfaces/IPromise";
 import { PromisePendingProcessor } from "./itemProcessor";
 import {
@@ -21,6 +21,11 @@ import {
 import { ePromiseState, STRING_STATES } from "../internal/state";
 import { emitEvent } from "./event";
 import { STR_PROMISE } from "../internal/constants";
+
+//#ifdef DEBUG
+import { _debugLog } from "./debug";
+//#endif
+
 
 const NODE_UNHANDLED_REJECTION = "unhandledRejection";
 const UNHANDLED_REJECTION = NODE_UNHANDLED_REJECTION.toLowerCase();

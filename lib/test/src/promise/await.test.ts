@@ -7,10 +7,12 @@
  */
 
 import { assert, expect } from "chai";
-import { doAwait, doAwaitResponse } from "../../../src/promise/await";
+import { doAwait, doAwaitResponse, doFinally } from "../../../src/promise/await";
 import { arrForEach } from "@nevware21/ts-utils";
 import { isPromiseLike } from "@nevware21/ts-utils";
 import sinon from "sinon";
+import { createPromise, createRejectedPromise, createResolvedPromise } from "../../../src/promise/promise";
+import { createTimeoutPromise } from "../../../src/promise/timeoutPromise";
 
 describe("Validate doAwait", () => {
     it("Invalid/missing callbacks", () => {
@@ -51,6 +53,16 @@ describe("Validate doAwait", () => {
         }, (reason) => {
             assert.fail("Should not be called");
         });
+    });
+
+    it("with no callback functions", () => {
+        doAwait(42, null, null);
+        assert.ok(true, "Should not throw an exception");
+    });
+
+    it("with no resolve or reject callback functions", async () => {
+        await doAwait(createTimeoutPromise(1, true, 42), null);
+        assert.ok(true, "Should not throw an exception");
     });
 
     it("with values", () => {
@@ -119,15 +131,95 @@ describe("Validate doAwait", () => {
         assert.equal(rejectCalled, true, "reject should have been called");
         assert.equal(finallyCalled, true, "Finally should have been called");
     });
+
+    it("Handle exception during resolve", (done) => {
+        let testPromiseLike = createPromise((resolve) => {
+            resolve(42);
+        });
+
+        let finallyCalled = false;
+        let resolveCalled = false;
+        doAwait(doAwait(testPromiseLike, (value) => {
+            resolveCalled = true;
+            assert.equal(value, 42, "resolve should receive the resolved value");
+            throw 53;
+        }, (reason) => {
+            assert.fail("Should not be called");
+        }, () => {
+            finallyCalled = true;
+        }), (value) => {
+            assert.fail("Outer resolve should not be called");
+        }, (reason) => {
+            assert.equal(reason, 53, "Should be called");
+        }, () => {
+            assert.equal(resolveCalled, true, "resolve should have been called");
+            assert.equal(finallyCalled, true, "Finally should have been called");
+            done();
+        });
+    });
+
+    it ("Handle exception during synchronous resolve", () => {
+        let finallyCalled = false;
+        let resolveCalled = false;
+        let rejectCalled = false;
+        doAwait(42, (value) => {
+            resolveCalled = true;
+            assert.equal(value, 42, "resolve should receive the resolved value");
+            throw 53;
+        }, (reason) => {
+            rejectCalled = true;
+        }, () => {
+            finallyCalled = true;
+        });
+
+        assert.equal(resolveCalled, true, "resolve should have been called");
+        assert.equal(rejectCalled, true, "reject should not have been called");
+        assert.equal(finallyCalled, true, "Finally should have been called");
+    });
+
+    it ("Handle exception during synchronous resolve with no reject function", () => {
+        let finallyCalled = false;
+        let resolveCalled = false;
+
+        try {
+            doAwait(42, (value) => {
+                resolveCalled = true;
+                assert.equal(value, 42, "resolve should receive the resolved value");
+                throw 53;
+            }, null, () => {
+                finallyCalled = true;
+            });
+            assert.fail("Expected an exception to have been thrown")
+        } catch (e) {
+            assert.ok(true, "Expected an exception");
+        }
+
+        assert.equal(resolveCalled, true, "resolve should have been called");
+        assert.equal(finallyCalled, true, "Finally should have been called");
+    });
 });
 
 describe("Validate doAwaitResponse", () => {
-    it("Invalid/missing callbacks", () => {
+    it("Invalid/missing callbacks with non-promise value", () => {
         let value = doAwaitResponse<number>(1, null as any);
         assert.equal(value, 1);
 
         value = doAwaitResponse(42, undefined as any);
         assert.equal(value, 42);
+    });
+
+    it("Invalid/missing callbacks with promise value", async () => {
+        let value = await doAwaitResponse(createResolvedPromise(42), null as any);
+        assert.equal(value, 42);
+    });
+
+    it("Invalid/missing callbacks with rejected promise value", async () => {
+        try {
+            await doAwaitResponse(createRejectedPromise("rejected"), null as any);
+        } catch (e) {
+            assert.ok(true, "Expected an exception");
+            assert.equal(e, "rejected", "rejected value should be returned");
+        }
     });
 
     it("null/undefined value", () => {
@@ -372,6 +464,188 @@ class TestPromiseLike<T> implements PromiseLike<T> {
         });
     }
 }
+
+describe("Validate doFinally", () => {
+    it("should call finallyFn for resolved promises", async () => {
+        let finallyCalled = false;
+        const promise = createResolvedPromise("resolved");
+
+        await doFinally(promise, () => {
+            finallyCalled = true;
+        });
+
+        assert.equal(finallyCalled, true, "Finally should have been called");
+    });
+
+    it("should call finallyFn for rejected promises", async () => {
+        let finallyCalled = false;
+        const promise = createRejectedPromise("rejected");
+
+        try {
+            await doFinally(promise, () => {
+                finallyCalled = true;
+            });
+
+            assert.fail("Should throw an exception");
+        } catch (e) {
+            assert.ok(true, "An exception should have been thrown");
+            assert.equal(e, "rejected", "An exception should have been thrown");
+        }
+
+        assert.equal(finallyCalled, true, "Finally should have been called");
+    });
+
+    it("should call finallyFn for non-promise values", () => {
+        let finallyCalled = false;
+        const value = "value";
+
+        doFinally(value, () => {
+            finallyCalled = true;
+        });
+
+        assert.equal(finallyCalled, true, "Finally should have been called");
+    });
+    
+    it("should throw an exception if finallyFn throws an exception", async () => {
+        const promise = createTimeoutPromise(1, true, "resolved");
+
+        try {
+            await doFinally(promise, () => {
+                throw "finallyFn error";
+            });
+
+            assert.fail("Should throw an exception");
+        } catch (e) {
+            assert.ok(true, "An exception should have been thrown");
+            assert.equal(e, "finallyFn error", "An exception should have been thrown");
+        }
+    });
+
+    it("should throw an exception if finallyFn throws an exception for rejected promises", async () => {
+        const promise = createRejectedPromise("rejected");
+
+        try {
+            await doFinally(promise, () => {
+                throw "finallyFn error";
+            });
+
+            assert.fail("Should throw an exception");
+        } catch (e) {
+            assert.ok(true, "An exception should have been thrown");
+            assert.equal(e, "finallyFn error", "An exception should have been thrown");
+        }
+    });
+
+    it("should throw an exception if finallyFn throws an exception for non-promise values", async () => {
+        const value = "value";
+
+        try {
+            await doFinally(value, () => {
+                throw "finallyFn error";
+            });
+
+            assert.fail("Should throw an exception");
+        } catch (e) {
+            assert.ok(true, "An exception should have been thrown");
+            assert.equal(e, "finallyFn error", "An exception should have been thrown");
+        }
+    });
+
+    it("should not throw an exception if finallyFn causes a rejected promise", async () => {
+        const promise = createResolvedPromise("resolved");
+
+        await doFinally(promise, () => {
+            // Actually causes an exception to be thrown
+            Promise.reject("finallyFn rejected");
+        });
+
+        assert.ok(true, "Should not throw an exception");
+    });
+
+    it("should throw the original reject value if finallyFn returns a rejected promise for rejected promises", async () => {
+        const promise = createRejectedPromise("rejected");
+
+        try {
+            await doFinally(promise, () => {
+                Promise.reject("finallyFn rejected");
+            });
+
+            assert.fail("Should throw an exception");
+        } catch (e) {
+            // Handle error
+            assert.ok(true, "The rejected promise should have thrown an exception");
+            assert.equal(e, "rejected", "The rejected promise should have thrown an exception");
+        }
+    });
+
+    it("should throw the native original reject value if finallyFn returns a rejected promise for rejected promises", async () => {
+        const promise = Promise.reject("rejected");
+
+        try {
+            await doFinally(promise, () => {
+                Promise.reject("finallyFn rejected");
+            });
+
+            assert.fail("Should throw an exception");
+        } catch (e) {
+            // Handle error
+            assert.ok(true, "The rejected promise should have thrown an exception");
+            assert.equal(e, "rejected", "The rejected promise should have thrown an exception");
+        }
+    });
+
+    it("should not throw an exception if finallyFn returns a rejected promise for non-promise values", () => {
+        const value = "value";
+
+        doFinally(value, () => {
+            Promise.reject("finallyFn error");
+        });
+
+        assert.ok(true, "Should not throw an exception");
+    });
+
+    it("should not thow an exception if no finallyFn is provided", async () => {
+        const promise = createResolvedPromise("resolved");
+
+        await doFinally(promise, null);
+
+        assert.ok(true, "Should not throw an exception");
+    });
+
+    it("should thow an exception if no finallyFn is provided for rejected promises", async () => {
+        const promise = createRejectedPromise("rejected");
+
+        try {
+            await doFinally(promise, null);
+            assert.fail("Should throw an exception");
+        } catch (e) {
+            // Handle error
+            assert.ok(true, "Should throw an exception");
+            assert.equal(e, "rejected", "Should throw an exception");
+        }
+    });
+
+    it("should thow an exception if no finallyFn is provided for rejected promises", async () => {
+        const promise = Promise.reject("rejected");
+
+        try {
+            await doFinally(promise, null);
+            assert.fail("Should throw an exception");
+        } catch (e) {
+            // Handle error
+            assert.ok(true, "Should throw an exception");
+            assert.equal(e, "rejected", "Should throw an exception");
+        }
+    });
+
+    it("should not thow an exception if no finallyFn is provided for non-promise values", () => {
+        const value = "value";
+
+        doFinally(value, null);
+
+        assert.ok(true, "Should not throw an exception");
+    });
+});
 
 class TestRejectedPromiseLike<T> implements PromiseLike<T> {
 

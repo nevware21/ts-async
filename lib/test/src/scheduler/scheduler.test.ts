@@ -553,6 +553,10 @@ function batchTests(testKey: string, definition: TestDefinition) {
     it("Validate tasks are executed based on when queued correctly", (done) => {
         let scheduler = createTaskScheduler(createAsyncPromise, "queue.test");
 
+        assert.ok(scheduler["[[SchedulerName]]"].startsWith("queue.test"), "Scheduled Name should start with 'queue.test' - " + scheduler["[[SchedulerName]]"]);
+        assert.deepEqual(scheduler["[[SchedulerState]]"].r, [], "Scheduler Status - " + JSON.stringify(scheduler["[[SchedulerState]]"]));
+        assert.deepEqual(scheduler["[[SchedulerState]]"].w, [], "Scheduler Status - " + JSON.stringify(scheduler["[[SchedulerState]]"]));
+
         let order: string[] = [];
         let expectedOrder: Array<string | RegExp> = [
             "queue1",

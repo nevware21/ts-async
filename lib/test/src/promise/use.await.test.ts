@@ -100,6 +100,14 @@ let testImplementations: TestImplementations = {
         checkState: true,
         checkChainedState: true
     },
+    "idle-def": {
+        creator: <T>(executor: PromiseExecutor<T>) => {
+            return createIdlePromise<T>(executor);
+        },
+        rejected: createIdleRejectedPromise,
+        checkState: true,
+        checkChainedState: true
+    },
     "sync": {
         creator: <T>(executor: PromiseExecutor<T>) => {
             return createSyncPromise<T>(executor);
@@ -1320,7 +1328,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
     it("check creating a resolved promise with another promise", async () => {
 
-        let otherPromise = createPromise((resolve, reject) => {
+        let otherPromise = createNewPromise((resolve, reject) => {
             scheduleTimeout(() => {
                 resolve(21);
             }, 0);
@@ -1349,12 +1357,12 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
     it("check create all with values resolved in the reverse order", async () => {
         let promise = createAllPromise([
-            createPromise((resolve, reject) => {
+            createNewPromise((resolve, reject) => {
                 scheduleTimeout(() => {
                     resolve(21);
                 }, 5)
             }),
-            createPromise((resolve, reject) => {
+            createNewPromise((resolve, reject) => {
                 scheduleTimeout(() => {
                     resolve(42);
                 }, 0)
@@ -1363,14 +1371,162 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
         let values = await promise;
         assert.ok(values, "A values object should have been returned");
-        assert.equal(values.length, 2, "No elements should have been returned");
+        assert.equal(values.length, 2, "Two elements should have been returned");
         assert.equal(values[0], 21);
         assert.equal(values[1], 42);
 
         let values2 = await promise;
         assert.ok(values2, "A values object should have been returned");
-        assert.equal(values2.length, 2, "No elements should have been returned");
+        assert.equal(values2.length, 2, "Two elements should have been returned");
 
         assert.ok(values === values2);
+    });
+
+    it("check create all with values resolved in the order", async () => {
+        let promise = createAllPromise([
+            createNewPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    resolve(21);
+                }, 0)
+            }),
+            createNewPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    resolve(42);
+                }, 5)
+            })
+        ]);
+
+        let values = await promise;
+        assert.ok(values, "A values object should have been returned");
+        assert.equal(values.length, 2, "Two elements should have been returned");
+        assert.equal(values[0], 21);
+        assert.equal(values[1], 42);
+
+        let values2 = await promise;
+        assert.ok(values2, "A values object should have been returned");
+        assert.equal(values2.length, 2, "Two elements should have been returned");
+
+        assert.ok(values === values2);
+    });
+
+    it("check create all with values resolved in the order with a rejected promise", async () => {
+        let promise = createAllPromise([
+            createNewPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    resolve(21);
+                }, 0)
+            }),
+            createNewPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    reject(new Error("Simulated failure"));
+                }, 5)
+            })
+        ]);
+
+        try {
+            await promise;
+        } catch (e) {
+            assert.ok(true, "Caught: " + dumpObj(e));
+            assert.equal(e.message, "Simulated failure");
+        }
+
+        try {
+            await promise;
+        } catch (e) {
+            assert.ok(true, "Caught: " + dumpObj(e));
+            assert.equal(e.message, "Simulated failure");
+        }
+    });
+
+    it("check create all with values resolved in the order with a rejected promise and a finally", async () => {
+        let promise = createAllPromise([
+            createNewPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    resolve(21);
+                }, 0)
+            }),
+            createNewPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    reject(new Error("Simulated failure"));
+                }, 5)
+            })
+        ]).finally(() => {
+            //console.log("Finally called");
+        });
+
+        try {
+            await promise;
+        } catch (e) {
+            assert.ok(true, "Caught: " + dumpObj(e));
+            assert.equal(e.message, "Simulated failure");
+        }
+
+        try {
+            await promise;
+        } catch (e) {
+            assert.ok(true, "Caught: " + dumpObj(e));
+            assert.equal(e.message, "Simulated failure");
+        }
+    });
+
+    it("check create all with values resolved in the order with a rejected promise and a finally and a catch", async () => {
+        let catchCalled = false;
+        let finallyCalled = false;
+        let promise = createAllPromise([
+            createNewPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    resolve(21);
+                }, 0)
+            }),
+            createNewPromise((resolve, reject) => {
+                scheduleTimeout(() => {
+                    reject(new Error("Simulated failure"));
+                }, 5)
+            })
+        ]).finally(() => {
+            finallyCalled = true;
+        }).catch((e) => {
+            catchCalled = true;
+        });
+
+        try {
+            await promise;
+        } catch (e) {
+            assert.ok(true, "Caught: " + dumpObj(e));
+            assert.equal(e.message, "Simulated failure");
+        }
+
+        assert.equal(catchCalled, true, "Catch was called");
+        assert.equal(finallyCalled, true, "Finally was called");
+
+        try {
+            await promise;
+        } catch (e) {
+            assert.ok(true, "Caught: " + dumpObj(e));
+            assert.equal(e.message, "Simulated failure");
+        }
+    });
+
+    it("check create all where a resolve function throws", async () => {
+        let promise = createAllPromise([
+            createRejectedPromise("Rejected"),
+            createResolvedPromise(42)
+        ]).finally(() => {
+            //console.log("Finally called");
+        });
+
+        try {
+            await promise;
+        } catch (e) {
+            assert.ok(true, "Caught: " + dumpObj(e));
+            assert.equal(e, "Rejected");
+        }
+
+        try {
+            await promise;
+        } catch (e) {
+            assert.ok(true, "Caught: " + dumpObj(e));
+            assert.equal(e, "Rejected");
+        }
     });
 }
