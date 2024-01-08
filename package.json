@@ -32,7 +32,7 @@
         "scheduler",
         "task scheduler"
     ],
-    "main": "lib/dist/es5/umd/ts-async.js",
+    "main": "lib/dist/es5/main/ts-async.js",
     "module": "lib/dist-es5/index.js",
     "esnext": "lib/dist-es6/index.js",
     "types": "lib/types/index.d.ts",    
