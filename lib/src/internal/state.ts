@@ -6,6 +6,8 @@
  * Licensed under the MIT license.
  */
 
+import { REJECTED } from "./constants";
+
 /**
  * @ignore -- Don't include in the generated documentation
  * @internal
@@ -21,6 +23,6 @@ export const enum ePromiseState {
  * @ignore -- Don't include in the generated documentation
  * @internal
  */
-export const STRING_STATES: string[] = [
-    "pending", "resolving", "resolved", "rejected"
+export const STRING_STATES: string[] = /*#__PURE__*/[
+    "pending", "resolving", "resolved", REJECTED
 ];

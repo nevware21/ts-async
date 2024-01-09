@@ -10,6 +10,6 @@
 !/LICENSE
 !lib/dist-esm/**
 !lib/dist/**
-!lib/browser/**
+!lib/bundle/**
 !lib/src/**
 !lib/types/**

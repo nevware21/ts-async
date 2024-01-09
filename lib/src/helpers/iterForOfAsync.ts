@@ -6,15 +6,15 @@
  * Licensed under the MIT license.
  */
 
-import { ILazyValue, WellKnownSymbols, fnCall, getKnownSymbol, getLazy, isIterator, isPromiseLike } from "@nevware21/ts-utils";
+import { ICachedValue, WellKnownSymbols, createCachedValue, fnCall, getKnownSymbol, isIterator, isPromiseLike } from "@nevware21/ts-utils";
 import { IPromise } from "../interfaces/IPromise";
 import { doWhileAsync } from "./doWhileAsync";
 import { IWhileState } from "../interfaces/IWhileState";
 import { DONE, RETURN, VALUE } from "../internal/constants";
-import { doAwait } from "../promise/await";
+import { doAwait, doFinally } from "../promise/await";
 
-let _iterSymbol: ILazyValue<symbol>;
-let _iterAsyncSymbol: ILazyValue<symbol>;
+let _iterSymbol: ICachedValue<symbol>;
+let _iterAsyncSymbol: ICachedValue<symbol>;
 
 /**
  * Calls the provided `callbackFn` function once for each element in the iterator or iterator returned by
@@ -78,45 +78,46 @@ let _iterAsyncSymbol: ILazyValue<symbol>;
  *  });
  */
 export function iterForOfAsync<T = any>(iter: Iterator<T> | Iterable<T> | AsyncIterator<T> | AsyncIterable<T>, callbackFn: (value: T, count: number, iter?: Iterator<T> | AsyncIterator<T>) => void | number | IPromise<void | number>, thisArg?: any): void | number | IPromise<void | number> {
+    let err: { e: any };
+    let iterResult: IteratorResult<T>;
+    let theIter: AsyncIterator<T> | Iterator<T> = iter as AsyncIterator<T> | Iterator<T>;
+
+    function onFailed(failed: any): never  {
+        err = { e: failed };
+        if (theIter.throw) {
+            iterResult = null;
+            theIter.throw(err);
+        }
+
+        throw failed;
+    }
+
+    function onFinally() {
+        try {
+            if (iterResult && !iterResult[DONE]) {
+                theIter[RETURN] && theIter[RETURN](iterResult);
+            }
+        } finally {
+            if (err) {
+                // eslint-disable-next-line no-unsafe-finally
+                throw err.e;
+            }
+        }
+    }
+
     if (iter) {
-        let theIter: AsyncIterator<T> | Iterator<T> = iter as AsyncIterator<T> | Iterator<T>;
         if (!isIterator(iter)) {
             // Get the asyncIterator from the iterable
-            !_iterAsyncSymbol && (_iterAsyncSymbol = getLazy(() => getKnownSymbol(WellKnownSymbols.asyncIterator)));
+            !_iterAsyncSymbol && (_iterAsyncSymbol = createCachedValue(getKnownSymbol(WellKnownSymbols.asyncIterator)));
             theIter = iter[_iterAsyncSymbol.v] ? iter[_iterAsyncSymbol.v]() : null;
             if (!theIter) {
                 // Get the iterator from the iterable
-                !_iterSymbol && (_iterSymbol = getLazy(() => getKnownSymbol(WellKnownSymbols.iterator)));
+                !_iterSymbol && (_iterSymbol = createCachedValue(getKnownSymbol(WellKnownSymbols.iterator)));
                 theIter = iter[_iterSymbol.v] ? iter[_iterSymbol.v]() : null;
             }
         }
         
         if (theIter && isIterator(theIter)) {
-            let err: { e: any };
-            let iterResult: IteratorResult<T>;
-
-            const onFailed = (failed: any): never => {
-                err = { e: failed };
-                if (theIter.throw) {
-                    iterResult = null;
-                    theIter.throw(err);
-                }
-
-                throw failed;
-            };
-
-            const onFinally = () => {
-                try {
-                    if (iterResult && !iterResult[DONE]) {
-                        theIter[RETURN] && theIter[RETURN](iterResult);
-                    }
-                } finally {
-                    if (err) {
-                        // eslint-disable-next-line no-unsafe-finally
-                        throw err.e;
-                    }
-                }
-            };
 
             let result: void | number | IPromise<void | number>;
             try {
@@ -138,7 +139,7 @@ export function iterForOfAsync<T = any>(iter: Iterator<T> | Iterable<T> | AsyncI
                 }, thisArg || theIter);
 
                 if (isPromiseLike(result)) {
-                    result = result.catch(onFailed).finally(onFinally);
+                    result = doFinally(result.catch(onFailed), onFinally);
                 }
 
                 return result;

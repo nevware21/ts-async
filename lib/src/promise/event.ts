@@ -6,10 +6,26 @@
  * Licensed under the MIT license.
  */
 
-import { dumpObj, getDocument, safeGetLazy, ILazyValue, getInst } from "@nevware21/ts-utils";
+import { dumpObj, getDocument, getInst, ICachedValue, createCachedValue, safe } from "@nevware21/ts-utils";
 
 const DISPATCH_EVENT = "dispatchEvent";
-let _hasInitEvent: ILazyValue<boolean>;
+let _hasInitEvent: ICachedValue<boolean>;
+
+/**
+ * @internal
+ * @ignore
+ * Helper function to determine if the document has the `initEvent` function
+ * @param doc - The document to check
+ * @returns
+ */
+function _hasInitEventFn(doc: Document) {
+    let evt: any;
+    if (doc && doc.createEvent) {
+        evt = doc.createEvent("Event");
+    }
+    
+    return (!!evt && evt.initEvent);
+}
 
 /**
  * @internal
@@ -22,14 +38,7 @@ let _hasInitEvent: ILazyValue<boolean>;
 export function emitEvent(target: any, evtName: string, populateEvent: (theEvt: Event | any) => Event | any, useNewEvent: boolean) {
 
     let doc = getDocument();
-    !_hasInitEvent && (_hasInitEvent = safeGetLazy(() => {
-        let evt: any;
-        if (doc && doc.createEvent) {
-            evt = doc.createEvent("Event");
-        }
-        
-        return (!!evt && evt.initEvent);
-    }, null));
+    !_hasInitEvent && (_hasInitEvent = createCachedValue(!!safe(_hasInitEventFn, [ doc ]).v));
 
     let theEvt: Event = _hasInitEvent.v ? doc.createEvent("Event") : (useNewEvent ? new Event(evtName) : {} as Event);
     populateEvent && populateEvent(theEvt);

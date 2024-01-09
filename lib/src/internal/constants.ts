@@ -11,3 +11,4 @@ export const DONE = "done";
 export const VALUE = "value";
 export const ITERATOR = "iterator";
 export const RETURN = "return";
+export const REJECTED = "rejected";

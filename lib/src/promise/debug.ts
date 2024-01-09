@@ -27,7 +27,7 @@ let _theLogger: (id: string, message: string) => void = null;
  * @ignore Internal function enable logging the internal state of the promise during execution, this code and references are
  * removed from the production artifacts
  */
-export const _debugLog = (id: string, message: string) => {
+export const _debugLog = /*#__PURE__*/(id: string, message: string) => {
     //#ifdef DEBUG
     if (_theLogger) {
         _theLogger(id, message);

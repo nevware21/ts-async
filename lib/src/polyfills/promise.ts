@@ -7,7 +7,7 @@
  */
 
 import { getKnownSymbol, objDefineProp, WellKnownSymbols } from "@nevware21/ts-utils";
-import { createAsyncAllPromise, createAsyncPromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../promise/asyncPromise";
+import { createAsyncAllPromise, createAsyncAllSettledPromise, createAsyncPromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../promise/asyncPromise";
 import { IPromise } from "../interfaces/IPromise";
 import { PromiseExecutor } from "../interfaces/types";
 
@@ -64,9 +64,25 @@ export interface PolyPromiseConstructor {
      * @returns A promise whose internal state matches the provided promise.
      */
     resolve<T>(value: T | PromiseLike<T>): Promise<T>;
+
+    /**
+     * Creates a Promise that is resolved with an array of results when all
+     * of the provided Promises resolve or reject.
+     * @param values An array of Promises.
+     * @returns A new Promise.
+     */
+    allSettled<T extends readonly unknown[] | []>(values: T): Promise<{ -readonly [P in keyof T]: PromiseSettledResult<Awaited<T[P]>>; }>;
+
+    /**
+     * Creates a Promise that is resolved with an array of results when all
+     * of the provided Promises resolve or reject.
+     * @param values An array of Promises.
+     * @returns A new Promise.
+     */
+    allSettled<T>(values: Iterable<T | PromiseLike<T>>): Promise<PromiseSettledResult<Awaited<T>>[]>;
 }
 
-export let PolyPromise = (function () {
+export let PolyPromise = /*#__PURE__*/(function () {
     function PolyPromiseImpl<T>(executor: PromiseExecutor<T>) {
         this._$ = createAsyncPromise(executor);
         if (toStringTagSymbol) {
@@ -83,6 +99,7 @@ export let PolyPromise = (function () {
     //PolyPromiseImpl.race = createAsyncRacePromise;
     PolyPromiseImpl.reject = createAsyncRejectedPromise;
     PolyPromiseImpl.resolve = createAsyncResolvedPromise;
+    PolyPromiseImpl.allSettled = createAsyncAllSettledPromise;
     let theProto = PolyPromiseImpl.prototype;
     theProto.then = function (onResolved: any, onRejected: any) {
         return this._$.then(onResolved, onRejected);

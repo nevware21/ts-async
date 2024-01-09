@@ -7,7 +7,7 @@
  */
 
 import { assert } from "chai";
-import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objForEachKey, objHasOwn, scheduleTimeout, setBypassLazyCache } from "@nevware21/ts-utils";
+import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objForEachKey, objHasOwn, scheduleTimeout, setBypassLazyCache, setDefaultIdleTimeout } from "@nevware21/ts-utils";
 import { createAsyncAllPromise, createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
 import { doAwait, doAwaitResponse } from "../../../src/promise/await";
 import { setPromiseDebugState } from "../../../src/promise/debug";
@@ -165,7 +165,8 @@ function batchTests(testKey: string, definition: TestDefinition) {
         
         // Disable lazy caching
         setBypassLazyCache(true);
-
+        setDefaultIdleTimeout(100);
+        
         if (!isNode()) {
             let gbl = getGlobal();
             if (gbl && (objHasOwn(gbl, "onunhandledrejection") || isWebWorker())) {

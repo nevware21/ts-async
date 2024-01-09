@@ -65,10 +65,10 @@ import { createPromise } from "./promise";
  * });
  * ```
  */
-export const createTimeoutPromise = <T = any>(timeout: number, resolveReject?: boolean, message?: T): IPromise<T> => {
+export function createTimeoutPromise<T = any>(timeout: number, resolveReject?: boolean, message?: T): IPromise<T> {
     return createPromise((resolve, reject) => {
         scheduleTimeout(() => {
             (resolveReject ? resolve : reject)(!isUndefined(message) ? message : "Timeout of " + timeout + "ms exceeded" as T);
         }, timeout);
     });
-};
+}

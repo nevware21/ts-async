@@ -7,14 +7,17 @@
  */
 
 import { createAsyncPromise } from "./asyncPromise";
-import { _createAllPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
+import { _createAllPromise, _createAllSettledPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
 import { IPromise } from "../interfaces/IPromise";
 import { ePromiseState, STRING_STATES } from "../internal/state";
 import { PromiseExecutor } from "../interfaces/types";
-import { dumpObj, lazySafeGetInst, ILazyValue, isFunction, objDefineProp, throwTypeError } from "@nevware21/ts-utils";
+import { dumpObj, isFunction, objDefineProp, throwTypeError, getInst, ICachedValue, createCachedValue, safe } from "@nevware21/ts-utils";
 import { STR_PROMISE } from "../internal/constants";
+import { IPromiseResult } from "../interfaces/IPromiseResult";
 
-let _isPromiseSupported: ILazyValue<PromiseConstructor>;
+let _promiseCls: ICachedValue<PromiseConstructor>;
+
+let _allNativeSettledCreator: ICachedValue<<T extends readonly unknown[] | []>(input: T, timeout?: number) => IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }>>;
 
 /**
  * Creates a Promise instance that when resolved or rejected will execute it's pending chained operations using the
@@ -30,9 +33,8 @@ let _isPromiseSupported: ILazyValue<PromiseConstructor>;
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
 export function createNativePromise<T>(executor: PromiseExecutor<T>, timeout?: number): IPromise<T> {
-    !_isPromiseSupported && (_isPromiseSupported = lazySafeGetInst(STR_PROMISE));
-
-    const PrmCls = _isPromiseSupported.v;
+    !_promiseCls && (_promiseCls = createCachedValue<PromiseConstructor>(safe(getInst, [STR_PROMISE]).v || null as any));
+    const PrmCls = _promiseCls.v;
     if (!PrmCls) {
         return createAsyncPromise(executor);
     }
@@ -77,6 +79,7 @@ export function createNativePromise<T>(executor: PromiseExecutor<T>, timeout?: n
  * and will reject with this first rejection message / error.
  * If the runtime doesn't support the Promise.all it will fallback back to an asynchronous Promise implementation.
  * @group Alias
+ * @group Promise
  * @group All
  * @group Native
  * @param input - The array of promises to wait to be resolved / rejected before resolving or rejecting the new promise
@@ -89,7 +92,7 @@ export function createNativePromise<T>(executor: PromiseExecutor<T>, timeout?: n
  * promises reject.
  * </ul>
  */
-export const createNativeAllPromise: <T>(input: PromiseLike<T>[], timeout?: number) => IPromise<T[]> = _createAllPromise(createNativePromise);
+export const createNativeAllPromise: <T>(input: Iterable<PromiseLike<T>>, timeout?: number) => IPromise<T[]> = /*#__PURE__*/_createAllPromise(createNativePromise);
 
 /**
  * Returns a single asynchronous Promise instance that is already resolved with the given value. If the value passed is
@@ -97,21 +100,102 @@ export const createNativeAllPromise: <T>(input: PromiseLike<T>[], timeout?: numb
  * If a new instance is returned then any chained operations will execute __asynchronously__ using the optional
  * timeout value to schedule when the chained items will be executed.(eg. `then()`; `finally()`).
  * @group Alias
+ * @group Promise
  * @group Resolved
  * @group Native
  * @param value - The value to be used by this `Promise`. Can also be a `Promise` or a thenable to resolve.
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createNativeResolvedPromise: <T>(value: T, timeout?: number) => Promise<T> =  _createResolvedPromise(createNativePromise);
+export const createNativeResolvedPromise: <T>(value: T, timeout?: number) => Promise<T> =  /*#__PURE__*/_createResolvedPromise(createNativePromise);
 
 /**
  * Returns a single asynchronous Promise instance that is already rejected with the given reason.
  * Any chained operations will execute __asynchronously__ using the optional timeout value to schedule
  * when then chained items will be executed. (eg. `catch()`; `finally()`).
  * @group Alias
+ * @group Promise
  * @group Rejected
  * @group Native
  * @param reason - The rejection reason
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createNativeRejectedPromise: <T = unknown>(reason: any, timeout?: number) => Promise<T> = _createRejectedPromise(createNativePromise);
+export const createNativeRejectedPromise: <T = unknown>(reason: any, timeout?: number) => Promise<T> = /*#__PURE__*/_createRejectedPromise(createNativePromise);
+
+/**
+ * Returns a single asynchronous Promise instance that resolves to an array of the results from the input promises.
+ * This returned promise will resolve and execute it's pending chained operations using {@link createNativePromise native}
+ * environment promise implementation, if the runtime does not provide any native then the optional provided
+ * timeout value will be used to schedule when the chained items will be executed or if the input contains no promises.
+ * It will resolve only after all of the input promises have either resolved or rejected, and will resolve with an array
+ * of {@link IPromiseResult } objects that each describe the outcome of each promise.
+ * @since 0.5.0
+ * @group Alias
+ * @group Promise
+ * @group AllSettled
+ * @group Native
+ * @param values - The iterator of promises to wait to be resolved / rejected before resolving or rejecting the new promise
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A pending `Promise` that will resolve to an array of {@link IPromiseResult } objects that each describe the outcome of each promise.
+ *
+ * @example
+ * ```ts
+ * const promises = [
+ *   createNativeResolvedPromise(1),
+ *   createNativeResolvedPromise(2),
+ *   createNativeResolvedPromise(3),
+ *   createNativeRejectedPromise("error"),
+ * ];
+ *
+ * const results = await createNativeAllSettledPromise(promises);
+ *
+ * // results is:
+ * // [
+ * //   { status: "fulfilled", value: 1 },
+ * //   { status: "fulfilled", value: 2 },
+ * //   { status: "fulfilled", value: 3 },
+ * //   { status: "rejected", reason: "error" }
+ * // ]
+ * ```
+ */
+export function createNativeAllSettledPromise<T>(values: Iterable<T | PromiseLike<T>> | Iterator<T | PromiseLike<T>>, timeout?: number): IPromise<IPromiseResult<Awaited<T>>[]>;
+
+/**
+ * Returns a single asynchronous Promise instance that resolves to an array of the results from the input promises.
+ * This returned promise will resolve and execute it's pending chained operations using {@link createNativePromise native}
+ * environment promise implementation, if the runtime does not provide any native then the optional provided
+ * timeout value will be used to schedule when the chained items will be executed or if the input contains no promises.
+ * It will resolve only after all of the input promises have either resolved or rejected, and will resolve with an array
+ * of {@link IPromiseResult } objects that each describe the outcome of each promise.
+ * @since 0.5.0
+ * @group Alias
+ * @group Promise
+ * @group AllSettled
+ * @group Native
+ * @param input - An array of promises to wait to be resolved / rejected before resolving or rejecting the new promise
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A pending `Promise` that will resolve to an array of {@link IPromiseResult } objects that each describe the outcome of each promise.
+ *
+ * @example
+ * ```ts
+ * const promises = [
+ *   createNativeResolvedPromise(1),
+ *   createNativeResolvedPromise(2),
+ *   createNativeResolvedPromise(3),
+ *   createNativeRejectedPromise("error"),
+ * ];
+ *
+ * const results = await createNativeAllSettledPromise(promises);
+ *
+ * // results is:
+ * // [
+ * //   { status: "fulfilled", value: 1 },
+ * //   { status: "fulfilled", value: 2 },
+ * //   { status: "fulfilled", value: 3 },
+ * //   { status: "rejected", reason: "error" }
+ * // ]
+ * ```
+ */
+export function createNativeAllSettledPromise<T extends readonly unknown[] | []>(input: T, timeout?: number): IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }> {
+    !_allNativeSettledCreator && (_allNativeSettledCreator = _createAllSettledPromise(createNativePromise));
+    return _allNativeSettledCreator.v(input, timeout);
+}

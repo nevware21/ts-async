@@ -14,7 +14,7 @@ export type PromisePendingProcessor = (pending: PromisePendingFn[]) => void;
 export type PromisePendingFn = () => void;
 export type PromiseCreatorFn = <T, TResult2 = never>(newExecutor: PromiseExecutor<T>, ...extraArgs: any) => IPromise<T | TResult2>;
 
-const _processPendingItems = (pending: PromisePendingFn[]) => {
+const _processPendingItems = /*#__PURE__*/(pending: PromisePendingFn[]) => {
     arrForEach(pending, (fn: PromisePendingFn) => {
         try {
             fn();
