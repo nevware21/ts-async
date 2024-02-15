@@ -106,8 +106,7 @@
         "codecov": "^3.8.3",
         "typedoc": "^0.25.0",
         "copyfiles": "^2.4.1",
-        "size-limit": "^11.0.2",
-        "@sindresorhus/merge-streams": "2.1.0"
+        "size-limit": "^11.0.2"
     },
     "size-limit": [
         {
