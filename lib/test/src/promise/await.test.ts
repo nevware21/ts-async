@@ -297,6 +297,7 @@ describe("Validate doAwaitResponse", () => {
 
         expect(mockCallback.calledOnce).to.be.true;
         expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            status: "fulfilled",
             value: "resolved",
             rejected: false
         });
@@ -314,6 +315,7 @@ describe("Validate doAwaitResponse", () => {
 
         expect(mockCallback.calledOnce).to.be.true;
         expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            status: "rejected",
             rejected: true,
             reason: "rejected"
         });
@@ -327,6 +329,7 @@ describe("Validate doAwaitResponse", () => {
 
         expect(mockCallback.calledOnce).to.be.true;
         expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            status: "fulfilled",
             value: "resolved",
             rejected: false
         });
@@ -341,6 +344,7 @@ describe("Validate doAwaitResponse", () => {
 
         expect(mockCallback.calledOnce).to.be.true;
         expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            status: "fulfilled",
             value: "resolved",
             rejected: false
         });
@@ -361,6 +365,7 @@ describe("Validate doAwaitResponse", () => {
 
         expect(mockCallback.calledOnce).to.be.true;
         expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            status: "fulfilled",
             value: "resolved",
             rejected: false
         });
@@ -380,6 +385,7 @@ describe("Validate doAwaitResponse", () => {
 
         expect(mockCallback.calledOnce).to.be.true;
         expect(mockCallback.firstCall.args[0]).to.deep.equal({
+            status: "fulfilled",
             value: "resolved",
             rejected: false
         });

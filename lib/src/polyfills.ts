@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { createAsyncAllPromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "./promise/asyncPromise";
+import { createAsyncAllPromise, createAsyncAllSettledPromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "./promise/asyncPromise";
 import { objForEachKey } from "@nevware21/ts-utils";
 import { PolyPromise } from "./polyfills/promise";
 
@@ -16,7 +16,8 @@ declare var Promise: any;
     const promisePolyfills = {
         "all": createAsyncAllPromise,
         "resolved": createAsyncResolvedPromise,
-        "rejected": createAsyncRejectedPromise
+        "rejected": createAsyncRejectedPromise,
+        "allSettled": createAsyncAllSettledPromise
     };
 
     if (!Promise) {

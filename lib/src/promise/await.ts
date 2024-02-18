@@ -10,6 +10,7 @@ import { isPromiseLike } from "@nevware21/ts-utils";
 import { AwaitResponse } from "../interfaces/await-response";
 import { IPromise } from "../interfaces/IPromise";
 import { FinallyPromiseHandler, RejectedPromiseHandler, ResolvedPromiseHandler } from "../interfaces/types";
+import { REJECTED } from "../internal/constants";
 
 /**
  * Helper to coallesce the promise resolved / reject into a single callback to simplify error handling.
@@ -126,12 +127,14 @@ export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | Pr
 export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T>, cb: (response: AwaitResponse<T | TResult1>) => T | TResult1 | TResult2 | IPromise<T | TResult1 | TResult2>): T | TResult1 | TResult2 | IPromise<T | TResult1 | TResult2> {
     return doAwait(value as T, (value) => {
         return cb ? cb({
-            value: value,
-            rejected: false
+            status: "fulfilled",
+            rejected: false,
+            value: value
         }) : value;
     },
     (reason) => {
         return cb ? cb({
+            status: REJECTED,
             rejected: true,
             reason: reason
         }) : reason;

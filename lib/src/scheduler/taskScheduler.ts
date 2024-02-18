@@ -47,11 +47,11 @@ interface _InternalDebugState {
  * @ignore
  * Empty reject function to avoid trying to re-reject
  */
-const _rejectDone = () => {
+function _rejectDone() {
     // A Do nothing function
 }
 
-var _createError = (type: string, evt: ITaskDetail, message?: string): Error => {
+function _createError(type: string, evt: ITaskDetail, message?: string): Error {
     // Lazily create the class
     !_customErrors[type] && (_customErrors[type] = createCustomError(type));
 

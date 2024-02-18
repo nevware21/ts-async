@@ -6,14 +6,14 @@
  * Licensed under the MIT license.
  */
 
-import { fnCall, isFunction, isPromiseLike, utcNow } from "@nevware21/ts-utils";
+import { isFunction, isPromiseLike, utcNow } from "@nevware21/ts-utils";
 import { IPromise } from "../interfaces/IPromise";
 import { createPromise } from "../promise/promise";
 import { doAwait } from "../promise/await";
 import { RejectPromiseHandler, ResolvePromiseHandler } from "../interfaces/types";
 import { IWhileState } from "../interfaces/IWhileState";
 
-const _doneChk = <T>(isDone: boolean, state: IWhileState<T>, value: T, thisArg?: any) => {
+const _doneChk = /*#__PURE__*/<T>(isDone: boolean, state: IWhileState<T>, value: T, thisArg?: any) => {
     let result: boolean | IPromise<boolean> = isDone;
     state.res = value;
     if (!result) {
@@ -185,7 +185,7 @@ const _doneChk = <T>(isDone: boolean, state: IWhileState<T>, value: T, thisArg?:
  * console.log(result); // my old friend
  * ```
  */
-export const doWhileAsync = <T>(callbackFn: (state: IWhileState<T>) => T | IPromise<T>, isDoneFn?: (state: IWhileState<T>) => boolean | void | IPromise<boolean | void>, thisArg?: any): T | IPromise<T> => {
+export function doWhileAsync<T>(callbackFn: (state: IWhileState<T>) => T | IPromise<T>, isDoneFn?: (state: IWhileState<T>) => boolean | void | IPromise<boolean | void>, thisArg?: any): T | IPromise<T> {
     let promise: T | IPromise<T>;
     let resolve: ResolvePromiseHandler<T>;
     let reject: RejectPromiseHandler | never = (reason: any) => {

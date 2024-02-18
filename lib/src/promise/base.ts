@@ -7,11 +7,12 @@
  */
 
 import {
-    arrForEach, arrSlice, dumpObj, getKnownSymbol, hasSymbol, isFunction, isPromiseLike, isUndefined,
+    arrSlice, dumpObj, getKnownSymbol, hasSymbol, isFunction, isPromiseLike, isUndefined,
     throwTypeError, WellKnownSymbols, objToString, scheduleTimeout, ITimerHandler, getWindow, isNode,
-    getGlobal, ILazyValue, objDefine, objDefineProp, lazySafeGetInst
+    getGlobal, ILazyValue, objDefine, objDefineProp, lazySafeGetInst, iterForOf, isIterator, isIterable,
+    isArray, arrForEach, createCachedValue, ICachedValue
 } from "@nevware21/ts-utils";
-import { doAwait } from "./await";
+import { doAwait, doAwaitResponse } from "./await";
 import { _addDebugState, _promiseDebugEnabled } from "./debug";
 import { IPromise } from "../interfaces/IPromise";
 import { PromisePendingProcessor } from "./itemProcessor";
@@ -20,7 +21,8 @@ import {
 } from "../interfaces/types";
 import { ePromiseState, STRING_STATES } from "../internal/state";
 import { emitEvent } from "./event";
-import { STR_PROMISE } from "../internal/constants";
+import { REJECTED, STR_PROMISE } from "../internal/constants";
+import { IPromiseResult } from "../interfaces/IPromiseResult";
 
 //#ifdef DEBUG
 import { _debugLog } from "./debug";
@@ -311,15 +313,15 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
  * @param newPromise - The delegate function used to create a new promise object the new promise instance.
  * @returns A function to create a promise that will be resolved when all arguments are resolved.
  */
-export function _createAllPromise(newPromise: PromiseCreatorFn): <T>(input: PromiseLike<T>[], ...additionalArgs: any) => IPromise<T[]> {
-    return function <T>(input: PromiseLike<T>[]): IPromise<T[]> {
+export function _createAllPromise(newPromise: PromiseCreatorFn): <T>(input: Iterable<T | PromiseLike<T>>, ...additionalArgs: any) => IPromise<Awaited<T>[]> {
+    return function <T>(input: Iterable<T | PromiseLike<T>>): IPromise<Awaited<T>[]> {
         let additionalArgs = arrSlice(arguments, 1);
-        return newPromise<T[]>((resolve, reject) => {
+        return newPromise<Awaited<T>[]>((resolve, reject) => {
             try {
                 let values = [] as any;
                 let pending = 1;            // Prefix to 1 so we finish iterating over all of the input promises first
 
-                arrForEach(input, (item, idx) => {
+                iterForOf(input, (item, idx) => {
                     if (item) {
                         pending++;
                         doAwait(item, (value) => {
@@ -386,4 +388,64 @@ export function _createRejectedPromise(newPromise: PromiseCreatorFn): <T>(reason
             reject(reason);
         }, additionalArgs);
     };
+}
+
+/**
+ * @ignore
+ * @internal
+ * @since 0.5.0
+ * Returns a function which when called will return a new Promise object that resolves to an array of
+ * IPromiseResults from the input promises. The returned promise will resolve when all of the inputs'
+ * promises have resolved or rejected, or if the input contains no promises. It will resolve only after
+ * all input promises have been fulfilled (resolve or rejected).
+ * @param newPromise - The delegate function used to create a new promise object the new promise instance.
+ * @returns A function to create a promise that will be resolved when all arguments are resolved.
+ */
+export function _createAllSettledPromise(newPromise: PromiseCreatorFn, ..._args: any[]): ICachedValue<<T extends readonly unknown[] | []>(input: T, timeout?: number) => IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }>> {
+    return createCachedValue(function <T>(input: T, ..._args: any[]): IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }> {
+        let additionalArgs = arrSlice(arguments, 1);
+        return newPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }>((resolve, reject) => {
+            let values: { -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; } = [] as any;
+            let pending = 1;            // Prefix to 1 so we finish iterating over all of the input promises first
+
+            function processItem(item: any, idx: number) {
+                pending++;
+                doAwaitResponse(item, (value) => {
+                    if (value.rejected) {
+                        values[idx] = {
+                            status: REJECTED,
+                            reason: value.reason
+                        };
+                    } else {
+                        values[idx] = {
+                            status: "fulfilled",
+                            value: value.value
+                        };
+                    }
+                
+                    if (--pending === 0) {
+                        resolve(values);
+                    }
+                });
+            }
+
+            try {
+
+                if (isArray(input)) {
+                    arrForEach(input, processItem);
+                } else if (isIterator(input) || isIterable(input)) {
+                    iterForOf(input, processItem);
+                }
+
+                // Now decrement the pending so that we finish correctly
+                pending--;
+                if (pending === 0) {
+                    // All promises were either resolved or where not a promise
+                    resolve(values);
+                }
+            } catch (e) {
+                reject(e);
+            }
+        }, additionalArgs);
+    });
 }

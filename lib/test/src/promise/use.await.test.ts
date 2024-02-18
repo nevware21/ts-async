@@ -7,16 +7,19 @@
  */
 
 import { assert } from "chai";
-import { getGlobal, objHasOwn, isWebWorker, isNode, scheduleTimeout, dumpObj, arrForEach, objForEachKey, setBypassLazyCache } from "@nevware21/ts-utils";
+import { getGlobal, objHasOwn, isWebWorker, isNode, scheduleTimeout, dumpObj, arrForEach, objForEachKey, setBypassLazyCache, CreateIteratorContext } from "@nevware21/ts-utils";
 import { PolyPromise } from "../../../src/polyfills/promise";
-import { createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
+import { createAsyncAllSettledPromise, createAsyncPromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
-import { createIdlePromise, createIdleRejectedPromise } from "../../../src/promise/idlePromise";
+import { createIdleAllSettledPromise, createIdlePromise, createIdleRejectedPromise, createIdleResolvedPromise } from "../../../src/promise/idlePromise";
 import { IPromise } from "../../../src/interfaces/IPromise";
-import { createNativePromise, createNativeRejectedPromise } from "../../../src/promise/nativePromise";
-import { createSyncPromise, createSyncRejectedPromise } from "../../../src/promise/syncPromise";
+import { createNativeAllSettledPromise, createNativePromise, createNativeRejectedPromise, createNativeResolvedPromise } from "../../../src/promise/nativePromise";
+import { createSyncAllSettledPromise, createSyncPromise, createSyncRejectedPromise, createSyncResolvedPromise } from "../../../src/promise/syncPromise";
 import { PromiseExecutor } from "../../../src/interfaces/types";
-import { createAllPromise, createPromise, createResolvedPromise, setCreatePromiseImpl } from "../../../src/promise/promise";
+import { createAllPromise, createPromise, setCreatePromiseImpl, createAllSettledPromise } from "../../../src/promise/promise";
+import { createIterator } from "@nevware21/ts-utils";
+import { createIterable } from "@nevware21/ts-utils";
+import { IPromiseResult } from "../../../src/interfaces/IPromiseResult";
 
 function _expectException(cb: () => void, message: string) {
     try {
@@ -60,7 +63,9 @@ function _unhandledNodeRejection(reason: any, promise: any) {
 
 interface TestDefinition {
     creator: <T>(executor: PromiseExecutor<T>) => IPromise<T>;
+    resolved: <T>(value: T) => IPromise<T>;
     rejected: <T>(reason: any) => IPromise<T>;
+    creatorAllSettled: <T>(values: Iterable<T | PromiseLike<T>> | Iterator<T | PromiseLike<T>>, timeout?: number) => IPromise<IPromiseResult<Awaited<T>>[]>;
     checkState: boolean;
     checkChainedState: boolean;
 }
@@ -72,7 +77,9 @@ let testImplementations: TestImplementations = {
         creator: <T>(executor: PromiseExecutor<T>) => {
             return new Promise<T>(executor);
         },
+        resolved: Promise.resolve.bind(Promise),
         rejected: Promise.reject.bind(Promise),
+        creatorAllSettled: Promise.allSettled.bind(Promise),
         checkState: false,
         checkChainedState: false
     },
@@ -80,7 +87,9 @@ let testImplementations: TestImplementations = {
         creator: <T>(executor: PromiseExecutor<T>) => {
             return createNativePromise<T>(executor);
         },
+        resolved: createNativeResolvedPromise,
         rejected: createNativeRejectedPromise,
+        creatorAllSettled: createNativeAllSettledPromise,
         checkState: true,
         checkChainedState: false
     },
@@ -88,7 +97,9 @@ let testImplementations: TestImplementations = {
         creator: <T>(executor: PromiseExecutor<T>) => {
             return createAsyncPromise<T>(executor, 1);
         },
+        resolved: createAsyncResolvedPromise,
         rejected: createAsyncRejectedPromise,
+        creatorAllSettled: createAsyncAllSettledPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -96,7 +107,9 @@ let testImplementations: TestImplementations = {
         creator: <T>(executor: PromiseExecutor<T>) => {
             return createIdlePromise<T>(executor, 1);
         },
+        resolved: createIdleResolvedPromise,
         rejected: createIdleRejectedPromise,
+        creatorAllSettled: createIdleAllSettledPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -104,7 +117,9 @@ let testImplementations: TestImplementations = {
         creator: <T>(executor: PromiseExecutor<T>) => {
             return createIdlePromise<T>(executor);
         },
+        resolved: createIdleResolvedPromise,
         rejected: createIdleRejectedPromise,
+        creatorAllSettled: createAllSettledPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -112,7 +127,9 @@ let testImplementations: TestImplementations = {
         creator: <T>(executor: PromiseExecutor<T>) => {
             return createSyncPromise<T>(executor);
         },
+        resolved: createSyncResolvedPromise,
         rejected: createSyncRejectedPromise,
+        creatorAllSettled: createSyncAllSettledPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -120,7 +137,9 @@ let testImplementations: TestImplementations = {
         creator: <T>(executor: PromiseExecutor<T>) => {
             return new PolyPromise(executor);
         },
+        resolved: PolyPromise.resolve,
         rejected: PolyPromise.reject,
+        creatorAllSettled: PolyPromise.allSettled,
         checkState: true,
         checkChainedState: true
     }
@@ -149,12 +168,16 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
     let createNewPromise = definition.creator;
     let createRejectedPromise = definition.rejected;
+    let createAllSettledPromise = definition.creatorAllSettled;
+    let createResolvedPromise = definition.resolved;
     let checkState = definition.checkState;
     let checkChainedState = definition.checkChainedState;
 
     beforeEach(() => {
         createNewPromise = definition.creator;
         createRejectedPromise = definition.rejected;
+        createAllSettledPromise = definition.creatorAllSettled;
+        createResolvedPromise = definition.resolved;
         checkState = definition.checkState;
         checkChainedState = definition.checkChainedState;
 
@@ -1341,192 +1364,399 @@ function batchTests(testKey: string, definition: TestDefinition) {
         assert.equal(result, 21);
     });
 
-    it("check create all with nothing", async () => {
-        let promise = createAllPromise([]);
-
-        let values = await promise;
-        assert.ok(values, "A values object should have been returned");
-        assert.equal(values.length, 0, "No elements should have been returned");
-
-        let values2 = await promise;
-        assert.ok(values, "A values object should have been returned");
-        assert.equal(values.length, 0, "No elements should have been returned");
-
-        assert.ok(values === values2);
+    describe("createAllPromise", () => {
+        it("check create all with nothing", async () => {
+            let promise = createAllPromise([]);
+    
+            let values = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 0, "No elements should have been returned");
+    
+            let values2 = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 0, "No elements should have been returned");
+    
+            assert.ok(values === values2);
+        });
+    
+        it("check create all with values resolved in the reverse order", async () => {
+            let promise = createAllPromise([
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(21);
+                    }, 5)
+                }),
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(42);
+                    }, 0)
+                })
+            ]);
+    
+            let values = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 2, "Two elements should have been returned");
+            assert.equal(values[0], 21);
+            assert.equal(values[1], 42);
+    
+            let values2 = await promise;
+            assert.ok(values2, "A values object should have been returned");
+            assert.equal(values2.length, 2, "Two elements should have been returned");
+    
+            assert.ok(values === values2);
+        });
+    
+        it("check create all with values resolved in the order", async () => {
+            let promise = createAllPromise([
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(21);
+                    }, 0)
+                }),
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(42);
+                    }, 5)
+                })
+            ]);
+    
+            let values = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 2, "Two elements should have been returned");
+            assert.equal(values[0], 21);
+            assert.equal(values[1], 42);
+    
+            let values2 = await promise;
+            assert.ok(values2, "A values object should have been returned");
+            assert.equal(values2.length, 2, "Two elements should have been returned");
+    
+            assert.ok(values === values2);
+        });
+    
+        it("check create all with values resolved in the order with a rejected promise", async () => {
+            let promise = createAllPromise([
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(21);
+                    }, 0)
+                }),
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        reject(new Error("Simulated failure"));
+                    }, 5)
+                })
+            ]);
+    
+            try {
+                await promise;
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+                assert.equal(e.message, "Simulated failure");
+            }
+    
+            try {
+                await promise;
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+                assert.equal(e.message, "Simulated failure");
+            }
+        });
+    
+        it("check create all with values resolved in the order with a rejected promise and a finally", async () => {
+            let promise = createAllPromise([
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(21);
+                    }, 0)
+                }),
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        reject(new Error("Simulated failure"));
+                    }, 5)
+                })
+            ]).finally(() => {
+                //console.log("Finally called");
+            });
+    
+            try {
+                await promise;
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+                assert.equal(e.message, "Simulated failure");
+            }
+    
+            try {
+                await promise;
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+                assert.equal(e.message, "Simulated failure");
+            }
+        });
+    
+        it("check create all with values resolved in the order with a rejected promise and a finally and a catch", async () => {
+            let catchCalled = false;
+            let finallyCalled = false;
+            let promise = createAllPromise([
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(21);
+                    }, 0)
+                }),
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        reject(new Error("Simulated failure"));
+                    }, 5)
+                })
+            ]).finally(() => {
+                finallyCalled = true;
+            }).catch((e) => {
+                catchCalled = true;
+            });
+    
+            try {
+                await promise;
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+                assert.equal(e.message, "Simulated failure");
+            }
+    
+            assert.equal(catchCalled, true, "Catch was called");
+            assert.equal(finallyCalled, true, "Finally was called");
+    
+            try {
+                await promise;
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+                assert.equal(e.message, "Simulated failure");
+            }
+        });
+    
+        it("check create all where a resolve function throws", async () => {
+            let promise = createAllPromise([
+                createRejectedPromise("Rejected"),
+                createResolvedPromise(42)
+            ]).finally(() => {
+                //console.log("Finally called");
+            });
+    
+            try {
+                await promise;
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+                assert.equal(e, "Rejected");
+            }
+    
+            try {
+                await promise;
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+                assert.equal(e, "Rejected");
+            }
+        });
     });
-
-    it("check create all with values resolved in the reverse order", async () => {
-        let promise = createAllPromise([
-            createNewPromise((resolve, reject) => {
-                scheduleTimeout(() => {
-                    resolve(21);
-                }, 5)
-            }),
-            createNewPromise((resolve, reject) => {
-                scheduleTimeout(() => {
-                    resolve(42);
-                }, 0)
-            })
-        ]);
-
-        let values = await promise;
-        assert.ok(values, "A values object should have been returned");
-        assert.equal(values.length, 2, "Two elements should have been returned");
-        assert.equal(values[0], 21);
-        assert.equal(values[1], 42);
-
-        let values2 = await promise;
-        assert.ok(values2, "A values object should have been returned");
-        assert.equal(values2.length, 2, "Two elements should have been returned");
-
-        assert.ok(values === values2);
-    });
-
-    it("check create all with values resolved in the order", async () => {
-        let promise = createAllPromise([
-            createNewPromise((resolve, reject) => {
-                scheduleTimeout(() => {
-                    resolve(21);
-                }, 0)
-            }),
-            createNewPromise((resolve, reject) => {
-                scheduleTimeout(() => {
-                    resolve(42);
-                }, 5)
-            })
-        ]);
-
-        let values = await promise;
-        assert.ok(values, "A values object should have been returned");
-        assert.equal(values.length, 2, "Two elements should have been returned");
-        assert.equal(values[0], 21);
-        assert.equal(values[1], 42);
-
-        let values2 = await promise;
-        assert.ok(values2, "A values object should have been returned");
-        assert.equal(values2.length, 2, "Two elements should have been returned");
-
-        assert.ok(values === values2);
-    });
-
-    it("check create all with values resolved in the order with a rejected promise", async () => {
-        let promise = createAllPromise([
-            createNewPromise((resolve, reject) => {
-                scheduleTimeout(() => {
-                    resolve(21);
-                }, 0)
-            }),
-            createNewPromise((resolve, reject) => {
-                scheduleTimeout(() => {
-                    reject(new Error("Simulated failure"));
-                }, 5)
-            })
-        ]);
-
-        try {
-            await promise;
-        } catch (e) {
-            assert.ok(true, "Caught: " + dumpObj(e));
-            assert.equal(e.message, "Simulated failure");
-        }
-
-        try {
-            await promise;
-        } catch (e) {
-            assert.ok(true, "Caught: " + dumpObj(e));
-            assert.equal(e.message, "Simulated failure");
-        }
-    });
-
-    it("check create all with values resolved in the order with a rejected promise and a finally", async () => {
-        let promise = createAllPromise([
-            createNewPromise((resolve, reject) => {
-                scheduleTimeout(() => {
-                    resolve(21);
-                }, 0)
-            }),
-            createNewPromise((resolve, reject) => {
-                scheduleTimeout(() => {
-                    reject(new Error("Simulated failure"));
-                }, 5)
-            })
-        ]).finally(() => {
-            //console.log("Finally called");
+    
+    describe("createAllSettledPromise with Array", () => {
+        it("check create all settled with nothing", async () => {
+            let promise = createAllSettledPromise([]);
+    
+            let values = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 0, "No elements should have been returned");
+    
+            let values2 = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 0, "No elements should have been returned");
+    
+            assert.ok(values === values2);
         });
 
-        try {
-            await promise;
-        } catch (e) {
-            assert.ok(true, "Caught: " + dumpObj(e));
-            assert.equal(e.message, "Simulated failure");
-        }
+        it("check create all settled with values resolved in the reverse order", async () => {
+            let promise = createAllSettledPromise([
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(21);
+                    }, 5)
+                }),
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(42);
+                    }, 0)
+                })
+            ]);
+    
+            let values = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 2, "Two elements should have been returned");
+            assert.equal(values[0].status, "fulfilled");
+            assert.equal(values[0].value, 21);
+            assert.equal(values[1].status, "fulfilled");
+            assert.equal(values[1].value, 42);
+    
+            let values2 = await promise;
+            assert.ok(values2, "A values object should have been returned");
+            assert.equal(values2.length, 2, "Two elements should have been returned");
+    
+            assert.ok(values === values2);
 
-        try {
-            await promise;
-        } catch (e) {
-            assert.ok(true, "Caught: " + dumpObj(e));
-            assert.equal(e.message, "Simulated failure");
-        }
+            Promise.allSettled([
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(21);
+                    }, 5)
+                }),
+                createNewPromise((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        resolve(42);
+                    }, 0)
+                })
+            ]);
+        });
     });
 
-    it("check create all with values resolved in the order with a rejected promise and a finally and a catch", async () => {
-        let catchCalled = false;
-        let finallyCalled = false;
-        let promise = createAllPromise([
-            createNewPromise((resolve, reject) => {
-                scheduleTimeout(() => {
-                    resolve(21);
-                }, 0)
-            }),
-            createNewPromise((resolve, reject) => {
-                scheduleTimeout(() => {
-                    reject(new Error("Simulated failure"));
-                }, 5)
-            })
-        ]).finally(() => {
-            finallyCalled = true;
-        }).catch((e) => {
-            catchCalled = true;
+    if (testKey !== "system") {
+        describe("createAllSettledPromise with Iterator", () => {
+            it("check create all settled with nothing", async () => {
+                let theValues: any[] = [ ];
+                let idx = -1
+                
+                function getNextFn() {
+                    idx++;
+                    let isDone = idx >= theValues.length;
+                    if (!isDone) {
+                        // this is passed as the current iterator
+                        // so you can directly assign the next "value" that will be returned
+                        this.v = theValues[idx];
+                    }
+                
+                    return isDone;
+                }
+                
+                let theIterator = createIterator<number>({ n: getNextFn });
+                let promise = createAllSettledPromise(theIterator);
+        
+                let values = await promise;
+                assert.ok(values, "A values object should have been returned");
+                assert.equal(values.length, 0, "No elements should have been returned");
+        
+                let values2 = await promise;
+                assert.ok(values, "A values object should have been returned");
+                assert.equal(values.length, 0, "No elements should have been returned");
+        
+                assert.ok(values === values2);
+            });
+
+            it("check create all settled with some values", async () => {
+                let theValues = [ 1, 2, 3, 5, 8, 13, 21, 34, 55, 89 ];
+                let idx = -1
+                
+                function getNextFn() {
+                    idx++;
+                    let isDone = idx >= theValues.length;
+                    if (!isDone) {
+                        // this is passed as the current iterator
+                        // so you can directly assign the next "value" that will be returned
+                        this.v = theValues[idx];
+                    }
+                
+                    return isDone;
+                }
+                
+                let theIterator = createIterator<number>({ n: getNextFn });
+                let promise = createAllSettledPromise(theIterator);
+        
+                let values = await promise;
+                assert.ok(values, "A values object should have been returned");
+                assert.equal(values.length, 10, "No elements should have been returned");
+        
+                let values2 = await promise;
+                assert.ok(values, "A values object should have been returned");
+                assert.equal(values.length, 10, "No elements should have been returned");
+        
+                assert.ok(values === values2);
+            });
+        });
+    }
+
+    describe("createAllSettledPromise with Iterable", () => {
+        it("check create all settled with nothing", async () => {
+            let fibCtx: CreateIteratorContext<number> = {
+                n: function() {
+                    // Return done
+                    return true;
+                }
+            };
+            
+            let theIterator = createIterable<number>(fibCtx);
+            let promise = createAllSettledPromise(theIterator);
+    
+            let values = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 0, "No elements should have been returned");
+    
+            let values2 = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 0, "No elements should have been returned");
+    
+            assert.ok(values === values2);
         });
 
-        try {
-            await promise;
-        } catch (e) {
-            assert.ok(true, "Caught: " + dumpObj(e));
-            assert.equal(e.message, "Simulated failure");
-        }
+        it("check create all settled with some values", async () => {
+            let current = 0;
+            let next = 1;
+            let fibCtx: CreateIteratorContext<number> = {
+                n: function() {
+                    fibCtx.v = current;
+                    current = next;
+                    next = fibCtx.v + next;
+            
+                    // Stop once the value is > 32
+                    return next > 32;
+                },
+                r: function(value) {
+                    return value;
+                }
+            };
+            
+            let theIterator = createIterable<number>(fibCtx);
+            let promise = createAllSettledPromise(theIterator);
+    
+            let values = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 7, "No elements should have been returned");
+            assert.deepEqual(values.map((v) => v.status), [ "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled" ]);
+            assert.deepEqual(values.map((v) => v.value), [ 0, 1, 1, 2, 3, 5, 8 ]);
 
-        assert.equal(catchCalled, true, "Catch was called");
-        assert.equal(finallyCalled, true, "Finally was called");
+            let values2 = await promise;
+            assert.ok(values, "A values object should have been returned");
+            assert.equal(values.length, 7, "No elements should have been returned");
+            assert.deepEqual(values.map((v) => v.status), [ "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled" ]);
+            assert.deepEqual(values.map((v) => v.value), [ 0, 1, 1, 2, 3, 5, 8 ]);
 
-        try {
-            await promise;
-        } catch (e) {
-            assert.ok(true, "Caught: " + dumpObj(e));
-            assert.equal(e.message, "Simulated failure");
-        }
+            assert.ok(values === values2);
+            assert.equal(values, values2);
+        });
     });
 
-    it("check create all where a resolve function throws", async () => {
-        let promise = createAllPromise([
-            createRejectedPromise("Rejected"),
-            createResolvedPromise(42)
-        ]).finally(() => {
-            //console.log("Finally called");
+    describe("createAllSettledPromise with rejected", () => {
+        it("should handle a mixture of fulfilled and rejected promise values", async () => {
+            const promises = [
+                createResolvedPromise("resolved1"),
+                createRejectedPromise("rejected1"),
+                createResolvedPromise("resolved2"),
+                createRejectedPromise("rejected2")
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createAllSettledPromise(theIterator);
+
+            const values = await promise;
+
+            assert.deepEqual(values, [
+                { status: "fulfilled", value: "resolved1" },
+                { status: "rejected", reason: "rejected1" },
+                { status: "fulfilled", value: "resolved2" },
+                { status: "rejected", reason: "rejected2" }
+            ]);
         });
-
-        try {
-            await promise;
-        } catch (e) {
-            assert.ok(true, "Caught: " + dumpObj(e));
-            assert.equal(e, "Rejected");
-        }
-
-        try {
-            await promise;
-        } catch (e) {
-            assert.ok(true, "Caught: " + dumpObj(e));
-            assert.equal(e, "Rejected");
-        }
     });
 }

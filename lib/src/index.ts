@@ -10,6 +10,7 @@ export { AwaitResponse } from "./interfaces/await-response";
 export { IPromise } from "./interfaces/IPromise";
 export { ITaskScheduler } from "./interfaces/ITaskScheduler";
 export { IWhileState } from "./interfaces/IWhileState";
+export { IPromiseResult } from "./interfaces/IPromiseResult";
 export {
     ResolvedPromiseHandler, RejectedPromiseHandler, FinallyPromiseHandler, ResolvePromiseHandler, RejectPromiseHandler, PromiseExecutor,
     PromiseCreatorFn, StartQueuedTaskFn
@@ -17,20 +18,23 @@ export {
 export { doAwaitResponse, doAwait, doFinally } from "./promise/await";
 export { setPromiseDebugState } from "./promise/debug";
 export {
-    createNativePromise, createNativeAllPromise, createNativeResolvedPromise, createNativeRejectedPromise
+    createNativePromise, createNativeAllPromise, createNativeResolvedPromise, createNativeRejectedPromise,
+    createNativeAllSettledPromise
 } from "./promise/nativePromise";
 export {
-    createSyncPromise, createSyncAllPromise, createSyncResolvedPromise, createSyncRejectedPromise
+    createSyncPromise, createSyncAllPromise, createSyncResolvedPromise, createSyncRejectedPromise,
+    createSyncAllSettledPromise
 } from "./promise/syncPromise";
 export {
     createIdlePromise, createIdleAllPromise, createIdleResolvedPromise, createIdleRejectedPromise,
-    setDefaultIdleTimeout
+    createIdleAllSettledPromise, setDefaultIdleTimeout
 } from "./promise/idlePromise";
 export {
-    createAsyncPromise, createAsyncAllPromise, createAsyncResolvedPromise, createAsyncRejectedPromise
+    createAsyncPromise, createAsyncAllPromise, createAsyncResolvedPromise, createAsyncRejectedPromise,
+    createAsyncAllSettledPromise
 } from "./promise/asyncPromise";
 export {
-    createPromise, createAllPromise, createRejectedPromise, createResolvedPromise,
+    createPromise, createAllPromise, createRejectedPromise, createResolvedPromise, createAllSettledPromise,
     setCreatePromiseImpl
 } from "./promise/promise";
 

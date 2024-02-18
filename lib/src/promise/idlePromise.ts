@@ -6,13 +6,16 @@
  * Licensed under the MIT license.
  */
 
-import { isUndefined } from "@nevware21/ts-utils";
-import { _createAllPromise, _createPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
+import { ICachedValue, isUndefined } from "@nevware21/ts-utils";
+import { _createAllPromise, _createAllSettledPromise, _createPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
 import { IPromise } from "../interfaces/IPromise";
 import { idleItemProcessor } from "./itemProcessor";
 import { PromiseExecutor } from "../interfaces/types";
+import { IPromiseResult } from "../interfaces/IPromiseResult";
 
 let _defaultIdleTimeout:  number;
+
+let _allIdleSettledCreator: ICachedValue<<T extends readonly unknown[] | []>(input: T, timeout?: number) => IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }>>;
 
 /**
  * Sets the global default idle timeout / deadline to use when no timeout is passed during promise creation.
@@ -54,6 +57,7 @@ export function createIdlePromise<T>(executor: PromiseExecutor<T>, timeout?: num
  * the `requestIdleCallback` API (if available) with the optional provided timeout value to schedule
  * when the chained items will be executed. (eg. `then()`; `catch()`; `finally()`).
  * @group Idle
+ * @group Promise
  * @group All
  * @param input - The array of promises to wait to be resolved / rejected before resolving or rejecting the new promise
  * @param timeout
@@ -65,7 +69,7 @@ export function createIdlePromise<T>(executor: PromiseExecutor<T>, timeout?: num
  * promises reject.
  * </ul>
  */
-export const createIdleAllPromise: <T>(input: PromiseLike<T>[], timeout?: number) => IPromise<T[]> = _createAllPromise(createIdlePromise);
+export const createIdleAllPromise: <T>(input: Iterable<PromiseLike<T>>, timeout?: number) => IPromise<T[]> = /*#__PURE__*/_createAllPromise(createIdlePromise);
 
 /**
  * Returns an idle Promise instance that is already resolved with the given value. If the value passed is
@@ -74,11 +78,12 @@ export const createIdleAllPromise: <T>(input: PromiseLike<T>[], timeout?: number
  * `requestIdleCallback` API (if available) with the optional provided timeout value to schedule when
  * the chained items will be executed. (eg. `then()`; `finally()`).
  * @group Idle
+ * @group Promise
  * @group Resolved
  * @param value - The value to be used by this `Promise`. Can also be a `Promise` or a thenable to resolve.
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createIdleResolvedPromise: <T>(value: T, timeout?: number) => IPromise<T> = _createResolvedPromise(createIdlePromise);
+export const createIdleResolvedPromise: <T>(value: T, timeout?: number) => IPromise<T> = /*#__PURE__*/_createResolvedPromise(createIdlePromise);
 
 /**
  * Returns an idle Promise instance that is already rejected with the given reason.
@@ -86,8 +91,88 @@ export const createIdleResolvedPromise: <T>(value: T, timeout?: number) => IProm
  * (if available) with the optional provided timeout value to schedule when the chained items will
  * be executed. (eg. `catch()`; `finally()`).
  * @group Idle
+ * @group Promise
  * @group Rejected
  * @param reason - The rejection reason
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createIdleRejectedPromise: <T = unknown>(reason: any, timeout?: number) => IPromise<T> = _createRejectedPromise(createIdlePromise);
+export const createIdleRejectedPromise: <T = unknown>(reason: any, timeout?: number) => IPromise<T> = /*#__PURE__*/_createRejectedPromise(createIdlePromise);
+
+/**
+ * Returns a single Promise instance that resolves to an array of the results from the input promises.
+ * This returned promise will resolve and execute it's pending chained operations based on the
+ * {@link createIdlePromise idle} promise implementation. Any chained operations will execute
+ * __asynchronously__ when the environment is idle as the final operation pending promises have resolved,
+ * or if the input contains no promises. It will resolve only after all of the input promises have either
+ * resolved or rejected, and will resolve with an array of {@link IPromiseResult } objects that each describe
+ * the outcome of each promise.
+ * @since 0.5.0
+ * @group Idle
+ * @group Promise
+ * @group AllSettled
+ * @param values - The iterator of promises to wait to be resolved / rejected before resolving or rejecting the new promise
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A pending `Promise` that will resolve to an array of {@link IPromiseResult } objects that each describe the outcome of each promise.
+ *
+ * @example
+ * ```ts
+ * const promises = [
+ *   createResolvedPromise(1),
+ *   createResolvedPromise(2),
+ *   createResolvedPromise(3),
+ *   createRejectedPromise("error"),
+ * ];
+ *
+ * const results = await createAllSettledPromise(promises);
+ *
+ * // results is:
+ * // [
+ * //   { status: "fulfilled", value: 1 },
+ * //   { status: "fulfilled", value: 2 },
+ * //   { status: "fulfilled", value: 3 },
+ * //   { status: "rejected", reason: "error" }
+ * // ]
+ * ```
+ */
+export function createIdleAllSettledPromise<T>(values: Iterable<T | PromiseLike<T>> | Iterator<T | PromiseLike<T>>, timeout?: number): IPromise<IPromiseResult<Awaited<T>>[]>;
+
+/**
+ * Returns a single Promise instance that resolves to an array of the results from the input promises.
+ * This returned promise will resolve and execute it's pending chained operations based on the
+ * {@link createIdlePromise idle} promise implementation. Any chained operations will execute
+ * __asynchronously__ when the environment is idle as the final operation pending promises have resolved,
+ * or if the input contains no promises. It will resolve only after all of the input promises have either
+ * resolved or rejected, and will resolve with an array of {@link IPromiseResult } objects that each describe
+ * the outcome of each promise.
+ * @since 0.5.0
+ * @group Idle
+ * @group Promise
+ * @group AllSettled
+ * @param input - An array of promises to wait to be resolved / rejected before resolving or rejecting the new promise
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A pending `Promise` that will resolve to an array of {@link IPromiseResult } objects that each describe the outcome of each promise.
+ *
+ * @example
+ * ```ts
+ * const promises = [
+ *   createResolvedPromise(1),
+ *   createResolvedPromise(2),
+ *   createResolvedPromise(3),
+ *   createRejectedPromise("error"),
+ * ];
+ *
+ * const results = await createAllSettledPromise(promises);
+ *
+ * // results is:
+ * // [
+ * //   { status: "fulfilled", value: 1 },
+ * //   { status: "fulfilled", value: 2 },
+ * //   { status: "fulfilled", value: 3 },
+ * //   { status: "rejected", reason: "error" }
+ * // ]
+ * ```
+ */
+export function createIdleAllSettledPromise<T extends readonly unknown[] | []>(input: T, timeout?: number): IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }> {
+    !_allIdleSettledCreator && (_allIdleSettledCreator = _createAllSettledPromise(createIdlePromise));
+    return _allIdleSettledCreator.v(input, timeout);
+}

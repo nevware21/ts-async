@@ -18,7 +18,7 @@ import { PolyPromise } from "../../../src/polyfills/promise";
 import { createResolvedPromise, setCreatePromiseImpl } from "../../../src/promise/promise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
 import { createTaskScheduler } from "../../../src/scheduler/taskScheduler";
-import { doAwait } from "../../../src/promise/await";
+import { doAwait, doAwaitResponse } from "../../../src/promise/await";
 
 function failOnCall(value: any) {
     console.error("Failed on being called " + dumpObj(value));
@@ -205,6 +205,30 @@ function batchTests(testKey: string, definition: TestDefinition) {
             done();
         },
         failOnCall);
+    });
+
+    it("With no promise create function and single task that throws", (done) => {
+        let scheduler = createTaskScheduler(null as any);
+        assert.equal(true, scheduler.idle, "The scheduler should be idle");
+
+        let waitPromise = scheduler.queue(() => {
+            throw 42;
+        } );
+        assert.ok(isPromiseLike(waitPromise), "We must have got a promise");
+        if (checkState) {
+            assert.equal(waitPromise.state, "rejected");
+        }
+
+        doAwaitResponse(waitPromise, (result) => {
+            if (result.rejected) {
+                assert.equal(result.reason, 42);
+            } else {
+                assert.fail("Should have been rejected");
+            }
+
+            assert.equal(true, scheduler.idle, "The scheduler should be idle");
+            done();
+        });
     });
 
     it("With no promise create function and single delayed resolved task", (done) => {
