@@ -161,7 +161,7 @@
        * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
        * DEFAULT VALUE: "<projectFolder>/temp/"
        */
-      "reportFolder": "<projectFolder>/types/"
+      "reportFolder": "<projectFolder>/dist/types/"
   
       /**
        * Specifies the folder where the temporary report file is written.  The file name portion is determined by
@@ -255,7 +255,7 @@
        * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
        * DEFAULT VALUE: "<projectFolder>/dist/<unscopedPackageName>.d.ts"
        */
-      "untrimmedFilePath": "<projectFolder>/types/ts-async.d.ts"
+      "untrimmedFilePath": "<projectFolder>/dist/types/ts-async.d.ts"
   
       /**
        * Specifies the output path for a .d.ts rollup file to be generated with trimming for an "alpha" release.
