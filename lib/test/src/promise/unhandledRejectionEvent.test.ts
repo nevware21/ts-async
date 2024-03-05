@@ -7,7 +7,7 @@
  */
 
 import { assert } from "chai";
-import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, scheduleTimeout, setBypassLazyCache } from "@nevware21/ts-utils";
+import { arrForEach, asString, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, scheduleTimeout, setBypassLazyCache } from "@nevware21/ts-utils";
 import { createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
 import { IPromise } from "../../../src/interfaces/IPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
@@ -16,36 +16,74 @@ import { createSyncRejectedPromise } from "../../../src/promise/syncPromise";
 import { createIdleRejectedPromise } from "../../../src/promise/idlePromise";
 import { createNativeRejectedPromise } from "../../../src/promise/nativePromise";
 import { objForEachKey } from "@nevware21/ts-utils";
+import { arrSlice } from "@nevware21/ts-utils";
+
+function _getCaller(start: number) {
+    let stack = new Error().stack;
+    if (stack) {
+        let lines = stack.split("\n");
+        if (lines.length > start) {
+            return arrSlice(lines, start, start + 5).join("\n") + "\n...";
+        }
+    }
+
+    return null;
+}
 
 let _unhandledEvents: any[] = [];
 function _unhandledrejection(event: any) {
-    let prefix = "";
-    if (arguments.length > 1) {
-        prefix = arguments[1].toString() + " :: ";
-    }
-
-    _unhandledEvents.push(prefix + dumpObj(event));
-    //console.log("Unhandled Rejection received: " + prefix + dumpObj(event));
-}
-
-function _unhandledNodeRejection(reason: any, promise: any) {
     let found = false;
     // The combination of node and mocha seems to cause any process.emit events to get duplicated (emitted twice)
     arrForEach(_unhandledEvents, (evt) => {
-        if (evt.promise === promise) {
+        if (evt.p === event.promise) {
             found = true;
             return -1;
         }
     });
 
     if (!found) {
+        _unhandledEvents.push({
+            type: dumpObj((event as any).type),
+            name: dumpObj((event as any).name),
+            evt: dumpObj(event),
+            p: event.promise,
+            promise: asString(event.promise),
+            stack: _getCaller(1)
+        });
+        //console.log("Unhandled Rejection received: " + prefix + dumpObj(event));
+    }
+
+    event.stopPropagation && event.stopPropagation();
+}
+
+function _unhandledNodeRejection(reason: any, promise: any) {
+    //console.log && console.log("Unhandled Node Rejection received: " + asString(promise) + "\n" + dumpObj(reason));
+
+    let found = false;
+    // The combination of node and mocha seems to cause any process.emit events to get duplicated (emitted twice)
+    arrForEach(_unhandledEvents, (evt) => {
+        if (evt.p === promise) {
+            found = true;
+            return -1;
+        }
+    });
+
+    if (!found) {
+        let stack = new Error().stack;
+        let lines = stack ? stack.split("\n") : [];
+
         // let prefix = promise.toString() + " :: ";
         _unhandledEvents.push({
-            reason,
-            promise
+            type: "node",
+            reason: asString(reason),
+            p: promise,
+            promise: asString(promise),
+            stack: (arrSlice(lines, 1, 6).join("\n")) + "\n..."
         });
         //console.log("Unhandled Node Rejection received: " + prefix + dumpObj(reason));
     }
+
+    return "Handled!";
 }
 
 interface TestDefinition {
@@ -58,6 +96,7 @@ type TestImplementations = { [key: string]: TestDefinition };
 
 let testImplementations: TestImplementations = {
     "system": {
+        // rejected: Promise.reject.bind(Promise),
         rejected: Promise.reject.bind(Promise),
         checkState: false,
         checkChainedState: false
@@ -83,7 +122,7 @@ let testImplementations: TestImplementations = {
         checkChainedState: true
     },
     "polyfill": {
-        rejected: PolyPromise.reject,
+        rejected: PolyPromise.reject.bind(PolyPromise),
         checkState: true,
         checkChainedState: true
     }
@@ -102,16 +141,18 @@ describe("Validate unhandled rejection event handling", () => {
     });
 });
 
-async function waitForUnhandledRejection() {
+function waitForUnhandledRejection() {
+    //console.log("Waiting for unhandled rejection event(s)");
     // Wait for unhandled rejection event
-    await createAsyncPromise((resolve) => {
+    return createAsyncPromise((resolve) => {
         let attempt = 0;
         let waiting = scheduleTimeout(() => {
-            if (_unhandledEvents.length > 0) {
-                resolve(true);
-            } else if (attempt < 10) {
+            //console.log("[" + attempt + "]: Waiting for unhandled rejection event(s) - " + _unhandledEvents.length);
+            if (attempt < 5) {
                 attempt++;
                 waiting.refresh();
+            } else if (_unhandledEvents.length > 0) {
+                resolve(true);
             } else {
                 throw "Failed to trigger and handle the unhandledRejection";
             }
@@ -127,6 +168,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
     beforeEach(() => {
         // clock = sinon.useFakeTimers();
+        //console.log("Clearing unhandled rejection listeners");
         _unhandledEvents = [];
 
         function _debug(id: string, message: string) {
@@ -167,7 +209,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
     it("Test pre-rejected promise with no handler", async () => {
         assert.equal(_unhandledEvents.length, 0, "No unhandled rejections");
-        let preRejected = createRejectedPromise(new Error("Simulated Pre Rejected Promise"));
+        let preRejected = createRejectedPromise(new Error("Simulated Pre Rejected Promise - pre-rejected promise with no handler"));
         if (checkState) {
             assert.equal(preRejected.state, "rejected", "The promise should be rejected");
         }

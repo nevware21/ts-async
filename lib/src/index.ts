@@ -19,22 +19,27 @@ export { doAwaitResponse, doAwait, doFinally } from "./promise/await";
 export { setPromiseDebugState } from "./promise/debug";
 export {
     createNativePromise, createNativeAllPromise, createNativeResolvedPromise, createNativeRejectedPromise,
+    createNativeAnyPromise, createNativeRacePromise,
     createNativeAllSettledPromise
 } from "./promise/nativePromise";
 export {
     createSyncPromise, createSyncAllPromise, createSyncResolvedPromise, createSyncRejectedPromise,
+    createSyncAnyPromise, createSyncRacePromise,
     createSyncAllSettledPromise
 } from "./promise/syncPromise";
 export {
     createIdlePromise, createIdleAllPromise, createIdleResolvedPromise, createIdleRejectedPromise,
-    createIdleAllSettledPromise, setDefaultIdleTimeout
+    createIdleAnyPromise, createIdleRacePromise,
+    createIdleAllSettledPromise, setDefaultIdleTimeout, setDefaultIdlePromiseTimeout
 } from "./promise/idlePromise";
 export {
     createAsyncPromise, createAsyncAllPromise, createAsyncResolvedPromise, createAsyncRejectedPromise,
+    createAsyncAnyPromise, createAsyncRacePromise,
     createAsyncAllSettledPromise
 } from "./promise/asyncPromise";
 export {
     createPromise, createAllPromise, createRejectedPromise, createResolvedPromise, createAllSettledPromise,
+    createAnyPromise, createRacePromise,
     setCreatePromiseImpl
 } from "./promise/promise";
 
@@ -45,3 +50,6 @@ export { iterForOfAsync } from "./helpers/iterForOfAsync";
 
 // Task Scheduler
 export { createTaskScheduler } from "./scheduler/taskScheduler";
+
+// Polyfill promise
+export { PolyPromise, PolyPromiseConstructor } from "./polyfills/promise";

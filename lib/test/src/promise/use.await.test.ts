@@ -7,26 +7,27 @@
  */
 
 import { assert } from "chai";
-import { getGlobal, objHasOwn, isWebWorker, isNode, scheduleTimeout, dumpObj, arrForEach, objForEachKey, setBypassLazyCache, CreateIteratorContext } from "@nevware21/ts-utils";
+import { getGlobal, objHasOwn, isWebWorker, isNode, scheduleTimeout, dumpObj, arrForEach, objForEachKey, setBypassLazyCache, CreateIteratorContext, isPromiseLike } from "@nevware21/ts-utils";
 import { PolyPromise } from "../../../src/polyfills/promise";
-import { createAsyncAllSettledPromise, createAsyncPromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";
+import { createAsyncAllPromise, createAsyncAllSettledPromise, createAsyncAnyPromise, createAsyncPromise, createAsyncRacePromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
-import { createIdleAllSettledPromise, createIdlePromise, createIdleRejectedPromise, createIdleResolvedPromise } from "../../../src/promise/idlePromise";
+import { createIdleAllPromise, createIdleAllSettledPromise, createIdleAnyPromise, createIdlePromise, createIdleRacePromise, createIdleRejectedPromise, createIdleResolvedPromise } from "../../../src/promise/idlePromise";
 import { IPromise } from "../../../src/interfaces/IPromise";
-import { createNativeAllSettledPromise, createNativePromise, createNativeRejectedPromise, createNativeResolvedPromise } from "../../../src/promise/nativePromise";
-import { createSyncAllSettledPromise, createSyncPromise, createSyncRejectedPromise, createSyncResolvedPromise } from "../../../src/promise/syncPromise";
+import { _clearPromiseCache, createNativeAllPromise, createNativeAllSettledPromise, createNativeAnyPromise, createNativePromise, createNativeRacePromise, createNativeRejectedPromise, createNativeResolvedPromise } from "../../../src/promise/nativePromise";
+import { createSyncAllPromise, createSyncAllSettledPromise, createSyncAnyPromise, createSyncPromise, createSyncRacePromise, createSyncRejectedPromise, createSyncResolvedPromise } from "../../../src/promise/syncPromise";
 import { PromiseExecutor } from "../../../src/interfaces/types";
-import { createAllPromise, createPromise, setCreatePromiseImpl, createAllSettledPromise } from "../../../src/promise/promise";
+import { createAllPromise, createPromise, setCreatePromiseImpl, createAllSettledPromise, createResolvedPromise, createRejectedPromise, createRacePromise, createAnyPromise } from "../../../src/promise/promise";
 import { createIterator } from "@nevware21/ts-utils";
 import { createIterable } from "@nevware21/ts-utils";
 import { IPromiseResult } from "../../../src/interfaces/IPromiseResult";
+import { createTimeoutPromise } from "../../../src/promise/timeoutPromise";
 
 function _expectException(cb: () => void, message: string) {
     try {
         cb();
         assert.ok(false, "expected an exception to be thrown with undefined");
     } catch(e) {
-        assert.ok(e.message.indexOf(message) != -1, "Expected the exception message to include [" + message + "] as the reason for failure was [" + e.message + "]");
+        assert.ok(e.message.indexOf(message) != -1, "Expected the exception message to include [" + message + "] as the reason for failure was [" + dumpObj(e) + "]");
     }
 }
 
@@ -65,7 +66,10 @@ interface TestDefinition {
     creator: <T>(executor: PromiseExecutor<T>) => IPromise<T>;
     resolved: <T>(value: T) => IPromise<T>;
     rejected: <T>(reason: any) => IPromise<T>;
-    creatorAllSettled: <T>(values: Iterable<T | PromiseLike<T>> | Iterator<T | PromiseLike<T>>, timeout?: number) => IPromise<IPromiseResult<Awaited<T>>[]>;
+    creatorAllSettled: <T>(values: Iterable<T | PromiseLike<T>>, timeout?: number) => IPromise<IPromiseResult<Awaited<T>>[]>;
+    creatorRace: <T>(values: Iterable<T | PromiseLike<T>>, timeout?: number) => IPromise<Awaited<T>>;
+    creatorAny: <T>(values: Iterable<T | PromiseLike<T>>, timeout?: number) => IPromise<Awaited<T>>;
+    creatorAll: <T>(input: Iterable<PromiseLike<T>>) => IPromise<T[]>;
     checkState: boolean;
     checkChainedState: boolean;
 }
@@ -80,16 +84,31 @@ let testImplementations: TestImplementations = {
         resolved: Promise.resolve.bind(Promise),
         rejected: Promise.reject.bind(Promise),
         creatorAllSettled: Promise.allSettled.bind(Promise),
+        creatorRace: Promise.race.bind(Promise),
+        creatorAny: Promise["any"].bind(Promise),
+        creatorAll: Promise.all.bind(Promise),
         checkState: false,
         checkChainedState: false
     },
     "native": {
-        creator: <T>(executor: PromiseExecutor<T>) => {
-            return createNativePromise<T>(executor);
-        },
+        creator: createNativePromise,
         resolved: createNativeResolvedPromise,
         rejected: createNativeRejectedPromise,
         creatorAllSettled: createNativeAllSettledPromise,
+        creatorRace: createNativeRacePromise,
+        creatorAny: createNativeAnyPromise,
+        creatorAll: createNativeAllPromise,
+        checkState: true,
+        checkChainedState: false
+    },
+    "no-native": {
+        creator: createNativePromise,
+        resolved: createNativeResolvedPromise,
+        rejected: createNativeRejectedPromise,
+        creatorAllSettled: createNativeAllSettledPromise,
+        creatorRace: createNativeRacePromise,
+        creatorAny: createNativeAnyPromise,
+        creatorAll: createNativeAllPromise,
         checkState: true,
         checkChainedState: false
     },
@@ -100,6 +119,9 @@ let testImplementations: TestImplementations = {
         resolved: createAsyncResolvedPromise,
         rejected: createAsyncRejectedPromise,
         creatorAllSettled: createAsyncAllSettledPromise,
+        creatorRace: createAsyncRacePromise,
+        creatorAny: createAsyncAnyPromise,
+        creatorAll: createAsyncAllPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -110,6 +132,9 @@ let testImplementations: TestImplementations = {
         resolved: createIdleResolvedPromise,
         rejected: createIdleRejectedPromise,
         creatorAllSettled: createIdleAllSettledPromise,
+        creatorRace: createIdleRacePromise,
+        creatorAny: createIdleAnyPromise,
+        creatorAll: createIdleAllPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -119,7 +144,10 @@ let testImplementations: TestImplementations = {
         },
         resolved: createIdleResolvedPromise,
         rejected: createIdleRejectedPromise,
-        creatorAllSettled: createAllSettledPromise,
+        creatorAllSettled: createIdleAllSettledPromise,
+        creatorRace: createIdleRacePromise,
+        creatorAny: createIdleAnyPromise,
+        creatorAll: createIdleAllPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -130,6 +158,9 @@ let testImplementations: TestImplementations = {
         resolved: createSyncResolvedPromise,
         rejected: createSyncRejectedPromise,
         creatorAllSettled: createSyncAllSettledPromise,
+        creatorRace: createSyncRacePromise,
+        creatorAny: createSyncAnyPromise,
+        creatorAll: createSyncAllPromise,
         checkState: true,
         checkChainedState: true
     },
@@ -140,8 +171,22 @@ let testImplementations: TestImplementations = {
         resolved: PolyPromise.resolve,
         rejected: PolyPromise.reject,
         creatorAllSettled: PolyPromise.allSettled,
+        creatorRace: PolyPromise.race,
+        creatorAny: PolyPromise.any,
+        creatorAll: PolyPromise.all,
         checkState: true,
         checkChainedState: true
+    },
+    "default": {
+        creator: createPromise,
+        resolved: createResolvedPromise,
+        rejected: createRejectedPromise,
+        creatorAllSettled: createAllSettledPromise,
+        creatorRace: createRacePromise,
+        creatorAny: createAnyPromise,
+        creatorAll: createAllPromise,
+        checkState: false,
+        checkChainedState: false
     }
 }
 
@@ -170,6 +215,9 @@ function batchTests(testKey: string, definition: TestDefinition) {
     let createRejectedPromise = definition.rejected;
     let createAllSettledPromise = definition.creatorAllSettled;
     let createResolvedPromise = definition.resolved;
+    let createRacePromise = definition.creatorRace;
+    let createAnyPromise = definition.creatorAny;
+    let createAllPromise = definition.creatorAll;
     let checkState = definition.checkState;
     let checkChainedState = definition.checkChainedState;
 
@@ -178,6 +226,8 @@ function batchTests(testKey: string, definition: TestDefinition) {
         createRejectedPromise = definition.rejected;
         createAllSettledPromise = definition.creatorAllSettled;
         createResolvedPromise = definition.resolved;
+        createAnyPromise = definition.creatorAny;
+        createAllPromise = definition.creatorAll;
         checkState = definition.checkState;
         checkChainedState = definition.checkChainedState;
 
@@ -186,7 +236,15 @@ function batchTests(testKey: string, definition: TestDefinition) {
             //console && console.log && console.log("Debug[" + id + "]:" + message);
         }
 
-        setCreatePromiseImpl(definition.creator);
+        if (testKey === "default") {
+            setCreatePromiseImpl(null as any);
+        } else {
+            setCreatePromiseImpl(definition.creator);
+        }
+
+        // Use test hook to clear the promise caches
+        _clearPromiseCache(testKey !== "no-native");
+
         setPromiseDebugState(true, _debug);
         
         // Disable lazy caching
@@ -253,7 +311,12 @@ function batchTests(testKey: string, definition: TestDefinition) {
         let promise = createPromise((resolve) => {
             resolve(12);
         });
-        assert.ok(promise instanceof Promise, "Check that it was a native Promise");
+    
+        if (testKey !== "no-native") {
+            assert.ok(promise instanceof Promise, "Check that it was a native Promise");
+        }
+        
+        assert.ok(isPromiseLike(promise), "Check that it was a native Promise");
         assert.equal(await promise, 12);
     });
 
@@ -538,7 +601,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
             assert.equal(chainedPromise.state, "resolved", "Check promise state");
         }
 
-        assert.equal(_unhandledEvents.length, 0, "No unhandled rejections");
+        assert.equal(_unhandledEvents.length, 0, "No unhandled rejections - " + JSON.stringify(_unhandledEvents));
     });
        
     it("Test rejecting promise immediately ", async () => {
@@ -1075,7 +1138,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
                 } else {
                     throw "Failed to trigger and handle the unhandledRejection";
                 }
-            }, 50);
+            }, 150);
         });
     });
 
@@ -1613,69 +1676,57 @@ function batchTests(testKey: string, definition: TestDefinition) {
         });
     });
 
-    if (testKey !== "system") {
-        describe("createAllSettledPromise with Iterator", () => {
-            it("check create all settled with nothing", async () => {
-                let theValues: any[] = [ ];
-                let idx = -1
-                
-                function getNextFn() {
-                    idx++;
-                    let isDone = idx >= theValues.length;
-                    if (!isDone) {
-                        // this is passed as the current iterator
-                        // so you can directly assign the next "value" that will be returned
-                        this.v = theValues[idx];
-                    }
-                
-                    return isDone;
+    describe("createAllSettledPromise with Iterator", () => {
+        it("check create all settled with nothing", async () => {
+            let theValues: any[] = [ ];
+            let idx = -1
+            
+            function getNextFn() {
+                idx++;
+                let isDone = idx >= theValues.length;
+                if (!isDone) {
+                    // this is passed as the current iterator
+                    // so you can directly assign the next "value" that will be returned
+                    this.v = theValues[idx];
                 }
-                
-                let theIterator = createIterator<number>({ n: getNextFn });
-                let promise = createAllSettledPromise(theIterator);
-        
-                let values = await promise;
-                assert.ok(values, "A values object should have been returned");
-                assert.equal(values.length, 0, "No elements should have been returned");
-        
-                let values2 = await promise;
-                assert.ok(values, "A values object should have been returned");
-                assert.equal(values.length, 0, "No elements should have been returned");
-        
-                assert.ok(values === values2);
-            });
-
-            it("check create all settled with some values", async () => {
-                let theValues = [ 1, 2, 3, 5, 8, 13, 21, 34, 55, 89 ];
-                let idx = -1
-                
-                function getNextFn() {
-                    idx++;
-                    let isDone = idx >= theValues.length;
-                    if (!isDone) {
-                        // this is passed as the current iterator
-                        // so you can directly assign the next "value" that will be returned
-                        this.v = theValues[idx];
-                    }
-                
-                    return isDone;
-                }
-                
-                let theIterator = createIterator<number>({ n: getNextFn });
-                let promise = createAllSettledPromise(theIterator);
-        
-                let values = await promise;
-                assert.ok(values, "A values object should have been returned");
-                assert.equal(values.length, 10, "No elements should have been returned");
-        
-                let values2 = await promise;
-                assert.ok(values, "A values object should have been returned");
-                assert.equal(values.length, 10, "No elements should have been returned");
-        
-                assert.ok(values === values2);
-            });
+            
+                return isDone;
+            }
+            
+            let theIterator = createIterator<number>({ n: getNextFn });
+            try {
+                createAllSettledPromise(theIterator as any);
+                assert.fail("Expected an exception to be thrown");
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+            }
         });
-    }
+
+        it("check create all settled with some values", async () => {
+            let theValues = [ 1, 2, 3, 5, 8, 13, 21, 34, 55, 89 ];
+            let idx = -1
+            
+            function getNextFn() {
+                idx++;
+                let isDone = idx >= theValues.length;
+                if (!isDone) {
+                    // this is passed as the current iterator
+                    // so you can directly assign the next "value" that will be returned
+                    this.v = theValues[idx];
+                }
+            
+                return isDone;
+            }
+            
+            let theIterator = createIterator<number>({ n: getNextFn });
+            try {
+                createAllSettledPromise(theIterator as any);
+                assert.fail("Expected an exception to be thrown");
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+            }
+        });
+    });
 
     describe("createAllSettledPromise with Iterable", () => {
         it("check create all settled with nothing", async () => {
@@ -1759,4 +1810,360 @@ function batchTests(testKey: string, definition: TestDefinition) {
             ]);
         });
     });
+
+    describe("createRacePromise with Array", () => {
+        it("should resolve with the value of the first resolved promise", async () => {
+            const promises = [
+                createNewPromise((resolve) => setTimeout(() => resolve("slow"), 300)),
+                createNewPromise((resolve) => setTimeout(() => resolve("fast"), 150)),
+                createNewPromise((resolve) => setTimeout(() => resolve("slowest"), 450))
+            ];
+
+            const promise = createRacePromise(promises);
+
+            const value = await promise;
+
+            assert.equal(value, "fast");
+        });
+
+        it("should reject with the reason of the first rejected promise", async () => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("slow"), 300)),
+                createNewPromise((_, reject) => setTimeout(() => reject("fast"), 150)),
+                createNewPromise((_, reject) => setTimeout(() => reject("slowest"), 450))
+            ];
+
+            const promise = createRacePromise(promises);
+
+            try {
+                await promise;
+            } catch (e) {
+                assert.equal(e, "fast");
+            }
+        });
+
+        it("should resolve with the value of the first resolved promise - sync first", async () => {
+            const promises = [
+                createResolvedPromise("sync"),
+                createNewPromise((resolve) => setTimeout(() => resolve("fast"), 150)),
+                createNewPromise((resolve) => setTimeout(() => resolve("slowest"), 300))
+            ];
+
+            const promise = createRacePromise(promises);
+
+            const value = await promise;
+
+            assert.equal(value, "sync");
+
+            // Wait for the slowest promise to resolve so that it doesn't cause an unhandled rejection later
+            await createTimeoutPromise(200, true);
+        });
+
+        it("should reject with the reason of the first rejected promise - sync first", async () => {
+            const promises = [
+                createRejectedPromise("sync"),
+                createNewPromise((_, reject) => setTimeout(() => reject("fast"), 150)),
+                createNewPromise((_, reject) => setTimeout(() => reject("slowest"), 300))
+            ];
+
+            const promise = createRacePromise(promises);
+
+            try {
+                await promise;
+            } catch (e) {
+                assert.equal(e, "sync");
+            }
+
+            // Wait for the slowest promise to resolve so that it doesn't cause an unhandled rejection later
+            await createTimeoutPromise(200, true);
+        });
+    });
+
+    describe("createRacePromise with Iterable", () => {
+        it("should resolve with the value of the first resolved promise", async () => {
+            const promises = [
+                createNewPromise((resolve) => setTimeout(() => resolve("slow"), 300)),
+                createNewPromise((resolve) => setTimeout(() => resolve("fast"), 150)),
+                createNewPromise((resolve) => setTimeout(() => resolve("slowest"), 450))
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createRacePromise(theIterator);
+
+            const value = await promise;
+
+            assert.equal(value, "fast");
+        });
+
+        it("should reject with the reason of the first rejected promise", async () => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("slow"), 300)),
+                createNewPromise((_, reject) => setTimeout(() => reject("fast"), 10)),
+                createNewPromise((_, reject) => setTimeout(() => reject("slowest"), 450))
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createRacePromise(theIterator);
+
+            try {
+                await promise;
+            } catch (e) {
+                assert.equal(e, "fast");
+            }
+        });
+
+        it("should resolve with the value of the first resolved promise - sync second", async () => {
+            const promises = [
+                createNewPromise((resolve) => setTimeout(() => resolve("slow"), 150)),
+                createResolvedPromise("sync"),
+                createNewPromise((resolve) => setTimeout(() => resolve("slowest"), 300))
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createRacePromise(theIterator);
+
+            const value = await promise;
+
+            assert.equal(value, "sync");
+
+            // Wait for the slowest promise to resolve so that it doesn't cause an unhandled rejection later
+            await createTimeoutPromise(200, true);
+        });
+
+        it("should reject with the reason of the first rejected promise - sync second", async () => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("slow"), 150)),
+                createRejectedPromise("sync"),
+                createNewPromise((_, reject) => setTimeout(() => reject("slowest"), 300))
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createRacePromise(theIterator);
+
+            try {
+                await promise;
+            } catch (e) {
+                assert.equal(e, "sync");
+            }
+
+            // Wait for the slowest promise to resolve so that it doesn't cause an unhandled rejection later
+            await createTimeoutPromise(200, true);
+        });
+    });
+
+    describe("createRacePromise with Iterator", () => {
+        it("check create all settled with nothing", async () => {
+            let theValues: any[] = [ ];
+            let idx = -1
+            
+            function getNextFn() {
+                idx++;
+                let isDone = idx >= theValues.length;
+                if (!isDone) {
+                    // this is passed as the current iterator
+                    // so you can directly assign the next "value" that will be returned
+                    this.v = theValues[idx];
+                }
+            
+                return isDone;
+            }
+            
+            let theIterator = createIterator<number>({ n: getNextFn });
+            try {
+                createRacePromise(theIterator as any);
+                assert.fail("Expected an exception to be thrown");
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+            }
+        });
+
+        it("check create all settled with some values", async () => {
+            let theValues = [ 1, 2, 3, 5, 8, 13, 21, 34, 55, 89 ];
+            let idx = -1
+            
+            function getNextFn() {
+                idx++;
+                let isDone = idx >= theValues.length;
+                if (!isDone) {
+                    // this is passed as the current iterator
+                    // so you can directly assign the next "value" that will be returned
+                    this.v = theValues[idx];
+                }
+            
+                return isDone;
+            }
+            
+            let theIterator = createIterator<number>({ n: getNextFn });
+            try {
+                createRacePromise(theIterator as any);
+                assert.fail("Expected an exception to be thrown");
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+            }
+        });
+    });
+
+    describe("createAnyPromise", () => {
+        it("should reject if empty array", async () => {
+            const promises: Array<any> = [ ];
+
+            const promise = createAnyPromise(promises);
+
+            try {
+                await promise;
+                assert.fail("Expected an exception to be thrown");
+            } catch (e) {
+                assert.deepEqual(e.errors, [],
+                    "Expected the promise to be rejected with the contained exception - " + dumpObj(e));
+            }
+        });
+
+        it("should resolve with the value of the first fulfilled promise", async () => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected"), 100)),
+                createNewPromise((resolve) => setTimeout(() => resolve("fulfilled"), 50)),
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected"), 150))
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createAnyPromise(theIterator);
+
+            const value = await promise;
+
+            assert.equal(value, "fulfilled");
+        });
+
+        it("should resolve with the value of the first fulfilled promise", async () => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected"), 100)),
+                createResolvedPromise(("resolved")),
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected"), 150))
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createAnyPromise(theIterator);
+
+            const value = await promise;
+
+            assert.equal(value, "resolved");
+        });
+
+        it("should reject if all promises are rejected", async () => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected1"), 100)),
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected2"), 50)),
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected3"), 150))
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createAnyPromise(theIterator);
+
+            try {
+                await promise;
+                assert.fail("Expected an exception to be thrown");
+            } catch (e) {
+                assert.deepEqual(e.errors, ["rejected1", "rejected2", "rejected3"],
+                    "Expected the promise to be rejected with the contained exception - " + dumpObj(e));
+            }
+        });
+
+        it("array: should resolve with the value of the first fulfilled promise", async () => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected"), 100)),
+                createNewPromise((resolve) => setTimeout(() => resolve("fulfilled"), 50)),
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected"), 150))
+            ];
+
+            const promise = createAnyPromise(promises);
+
+            const value = await promise;
+
+            assert.equal(value, "fulfilled");
+        });
+
+        it("array: should resolve with the value of the first fulfilled promise", async () => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected"), 100)),
+                createResolvedPromise(("resolved")),
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected"), 150))
+            ];
+
+            const promise = createAnyPromise(promises);
+
+            const value = await promise;
+
+            assert.equal(value, "resolved");
+        });
+
+        it("array: should reject if all promises are rejected", async () => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected1"), 100)),
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected2"), 50)),
+                createNewPromise((_, reject) => setTimeout(() => reject("rejected3"), 150))
+            ];
+
+            const promise = createAnyPromise(promises);
+
+            try {
+                await promise;
+                assert.fail("Expected an exception to be thrown");
+            } catch (e) {
+                assert.deepEqual(e.errors, ["rejected1", "rejected2", "rejected3"],
+                    "Expected the promise to be rejected with the contained exception - " + dumpObj(e));
+            }
+        });
+    });
+
+    describe("createAnyPromise with Iterator", () => {
+        it("check create all settled with nothing", async () => {
+            let theValues: any[] = [ ];
+            let idx = -1
+            
+            function getNextFn() {
+                idx++;
+                let isDone = idx >= theValues.length;
+                if (!isDone) {
+                    // this is passed as the current iterator
+                    // so you can directly assign the next "value" that will be returned
+                    this.v = theValues[idx];
+                }
+            
+                return isDone;
+            }
+            
+            let theIterator = createIterator<number>({ n: getNextFn });
+            try {
+                createAnyPromise(theIterator as any);
+                assert.fail("Expected an exception to be thrown");
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+            }
+        });
+
+        it("check create all settled with some values", async () => {
+            let theValues = [ 1, 2, 3, 5, 8, 13, 21, 34, 55, 89 ];
+            let idx = -1
+            
+            function getNextFn() {
+                idx++;
+                let isDone = idx >= theValues.length;
+                if (!isDone) {
+                    // this is passed as the current iterator
+                    // so you can directly assign the next "value" that will be returned
+                    this.v = theValues[idx];
+                }
+            
+                return isDone;
+            }
+            
+            let theIterator = createIterator<number>({ n: getNextFn });
+            try {
+                createAnyPromise(theIterator as any);
+                assert.fail("Expected an exception to be thrown");
+            } catch (e) {
+                assert.ok(true, "Caught: " + dumpObj(e));
+            }
+        });
+    });
+
 }

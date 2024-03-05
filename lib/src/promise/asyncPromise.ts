@@ -6,7 +6,10 @@
  * Licensed under the MIT license.
  */
 
-import { _createAllPromise, _createAllSettledPromise, _createPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
+import {
+    _createAllPromise, _createAllSettledPromise, _createAnyPromise, _createPromise, _createRacePromise,
+    _createRejectedPromise, _createResolvedPromise
+} from "./base";
 import { IPromise } from "../interfaces/IPromise";
 import { timeoutItemProcessor } from "./itemProcessor";
 import { PromiseExecutor } from "../interfaces/types";
@@ -14,6 +17,8 @@ import { IPromiseResult } from "../interfaces/IPromiseResult";
 import { ICachedValue } from "@nevware21/ts-utils";
 
 let _allAsyncSettledCreator: ICachedValue<<T extends readonly unknown[] | []>(input: T, timeout?: number) => IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }>>;
+let _raceAsyncCreator: ICachedValue<<T extends readonly unknown[] | []>(values: T, timeout?: number) => IPromise<Awaited<T[number]>>>;
+let _anyAsyncCreator: ICachedValue<<T extends readonly unknown[] | []>(values: T, timeout?: number) => IPromise<Awaited<T[number]>>>;
 
 /**
  * Creates an asynchronous Promise instance that when resolved or rejected will execute it's pending chained operations
@@ -40,7 +45,7 @@ export function createAsyncPromise<T>(executor: PromiseExecutor<T>, timeout?: nu
  * @group Promise
  * @group All
  * @param input - The array of promises to wait to be resolved / rejected before resolving or rejecting the new promise
- * @param timeout
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  * @returns
  * <ul>
  * <li> An already resolved `Promise`, if the input passed is empty.
@@ -50,15 +55,6 @@ export function createAsyncPromise<T>(executor: PromiseExecutor<T>, timeout?: nu
  * </ul>
  */
 export const createAsyncAllPromise: <T>(input: Iterable<PromiseLike<T>>, timeout?: number) => IPromise<T[]> = /*#__PURE__*/_createAllPromise(createAsyncPromise);
-
-// /**
-//  * Creates a Promise that is resolved or rejected when any of the provided Promises are resolved
-//  * or rejected.
-//  * @param values An array of Promises.
-//  * @returns A new Promise.
-//  */
-//     race<T extends readonly unknown[] | []>(values: T): Promise<Awaited<T[number]>>;
-//export const createAsyncRacePromise: <T extends readonly unknown[] | []>(values: T): IPromise<T[number]>;
 
 /**
  * Returns a single asynchronous Promise instance that is already resolved with the given value. If the value passed is
@@ -121,7 +117,7 @@ export const createAsyncRejectedPromise: <T = unknown>(reason: any, timeout?: nu
  * // ]
  * ```
  */
-export function createAsyncAllSettledPromise<T>(values: Iterable<T | PromiseLike<T>> | Iterator<T | PromiseLike<T>>, timeout?: number): IPromise<IPromiseResult<Awaited<T>>[]>;
+export function createAsyncAllSettledPromise<T>(values: Iterable<T | PromiseLike<T>>, timeout?: number): IPromise<IPromiseResult<Awaited<T>>[]>;
 
 /**
  * Returns a single Promise instance that resolves to an array of the results from the input promises.
@@ -162,4 +158,96 @@ export function createAsyncAllSettledPromise<T>(values: Iterable<T | PromiseLike
 export function createAsyncAllSettledPromise<T extends readonly unknown[] | []>(input: T, timeout?: number): IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }> {
     !_allAsyncSettledCreator && (_allAsyncSettledCreator = _createAllSettledPromise(createAsyncPromise));
     return _allAsyncSettledCreator.v(input, timeout);
+}
+
+/**
+ * The `createAsyncRacePromise` method takes an array of promises as input and returns a single Promise. This returned promise
+ * settles with the eventual state of the first promise that settles.
+ * @description The `createAsyncRacePromise` method is one of the promise concurrency methods. It's useful when you want the first
+ * async task to complete, but do not care about its eventual state (i.e. it can either succeed or fail).
+ * If the iterable contains one or more non-promise values and/or an already settled promise, then Promise.race() will settle to
+ * the first of these values found in the iterable.
+ * @since 0.5.0
+ * @group Async
+ * @group Promise
+ * @group Race
+ * @param values - An iterable object of promises.
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A Promise that settles with the eventual state of the first promise in the iterable to settle. In other words, it fulfills if the
+ * first promise to settle is fulfilled, and rejects if the first promise to settle is rejected. The returned promise remains pending forever
+ * if the iterable passed is empty. If the iterable passed is non-empty but contains no pending promises, the returned promise is still
+ * asynchronously settled.
+ */
+export function createAsyncRacePromise<T>(values: Iterable<T | PromiseLike<T>>, timeout?: number): IPromise<Awaited<T>>;
+
+/**
+ * The `createAsyncRacePromise` method takes an array of promises as input and returns a single Promise. This returned promise
+ * settles with the eventual state of the first promise that settles.
+ * @description The `createAsyncRacePromise` method is one of the promise concurrency methods. It's useful when you want the first
+ * async task to complete, but do not care about its eventual state (i.e. it can either succeed or fail).
+ * If the iterable contains one or more non-promise values and/or an already settled promise, then Promise.race() will settle to
+ * the first of these values found in the iterable.
+ * @since 0.5.0
+ * @group Async
+ * @group Promise
+ * @group Race
+ * @param values - An the array of promises.
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A Promise that settles with the eventual state of the first promise in the iterable to settle. In other words, it fulfills if the
+ * first promise to settle is fulfilled, and rejects if the first promise to settle is rejected. The returned promise remains pending forever
+ * if the iterable passed is empty. If the iterable passed is non-empty but contains no pending promises, the returned promise is still
+ * asynchronously settled.
+ */
+export function  createAsyncRacePromise<T extends readonly unknown[] | []>(values: T, timeout?: number): IPromise<Awaited<T[number]>> {
+    !_raceAsyncCreator && (_raceAsyncCreator = _createRacePromise(createAsyncPromise));
+    return _raceAsyncCreator.v(values, timeout);
+}
+
+/**
+ * The `createAsyncAnyPromise` method takes an iterable of promises as input and returns a single Promise.
+ * This returned promise fulfills when any of the input's promises fulfills, with this first fulfillment value.
+ * It rejects when all of the input's promises reject (including when an empty iterable is passed), with an
+ * AggregateError containing an array of rejection reasons.
+ * @since 0.5.0
+ * @group Async
+ * @group Promise
+ * @group Any
+ * @param values - An iterable object of promises.
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A new Promise that is:
+ * - Already rejected, if the iterable passed is empty.
+ * - Asynchronously fulfilled, when any of the promises in the given iterable fulfills. The fulfillment value
+ * is the fulfillment value of the first promise that was fulfilled.
+ * - Asynchronously rejected, when all of the promises in the given iterable reject. The rejection reason is
+ * an AggregateError containing an array of rejection reasons in its errors property. The errors are in the
+ * order of the promises passed, regardless of completion order. If the iterable passed is non-empty but
+ * contains no pending promises, the returned promise is still asynchronously (instead of synchronously)
+ * rejected.
+ */
+export function createAsyncAnyPromise<T>(values: Iterable<T | PromiseLike<T>>, timeout?: number): IPromise<Awaited<T>>;
+        
+/**
+ * The `createAsyncAnyPromise` method takes an array of promises as input and returns a single Promise.
+ * This returned promise fulfills when any of the input's promises fulfills, with this first fulfillment value.
+ * It rejects when all of the input's promises reject (including when an empty iterable is passed), with an
+ * AggregateError containing an array of rejection reasons.
+ * @since 0.5.0
+ * @group Async
+ * @group Promise
+ * @group Any
+ * @param values - An Array promises.
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A new Promise that is:
+ * - Already rejected, if the iterable passed is empty.
+ * - Asynchronously fulfilled, when any of the promises in the given iterable fulfills. The fulfillment value
+ * is the fulfillment value of the first promise that was fulfilled.
+ * - Asynchronously rejected, when all of the promises in the given iterable reject. The rejection reason is
+ * an AggregateError containing an array of rejection reasons in its errors property. The errors are in the
+ * order of the promises passed, regardless of completion order. If the iterable passed is non-empty but
+ * contains no pending promises, the returned promise is still asynchronously (instead of synchronously)
+ * rejected.
+ */
+export function createAsyncAnyPromise<T extends readonly unknown[] | []>(values: T, timeout?: number): IPromise<Awaited<T[number]>> {
+    !_anyAsyncCreator && (_anyAsyncCreator = _createAnyPromise(createAsyncPromise));
+    return _anyAsyncCreator.v(values, timeout);
 }
