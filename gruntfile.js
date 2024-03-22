@@ -39,11 +39,11 @@ module.exports = function (grunt) {
             "ts_async": {
                 // Default ES5
                 tsconfig: "./lib/tsconfig.json",
-                outDir: "./lib/dist-es5"
+                outDir: "./lib/dist/es5/mod"
             },
             "ts_async_es6": {
                 tsconfig: "./lib/tsconfig.es6.json",
-                outDir: "./lib/dist-es6"
+                outDir: "./lib/dist/es6/mod"
             },
             "ts_async-test": {
                 tsconfig: "./lib/test/tsconfig.test.json",

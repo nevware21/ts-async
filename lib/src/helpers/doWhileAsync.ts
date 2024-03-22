@@ -43,6 +43,18 @@ const _doneChk = /*#__PURE__*/<T>(isDone: boolean, state: IWhileState<T>, value:
  * callback function returns a promise the while loop will be asynchronous and an {@link IPromise}
  * will be returned and resolved with the last value returned by the callback or rejected if the
  * callback promise rejects or throws an error.
+ * @since 0.5.0
+ * @group Loop
+ * @typeParam T - Identifies the element type returned by the callback function.
+ * @param callbackFn A function that will be called until the `state.isDone` flag is set to `true`
+ * the function will receive a single {@link IWhileState state} argument. The callback function
+ * may return either a value or a promise, if a promise is returned the while loop will wait
+ * until the promise is resolved before calling the callback function again.
+ * @param isDoneFn An optional function that will be called after the callback function is called,
+ * that can be used to stop the while loop. The function will receive a single {@link IWhileState state}
+ * argument. If the function returns `true` the while loop will stop, otherwise the while loop will continue.
+ * @param thisArg An object to which the this keyword can refer in the callbackfn function.
+ * If thisArg is omitted, null or undefined the array will be used as the this value.
  * @remarks
  * - If an `isDoneFn` is provided the `state.isDone` property will be set to the provided value and
  * is accessible withing the callback function. The callbackFn may overwrite the value of the
@@ -63,18 +75,6 @@ const _doneChk = /*#__PURE__*/<T>(isDone: boolean, state: IWhileState<T>, value:
  * loop will wait until the promise is resolved before calling the callback function again.
  * - If the callback function throws an error when executing `synchronously` the exception will
  * also be thrown `synchronously` otherwise the returned promise will be rejected with the error.
- * @since 0.5.0
- * @group Loop
- * @typeParam T - Identifies the element type returned by the callback function.
- * @param callbackFn A function that will be called until the `state.isDone` flag is set to `true`
- * the function will receive a single {@link IWhileState state} argument. The callback function
- * may return either a value or a promise, if a promise is returned the while loop will wait
- * until the promise is resolved before calling the callback function again.
- * @param isDoneFn An optional function that will be called after the callback function is called,
- * that can be used to stop the while loop. The function will receive a single {@link IWhileState state}
- * argument. If the function returns `true` the while loop will stop, otherwise the while loop will continue.
- * @param thisArg An object to which the this keyword can refer in the callbackfn function.
- * If thisArg is omitted, null or undefined the array will be used as the this value.
  * @example
  * ```ts
  * // Synchronous example

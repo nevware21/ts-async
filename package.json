@@ -33,12 +33,13 @@
         "task scheduler"
     ],
     "main": "lib/dist/es5/main/ts-async.js",
-    "module": "lib/dist-es5/index.js",
-    "esnext": "lib/dist-es6/index.js",
-    "types": "lib/types/index.d.ts",    
+    "esnext:main": "lib/dist/es6/main/ts-async.js",
+    "module": "lib/dist/es5/mod/index.js",
+    "esnext": "lib/dist/es6/mod/index.js",
+    "types": "lib/dist/types/ts-async.d.ts",    
     "scripts": {
         "postinstall": "node common/scripts/install-run-rush.js update --full",
-        "build": "rush build && npm run pre-proc -- -restore && npm run size",
+        "build": "rush build && npm run pre-proc -- -restore",
         "rebuild": "rush rebuild && npm run pre-proc -- -restore && npm run size",
         "test": "rush test",
         "lint": "grunt ts_async-lint",
@@ -78,7 +79,7 @@
         "node": ">= 0.8.0"
     },
     "dependencies": {
-        "@nevware21/ts-utils": ">= 0.10.5 < 2.x"
+        "@nevware21/ts-utils": ">= 0.11.0 < 2.x"
     },
     "devDependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
@@ -111,53 +112,53 @@
     "size-limit": [
         {
             "name": "es5-full",
-            "path": "lib/dist-es5/index.js",
+            "path": "lib/dist/es5/mod/index.js",
             "limit": "16 kb",
             "brotli": false,
             "ignore": [
-                "lib/dist-es5/polyfills.js",
-                "lib/dist-es5/polyfills.*.js"
+                "lib/dist/es5/mod/polyfills.js",
+                "lib/dist/es5/mod/polyfills.*.js"
             ]
         },
         {
             "name": "es6-full",
-            "path": "lib/dist-es6/index.js",
+            "path": "lib/dist/es6/mod/index.js",
             "limit": "15 kb",
             "brotli": false,
             "ignore": [
-                "lib/dist-es6/polyfills.js",
-                "lib/dist-es6/polyfills.*.js"
+                "lib/dist/es6/mod/polyfills.js",
+                "lib/dist/es6/mod/polyfills.*.js"
             ]
         },
         {
             "name": "es5-zip",
-            "path": "lib/dist-es5/index.js",
+            "path": "lib/dist/es5/mod/index.js",
             "limit": "7 Kb",
             "gzip": true,
             "ignore": [
-                "lib/dist-es5/polyfills.js",
-                "lib/dist-es5/polyfills.*.js"
+                "lib/dist/es5/mod/polyfills.js",
+                "lib/dist/es5/mod/polyfills.*.js"
             ]
         },
         {
             "name": "es6-zip",
-            "path": "lib/dist-es6/index.js",
+            "path": "lib/dist/es6/mod/index.js",
             "limit": "7 Kb",
             "gzip": true,
             "ignore": [
-                "lib/dist-es6/polyfills.js",
-                "lib/dist-es6/polyfills.*.js"
+                "lib/dist/es6/mod/polyfills.js",
+                "lib/dist/es6/mod/polyfills.*.js"
             ]
         },
         {
             "name": "es5-promise",
-            "path": "lib/dist-es5/index.js",
+            "path": "lib/dist/es5/mod/index.js",
             "limit": "8 kb",
             "import": "{ createAsyncPromise }",
             "brotli": false,
             "ignore": [
-                "lib/dist-es5/polyfills.js",
-                "lib/dist-es5/polyfills.*.js"
+                "lib/dist/es5/mod/polyfills.js",
+                "lib/dist/es5/mod/polyfills.*.js"
             ]
         } 
     ]

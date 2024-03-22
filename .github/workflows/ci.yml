@@ -38,3 +38,6 @@ jobs:
       run: npm run test --verbose
     - name: Report Coverage
       run: npm run codecov
+    - name: Size tests
+      if: matrix.node == 20 || matrix.node == 18 # Only run size tests on the latest Node.js versions
+      run: npm run size

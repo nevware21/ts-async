@@ -11,7 +11,7 @@ import { IStateContext } from "./interfaces/IStateContext";
 import { ILine } from "./getLines";
 import { processDirective } from "./processDirective";
 import { IState } from "./interfaces/IState";
-import { DefinedState } from "./constants";
+import { DefinedState, DirectiveType } from "./constants";
 
 const IS_DIRECTIVE = /^(\s*)\/\/\s{0,1}#([^:].*)$/;
 
@@ -19,6 +19,7 @@ const calcState = (context: IStateContext): IState => {
     let name: string = "";
     let prefix: string = "";
     let theState: DefinedState = DefinedState.NotSet;
+    let directive: DirectiveType = DirectiveType.NotSet;
     
     arrForEach(context.states, (state) => {
         // Any Not defined causes the remaining items to be bypassed
@@ -26,6 +27,7 @@ const calcState = (context: IStateContext): IState => {
             name = state.name;
             theState = DefinedState.NotDefined;
             prefix = state.prefix;
+            directive = state.directive;
             return -1;
         }
     });
@@ -33,7 +35,8 @@ const calcState = (context: IStateContext): IState => {
     return {
         name: name,
         state: theState,
-        prefix: prefix || ""
+        prefix: prefix || "",
+        directive: directive
     }
 }
 

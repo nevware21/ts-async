@@ -11,3 +11,13 @@ export const enum DefinedState {
     Defined = 1,
     NotDefined = 2
 }
+
+export const enum DirectiveType {
+    NotSet = 0,
+    IfDef = 1,
+    IfNDef = 2,
+    EndIf = 3,
+    If = 4,
+    Else = 5,
+    Elif = 6
+}

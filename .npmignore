@@ -8,8 +8,6 @@
 !tsconfig.json
 !/README.md
 !/LICENSE
-!lib/dist-esm/**
 !lib/dist/**
 !lib/bundle/**
-!lib/src/**
 !lib/types/**

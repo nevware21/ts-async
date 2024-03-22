@@ -9,7 +9,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as globby from "globby";
-import { arrForEach } from "@nevware21/ts-utils";
+import { arrForEach, objForEachKey, strSplit, strTrim } from "@nevware21/ts-utils";
 import { undefSrc } from "./undef";
 import { IStateContext } from "./interfaces/IStateContext";
 import { LineEnding, getLines } from "./getLines";
@@ -18,7 +18,7 @@ import { convertFile } from "./convertFile";
 let preProcDef = "../pre-proc.json";
 let repoRoot: string = "";
 let sourceGroup: string;
-let definitionGroup: string;
+let definitionGroups: string[];
 let cfgRepoRoot: string;
 let restoreOnly: boolean;
 let globalContext: IStateContext = {
@@ -40,11 +40,11 @@ function showHelp() {
     console.log("");
     console.log(scriptName + " [<definitions> [<group>]] [-D <name>]*");
     console.log("--------------------------");
+    console.log(" <definitions>    - Use the global group definitions, this is a comma separated list of groups to process");
     console.log(" <group>          - Identifies the group of projects to process");
-    console.log(" <definitions>    - Import the global group definitions");
     console.log(" -D <name>        - Define the named variable, can be specified more than once");
     console.log(" -C <config file> - The json config file to use");
-    console.log(" -R <reopRoot>    - The repository root");
+    console.log(" -R <repoRoot>    - The repository root");
 }
 
 function parseArgs(): boolean {
@@ -83,9 +83,9 @@ function parseArgs(): boolean {
                 console.error("!!! Unknown switch [" + theArg + "] detected");
                 return false;
             }
-        } else if (!definitionGroup) {
-            definitionGroup = theArg;
-            console.log(" - Using " + definitionGroup);
+        } else if (!definitionGroups) {
+            definitionGroups = strSplit(theArg, ",");
+            console.log(" - Using " + definitionGroups.join(","));
         } else if (!sourceGroup) {
             sourceGroup = theArg;
             console.log(" - Using " + sourceGroup);
@@ -124,15 +124,17 @@ function getGroupDefinitions() {
 
     let defaults = groupJson.default || {};
 
-    if (!definitionGroup) {
-        definitionGroup = defaults.definition || "";
+    if (!definitionGroups) {
+        definitionGroups = strSplit(defaults.definition || "", ",");
     }
 
-    let groupDefines = (groupJson.definitions || {})[definitionGroup] || {};
-    Object.keys(groupDefines).forEach((key) => {
-        if (!globalContext.defs[key]) {
-            globalContext.defs[key] = groupDefines[key];
-        }
+    arrForEach(definitionGroups, (theGroup) => {
+        let groupDefines = (groupJson.definitions || {})[strTrim(theGroup)] || {};
+        objForEachKey(groupDefines, (key, value) => {
+            if (!globalContext.defs[key]) {
+                globalContext.defs[key] = value;
+            }
+        });
     });
 
     if (!sourceGroup) {
