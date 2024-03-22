@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { objDefineProp } from "@nevware21/ts-utils";
+import { objDefineProperties } from "@nevware21/ts-utils";
 
 let _debugState: any;
 let _debugResult: any;
@@ -53,9 +53,12 @@ export function _addDebugState(thePromise: any, stateFn: () => string, resultFn:
     _debugResult = _debugResult || { toString: () => "[[PromiseResult]]" };
     _debugHandled = _debugHandled || { toString: () => "[[PromiseIsHandled]]" };
     
-    objDefineProp(thePromise, _debugState, { get: stateFn });
-    objDefineProp(thePromise, _debugResult, { get: resultFn });
-    objDefineProp(thePromise, _debugHandled, { get: handledFn });
+    let props: PropertyDescriptorMap = {};
+    props[_debugState] = { get: stateFn };
+    props[_debugResult] = { get: resultFn };
+    props[_debugHandled] = { get: handledFn };
+
+    objDefineProperties(thePromise, props);
 }
 
 /**

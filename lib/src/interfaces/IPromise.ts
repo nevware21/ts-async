@@ -166,7 +166,7 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
      * // expected output: Uh-oh!
      * ```
      */
-     catch<TResult = never>(onRejected?: ((reason: any) => TResult | IPromise<TResult>) | undefined | null): Promise<T | TResult>;
+    catch<TResult = never>(onRejected?: ((reason: any) => TResult | IPromise<TResult>) | undefined | null): Promise<T | TResult>;
  
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -195,32 +195,4 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
      * ```
      */
     finally(onfinally?: FinallyPromiseHandler): IPromise<T>
-
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     * @example
-     * ```ts
-     * function doFunction() {
-     *   return createPromise((resolve, reject) => {
-     *     if (Math.random() > 0.5) {
-     *       resolve('Function has completed');
-     *     } else {
-     *       reject(new Error('Function failed to process'));
-     *     }
-     *   });
-     * }
-     *
-     * doFunction().then((data) => {
-     *     console.log(data);
-     * }).catch((err) => {
-     *     console.error(err);
-     * }).finally(() => {
-     *     console.log('Function processing completed');
-     * });
-     * ```
-     */
-    finally(onFinally?: FinallyPromiseHandler): Promise<T>;
 }

@@ -2,7 +2,7 @@
  * @nevware21/ts-async
  * https://github.com/nevware21/ts-async
  *
- * Copyright (c) 2022 Nevware21
+ * Copyright (c) 2024 Nevware21
  * Licensed under the MIT license.
  */
 

@@ -6,10 +6,11 @@
  * Licensed under the MIT license.
  */
 
-import { DefinedState } from "../constants";
+import { DefinedState, DirectiveType } from "../constants";
 
 export interface IState {
     name: string;
     state: DefinedState;
     prefix: string;
+    directive: DirectiveType
 }
