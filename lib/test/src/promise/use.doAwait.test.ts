@@ -7,16 +7,19 @@
  */
 
 import { assert } from "chai";
-import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objForEachKey, objHasOwn, scheduleTimeout, setBypassLazyCache, setDefaultIdleTimeout } from "@nevware21/ts-utils";
-import { createAsyncAllPromise, createAsyncPromise, createAsyncRejectedPromise } from "../../../src/promise/asyncPromise";
+import { CreateIteratorContext, arrForEach, createIterable, dumpObj, getGlobal, isNode, isWebWorker, objForEachKey, objHasOwn, scheduleTimeout, setBypassLazyCache, setDefaultIdleTimeout } from "@nevware21/ts-utils";
+import { createAsyncAllPromise, createAsyncAllSettledPromise, createAsyncPromise, createAsyncRacePromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";
 import { doAwait, doAwaitResponse } from "../../../src/promise/await";
 import { setPromiseDebugState } from "../../../src/promise/debug";
-import { createIdleAllPromise, createIdlePromise, createIdleRejectedPromise } from "../../../src/promise/idlePromise";
-import { createNativeAllPromise, createNativePromise, createNativeRejectedPromise } from "../../../src/promise/nativePromise";
-import { createSyncAllPromise, createSyncPromise, createSyncRejectedPromise } from "../../../src/promise/syncPromise";
+import { createIdleAllPromise, createIdleAllSettledPromise, createIdlePromise, createIdleRacePromise, createIdleRejectedPromise, createIdleResolvedPromise } from "../../../src/promise/idlePromise";
+import { createNativeAllPromise, createNativeAllSettledPromise, createNativePromise, createNativeRacePromise, createNativeRejectedPromise, createNativeResolvedPromise } from "../../../src/promise/nativePromise";
+import { createSyncAllPromise, createSyncAllSettledPromise, createSyncPromise, createSyncRacePromise, createSyncRejectedPromise, createSyncResolvedPromise } from "../../../src/promise/syncPromise";
 import { PromiseExecutor } from "../../../src/interfaces/types";
 import { PolyPromise } from "../../../src/polyfills/promise";
 import { IPromise } from "../../../src/interfaces/IPromise";
+import { IPromiseResult } from "../../../src/interfaces/IPromiseResult";
+import { createAllPromise, createAllSettledPromise, createPromise, createRacePromise, createRejectedPromise, createResolvedPromise, setCreatePromiseImpl } from "../../../src/promise/promise";
+import { createTimeoutPromise } from "../../../src/promise/timeoutPromise";
 
 function _expectException(cb: () => void, message: string) {
     try {
@@ -64,8 +67,11 @@ function _fail(reason: any) {
 
 interface TestDefinition {
     creator: <T>(executor: PromiseExecutor<T>) => IPromise<T>;
+    resolved: <T>(value: T) => IPromise<T>;
     rejected: <T>(reason: any) => IPromise<T>;
     all: <T>(input: PromiseLike<T>[], timeout?: number) => IPromise<T[]>;
+    creatorAllSettled: <T>(values: Iterable<T | PromiseLike<T>>, timeout?: number) => IPromise<IPromiseResult<Awaited<T>>[]>;
+    creatorRace: <T>(values: Iterable<T | PromiseLike<T>>, timeout?: number) => IPromise<Awaited<T>>;
     checkState: boolean;
     checkChainedState: boolean;
 }
@@ -79,6 +85,9 @@ let testImplementations: TestImplementations = {
         },
         rejected: Promise.reject.bind(Promise),
         all: Promise.all.bind(Promise),
+        resolved: Promise.resolve.bind(Promise),
+        creatorAllSettled: Promise.allSettled.bind(Promise),
+        creatorRace: Promise.race.bind(Promise),
         checkState: false,
         checkChainedState: false
     },
@@ -88,6 +97,9 @@ let testImplementations: TestImplementations = {
         },
         rejected: createNativeRejectedPromise,
         all: createNativeAllPromise,
+        resolved: createNativeResolvedPromise,
+        creatorAllSettled: createNativeAllSettledPromise,
+        creatorRace: createNativeRacePromise,
         checkState: true,
         checkChainedState: false
     },
@@ -97,6 +109,9 @@ let testImplementations: TestImplementations = {
         },
         rejected: createAsyncRejectedPromise,
         all: createAsyncAllPromise,
+        resolved: createAsyncResolvedPromise,
+        creatorAllSettled: createAsyncAllSettledPromise,
+        creatorRace: createAsyncRacePromise,
         checkState: true,
         checkChainedState: true
     },
@@ -106,6 +121,9 @@ let testImplementations: TestImplementations = {
         },
         rejected: createIdleRejectedPromise,
         all: createIdleAllPromise,
+        resolved: createIdleResolvedPromise,
+        creatorAllSettled: createIdleAllSettledPromise,
+        creatorRace: createIdleRacePromise,
         checkState: true,
         checkChainedState: true
     },
@@ -115,6 +133,9 @@ let testImplementations: TestImplementations = {
         },
         rejected: createSyncRejectedPromise,
         all: createSyncAllPromise,
+        resolved: createSyncResolvedPromise,
+        creatorAllSettled: createSyncAllSettledPromise,
+        creatorRace: createSyncRacePromise,
         checkState: true,
         checkChainedState: true
     },
@@ -124,8 +145,21 @@ let testImplementations: TestImplementations = {
         },
         rejected: PolyPromise.reject,
         all: PolyPromise.all,
+        resolved: PolyPromise.resolve,
+        creatorAllSettled: PolyPromise.allSettled,
+        creatorRace: PolyPromise.race,
         checkState: true,
         checkChainedState: true
+    },
+    "default": {
+        creator: createPromise,
+        resolved: createResolvedPromise,
+        rejected: createRejectedPromise,
+        all: createAllPromise,
+        creatorAllSettled: createAllSettledPromise,
+        creatorRace: createRacePromise,
+        checkState: false,
+        checkChainedState: false
     }
 }
 
@@ -152,6 +186,10 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
     let createNewPromise = definition.creator;
     let createNewAllPromise = definition.all;
+    let createAllSettledPromise = definition.creatorAllSettled;
+    let createRejectedPromise = definition.rejected;
+    let createResolvedPromise = definition.resolved;
+    let createRacePromise = definition.creatorRace;
     let checkState = definition.checkState;
     let checkChainedState = definition.checkChainedState;
 
@@ -163,6 +201,12 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
         setPromiseDebugState(true, _debug);
         
+        if (testKey === "default") {
+            setCreatePromiseImpl(null as any);
+        // } else {
+        //     setCreatePromiseImpl(definition.creator);
+        }
+                
         // Disable lazy caching
         setBypassLazyCache(true);
         setDefaultIdleTimeout(100);
@@ -1000,7 +1044,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
                     } else {
                         throw "Failed to trigger and handle the unhandledRejection";
                     }
-                }, 10);
+                }, 150);
             }), (result) => {
                 done();
             }, _fail);
@@ -1114,6 +1158,238 @@ function batchTests(testKey: string, definition: TestDefinition) {
                 assert.equal(values.length, 2, "No elements should have been returned");
         
                 assert.ok(values === values2);
+                done();
+            }, (reason) => {
+                assert.fail("Should not have been rejected");
+                done(reason);
+            });
+        });
+    });
+
+    describe("createAllSettledPromise with Iterable", () => {
+        it("check create all settled with nothing", (done) => {
+            let fibCtx: CreateIteratorContext<number> = {
+                n: function() {
+                    // Return done
+                    return true;
+                }
+            };
+            
+            let theIterator = createIterable<number>(fibCtx);
+            let promise = createAllSettledPromise(theIterator);
+
+            doAwait(promise, (values) => {
+                assert.ok(values, "A values object should have been returned");
+                assert.equal(values.length, 0, "No elements should have been returned");
+
+                doAwait(promise, (values2) => {
+                    assert.ok(values, "A values object should have been returned");
+                    assert.equal(values.length, 0, "No elements should have been returned");
+    
+                    assert.ok(values === values2);
+
+                    done();
+                }, (reason) => {
+                    assert.fail("Should not have been rejected");
+                    done(reason);
+                });
+            }, (reason) => {
+                assert.fail("Should not have been rejected");
+                done(reason);
+            });
+        });
+
+        it("check create all settled with some values", (done) => {
+            let current = 0;
+            let next = 1;
+            let fibCtx: CreateIteratorContext<number> = {
+                n: function() {
+                    fibCtx.v = current;
+                    current = next;
+                    next = fibCtx.v + next;
+            
+                    // Stop once the value is > 32
+                    return next > 32;
+                },
+                r: function(value) {
+                    return value;
+                }
+            };
+            
+            let theIterator = createIterable<number>(fibCtx);
+            let promise = createAllSettledPromise(theIterator);
+    
+            doAwait(promise, (values) => {
+                assert.ok(values, "A values object should have been returned");
+                assert.equal(values.length, 7, "No elements should have been returned");
+                assert.deepEqual(values.map((v) => v.status), [ "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled" ]);
+                assert.deepEqual(values.map((v) => v.value), [ 0, 1, 1, 2, 3, 5, 8 ]);
+
+                doAwait(promise, (values2) => {
+                    assert.ok(values, "A values object should have been returned");
+                    assert.equal(values.length, 7, "No elements should have been returned");
+                    assert.deepEqual(values.map((v) => v.status), [ "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled", "fulfilled" ]);
+                    assert.deepEqual(values.map((v) => v.value), [ 0, 1, 1, 2, 3, 5, 8 ]);
+
+                    assert.ok(values === values2);
+                    assert.equal(values, values2);
+
+                    done();
+                }, (reason) => {
+                    assert.fail("Should not have been rejected");
+                    done(reason);
+                });
+            }, (reason) => {
+                assert.fail("Should not have been rejected");
+                done(reason);
+            });
+        });
+    });
+
+    describe("createAllSettledPromise with rejected", () => {
+        it("should handle a mixture of fulfilled and rejected promise values", (done) => {
+            const promises = [
+                createResolvedPromise("resolved1"),
+                createRejectedPromise("rejected1"),
+                createResolvedPromise("resolved2"),
+                createRejectedPromise("rejected2")
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createAllSettledPromise(theIterator);
+
+            doAwait(promise, (values) => {
+                assert.deepEqual(values, [
+                    { status: "fulfilled", value: "resolved1" },
+                    { status: "rejected", reason: "rejected1" },
+                    { status: "fulfilled", value: "resolved2" },
+                    { status: "rejected", reason: "rejected2" }
+                ]);
+
+                done();
+            }, (reason) => {
+                assert.fail("Should not have been rejected");
+                done(reason);
+            });
+        });
+    });
+
+    describe("createRacePromise with Array", () => {
+        it("should resolve with the value of the first resolved promise", (done) => {
+            const promises = [
+                createNewPromise((resolve) => setTimeout(() => resolve("slow"), 100)),
+                createNewPromise((resolve) => setTimeout(() => resolve("fast"), 50)),
+                createNewPromise((resolve) => setTimeout(() => resolve("slowest"), 150))
+            ];
+
+            const promise = createRacePromise(promises);
+
+            doAwait(promise, (value) => {
+                assert.equal(value, "fast");
+                done();
+            }, (reason) => {
+                assert.fail("Should not have been rejected");
+                done();
+            });
+        });
+
+        it("should reject with the reason of the first rejected promise", (done) => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("slow"), 100)),
+                createNewPromise((_, reject) => setTimeout(() => reject("fast"), 50)),
+                createNewPromise((_, reject) => setTimeout(() => reject("slowest"), 150))
+            ];
+
+            const promise = createRacePromise(promises);
+
+            doAwait(promise, () => {
+                assert.fail("Should not have been resolved");
+                done();
+            }, (reason) => {
+                assert.equal(reason, "fast");
+                done();
+            });
+        });
+
+        it("should resolve with the value of the first resolved promise", (done) => {
+            const promises = [
+                createResolvedPromise("sync"),
+                createNewPromise((resolve) => setTimeout(() => resolve("fast"), 50)),
+                createNewPromise((resolve) => setTimeout(() => resolve("slowest"), 150))
+            ];
+
+            const promise = createRacePromise(promises);
+
+            doAwait(promise, (value) => {
+                assert.equal(value, "sync");
+
+                // Wait for the slowest promise to resolve so that it doesn't cause an unhandled rejection later
+                doAwait(createTimeoutPromise(200, true), () => {
+                    done();
+                });
+            }, (reason) => {
+                assert.fail("Should not have been rejected");
+                done(reason);
+            });
+        });
+
+        it("should reject with the reason of the first rejected promise", (done) => {
+            const promises = [
+                createRejectedPromise("sync"),
+                createNewPromise((_, reject) => setTimeout(() => reject("fast"), 50)),
+                createNewPromise((_, reject) => setTimeout(() => reject("slowest"), 150))
+            ];
+
+            const promise = createRacePromise(promises);
+
+            doAwait(promise, () => {
+                assert.fail("Should not have been resolved");
+                done();
+            }, (reason) => {
+                assert.equal(reason, "sync");
+                // Wait for the slowest promise to resolve so that it doesn't cause an unhandled rejection later
+                doAwait(createTimeoutPromise(200, true), () => {
+                    done();
+                });
+            });
+        });
+    });
+
+    describe("createRacePromise with Iterable", () => {
+        it("should resolve with the value of the first resolved promise", (done) => {
+            const promises = [
+                createNewPromise((resolve) => setTimeout(() => resolve("slow"), 100)),
+                createNewPromise((resolve) => setTimeout(() => resolve("fast"), 50)),
+                createNewPromise((resolve) => setTimeout(() => resolve("slowest"), 150))
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createRacePromise(theIterator);
+
+            doAwait(promise, (value) => {
+                assert.equal(value, "fast");
+                done();
+            }, (reason) => {
+                assert.fail("Should not have been rejected");
+                done(reason);
+            });
+        });
+
+        it("should reject with the reason of the first rejected promise", (done) => {
+            const promises = [
+                createNewPromise((_, reject) => setTimeout(() => reject("slow"), 100)),
+                createNewPromise((_, reject) => setTimeout(() => reject("fast"), 50)),
+                createNewPromise((_, reject) => setTimeout(() => reject("slowest"), 150))
+            ];
+
+            const theIterator = promises[Symbol.iterator]();
+            const promise = createRacePromise(theIterator);
+
+            doAwait(promise, () => {
+                assert.fail("Should not have been resolved");
+                done();
+            }, (reason) => {
+                assert.equal(reason, "fast");
                 done();
             });
         });

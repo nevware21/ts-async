@@ -6,16 +6,17 @@
  * Licensed under the MIT license.
  */
 
-import { getLazy, ICachedValue, ILazyValue } from "@nevware21/ts-utils";
-import { _createAllPromise, _createAllSettledPromise, _createRejectedPromise, _createResolvedPromise } from "./base";
+import { createCachedValue, ICachedValue } from "@nevware21/ts-utils";
+import { _createAllPromise, _createAllSettledPromise, _createAnyPromise, _createRacePromise, _createRejectedPromise, _createResolvedPromise } from "./base";
 import { IPromise } from "../interfaces/IPromise";
 import { createNativePromise } from "./nativePromise";
 import { PromiseExecutor } from "../interfaces/types";
 import { IPromiseResult } from "../interfaces/IPromiseResult";
 
-let _promiseCreator: ILazyValue<<T>(executor: PromiseExecutor<T>, timeout?: number) => IPromise<T>>;
+let _promiseCreator: ICachedValue<<T>(executor: PromiseExecutor<T>, timeout?: number) => IPromise<T>>;
 let _allSettledCreator: ICachedValue<<T extends readonly unknown[] | []>(input: T, timeout?: number) => IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }>>;
-
+let _raceCreator: ICachedValue<<T extends readonly unknown[] | []>(values: T, timeout?: number) => IPromise<Awaited<T[number]>>>;
+let _anyCreator: ICachedValue<<T extends readonly unknown[] | []>(values: T, timeout?: number) => IPromise<Awaited<T[number]>>>;
 
 /**
  * Set the default promise implementation to use when calling `createPromise`; `createAllPromise`; `createResolvedPromise`
@@ -30,7 +31,7 @@ let _allSettledCreator: ICachedValue<<T extends readonly unknown[] | []>(input: 
 export function setCreatePromiseImpl(
     creator: <T>(executor: PromiseExecutor<T>, timeout?: number) => IPromise<T>
 ) {
-    _promiseCreator = creator ? getLazy(() => creator) : null;
+    _promiseCreator = creator ? createCachedValue(creator) : null;
 }
 
 /**
@@ -43,7 +44,7 @@ export function setCreatePromiseImpl(
  * @param timeout - [Optional] timeout to wait before processing the items, defaults to zero.
  */
 export function createPromise<T>(executor: PromiseExecutor<T>, timeout?: number): IPromise<T>  {
-    !_promiseCreator && (_promiseCreator = getLazy(() => createNativePromise));
+    !_promiseCreator && (_promiseCreator = createCachedValue(createNativePromise));
 
     return _promiseCreator.v.call(this, executor, timeout);
 }
@@ -69,6 +70,7 @@ export function createPromise<T>(executor: PromiseExecutor<T>, timeout?: number)
  * </ul>
  */
 export const createAllPromise: <T>(input: Iterable<PromiseLike<T>>, timeout?: number) => IPromise<T[]> = /*#__PURE__*/_createAllPromise(createPromise);
+
 
 /**
  * Returns a single asynchronous Promise instance that is already resolved with the given value. If the value passed is
@@ -133,7 +135,7 @@ export const createRejectedPromise: <T = unknown>(reason: any, timeout?: number)
  * // ]
  * ```
  */
-export function createAllSettledPromise<T>(values: Iterable<T | PromiseLike<T>> | Iterator<T | PromiseLike<T>>, timeout?: number): IPromise<IPromiseResult<Awaited<T>>[]>;
+export function createAllSettledPromise<T>(values: Iterable<T | PromiseLike<T>>, timeout?: number): IPromise<IPromiseResult<Awaited<T>>[]>;
 
 /**
  * Returns a single Promise instance that resolves to an array of the results from the input promises.
@@ -176,4 +178,96 @@ export function createAllSettledPromise<T>(values: Iterable<T | PromiseLike<T>> 
 export function createAllSettledPromise<T extends readonly unknown[] | []>(input: T, timeout?: number): IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }> {
     !_allSettledCreator && (_allSettledCreator = _createAllSettledPromise(createPromise));
     return _allSettledCreator.v(input, timeout);
+}
+
+/**
+ * The `createRacePromise` method takes an array of promises as input and returns a single Promise. This returned promise
+ * settles with the eventual state of the first promise that settles.
+ * @description The `createRacePromise` method is one of the promise concurrency methods. It's useful when you want the first
+ * async task to complete, but do not care about its eventual state (i.e. it can either succeed or fail).
+ * If the iterable contains one or more non-promise values and/or an already settled promise, then Promise.race() will settle to
+ * the first of these values found in the iterable.
+ * @since 0.5.0
+ * @group Alias
+ * @group Promise
+ * @group Race
+ * @param values - An iterable object of promises.
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A Promise that settles with the eventual state of the first promise in the iterable to settle. In other words, it fulfills if the
+ * first promise to settle is fulfilled, and rejects if the first promise to settle is rejected. The returned promise remains pending forever
+ * if the iterable passed is empty. If the iterable passed is non-empty but contains no pending promises, the returned promise will settle
+ * based on the current promise implementation.
+ */
+export function createRacePromise<T>(values: Iterable<T | PromiseLike<T>>, timeout?: number): IPromise<Awaited<T>>;
+
+/**
+ * The `createRacePromise` method takes an array of promises as input and returns a single Promise. This returned promise
+ * settles with the eventual state of the first promise that settles.
+ * @description The `createRacePromise` method is one of the promise concurrency methods. It's useful when you want the first
+ * async task to complete, but do not care about its eventual state (i.e. it can either succeed or fail).
+ * If the iterable contains one or more non-promise values and/or an already settled promise, then Promise.race() will settle to
+ * the first of these values found in the iterable.
+ * @since 0.5.0
+ * @group Alias
+ * @group Promise
+ * @group Race
+ * @param values - An the array of promises.
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A Promise that settles with the eventual state of the first promise in the iterable to settle. In other words, it fulfills if the
+ * first promise to settle is fulfilled, and rejects if the first promise to settle is rejected. The returned promise remains pending forever
+ * if the iterable passed is empty. If the iterable passed is non-empty but contains no pending promises, the returned promise will settle
+ * based on the current promise implementation.
+ */
+export function  createRacePromise<T extends readonly unknown[] | []>(values: T, timeout?: number): IPromise<Awaited<T[number]>> {
+    !_raceCreator && (_raceCreator = _createRacePromise(createPromise));
+    return _raceCreator.v(values, timeout);
+}
+
+/**
+ * The `createAnyPromise` method takes an iterable of promises as input and returns a single Promise.
+ * This returned promise fulfills when any of the input's promises fulfills, with this first fulfillment value.
+ * It rejects when all of the input's promises reject (including when an empty iterable is passed), with an
+ * AggregateError containing an array of rejection reasons.
+ * @since 0.5.0
+ * @group Alias
+ * @group Promise
+ * @group Any
+ * @param values - An iterable object of promises.
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A new Promise that is:
+ * - Already rejected, if the iterable passed is empty.
+ * - Asynchronously fulfilled, when any of the promises in the given iterable fulfills. The fulfillment value
+ * is the fulfillment value of the first promise that was fulfilled.
+ * - Asynchronously rejected, when all of the promises in the given iterable reject. The rejection reason is
+ * an AggregateError containing an array of rejection reasons in its errors property. The errors are in the
+ * order of the promises passed, regardless of completion order. If the iterable passed is non-empty but
+ * contains no pending promises, the returned promise is still asynchronously (instead of synchronously)
+ * rejected.
+ */
+export function createAnyPromise<T>(values: Iterable<T | PromiseLike<T>>, timeout?: number): IPromise<Awaited<T>>;
+        
+/**
+ * The `createAnyPromise` method takes an array of promises as input and returns a single Promise.
+ * This returned promise fulfills when any of the input's promises fulfills, with this first fulfillment value.
+ * It rejects when all of the input's promises reject (including when an empty iterable is passed), with an
+ * AggregateError containing an array of rejection reasons.
+ * @since 0.5.0
+ * @group Alias
+ * @group Promise
+ * @group Any
+ * @param values - An Array promises.
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
+ * @returns A new Promise that is:
+ * - Already rejected, if the iterable passed is empty.
+ * - Asynchronously fulfilled, when any of the promises in the given iterable fulfills. The fulfillment value
+ * is the fulfillment value of the first promise that was fulfilled.
+ * - Asynchronously rejected, when all of the promises in the given iterable reject. The rejection reason is
+ * an AggregateError containing an array of rejection reasons in its errors property. The errors are in the
+ * order of the promises passed, regardless of completion order. If the iterable passed is non-empty but
+ * contains no pending promises, the returned promise is still asynchronously (instead of synchronously)
+ * rejected.
+ */
+export function createAnyPromise<T extends readonly unknown[] | []>(values: T, timeout?: number): IPromise<Awaited<T[number]>> {
+    !_anyCreator && (_anyCreator = _createAnyPromise(createPromise));
+    return _anyCreator.v(values, timeout);
 }

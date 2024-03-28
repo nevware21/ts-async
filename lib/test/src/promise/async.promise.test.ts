@@ -82,9 +82,6 @@ describe("Validate createAsyncPromise() timeout usages", () => {
     });
 
     afterEach(() => {
-        clock.tick(5000);
-        clock.restore();
-
         if (!isNode()) {
             let gbl = getGlobal();
             if (gbl && (objHasOwn(gbl, "onunhandledrejection") || isWebWorker())) {
@@ -94,6 +91,9 @@ describe("Validate createAsyncPromise() timeout usages", () => {
             //console.log("Removing Node Rejection Listener");
             process.off("unhandledRejection", _unhandledNodeRejection);
         }
+
+        clock.tick(5000);
+        clock.restore();
         
         // Re-Ensable lazy caching
         setBypassLazyCache(false);

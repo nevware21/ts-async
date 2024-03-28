@@ -82,9 +82,6 @@ describe("Validate createSyncPromise() timeout usages", () => {
     });
 
     afterEach(() => {
-        clock.tick(5000);
-        clock.restore();
-
         if (!isNode()) {
             let gbl = getGlobal();
             if (gbl && (objHasOwn(gbl, "onunhandledrejection") || isWebWorker())) {
@@ -95,6 +92,9 @@ describe("Validate createSyncPromise() timeout usages", () => {
             process.off("unhandledRejection", _unhandledNodeRejection);
         }
         
+        clock.tick(5000);
+        clock.restore();
+
         // Re-Ensable lazy caching
         setBypassLazyCache(false);
     });

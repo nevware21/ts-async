@@ -9,8 +9,8 @@
 import {
     arrSlice, dumpObj, getKnownSymbol, hasSymbol, isFunction, isPromiseLike, isUndefined,
     throwTypeError, WellKnownSymbols, objToString, scheduleTimeout, ITimerHandler, getWindow, isNode,
-    getGlobal, ILazyValue, objDefine, objDefineProp, lazySafeGetInst, iterForOf, isIterator, isIterable,
-    isArray, arrForEach, createCachedValue, ICachedValue
+    getGlobal, ILazyValue, objDefine, objDefineProp, lazySafeGetInst, iterForOf, isIterable,
+    isArray, arrForEach, createCachedValue, ICachedValue, safe, getInst, createCustomError
 } from "@nevware21/ts-utils";
 import { doAwait, doAwaitResponse } from "./await";
 import { _addDebugState, _promiseDebugEnabled } from "./debug";
@@ -34,6 +34,7 @@ const UNHANDLED_REJECTION = NODE_UNHANDLED_REJECTION.toLowerCase();
 let _currentPromiseId: number[] = [];
 let _uniquePromiseId = 0;
 let _unhandledRejectionTimeout = 10;
+let _aggregationError: ICachedValue<any>;
 
 let _hasPromiseRejectionEvent: ILazyValue<any>;
 
@@ -43,6 +44,28 @@ function dumpFnObj(value: any) {
     }
 
     return dumpObj(value);
+}
+
+//#ifdef DEBUG
+function _getCaller(prefix: string, start: number) {
+    let stack = new Error().stack;
+    if (stack) {
+        let lines = stack.split("\n");
+        if (lines.length > start) {
+            return prefix + ":" + arrSlice(lines, start, start + 5).join("\n") + "\n...";
+        }
+    }
+    return null;
+}
+//#endif
+
+/*#__NO_SIDE_EFFECTS__*/
+function _createAggregationError(values: any[]) {
+    !_aggregationError && (_aggregationError = createCachedValue(safe(getInst, ["AggregationError"]).v || createCustomError("AggregationError", (self, args) => {
+        self.errors = args[0];
+    })));
+
+    return new _aggregationError.v(values);
 }
 
 /**
@@ -57,6 +80,18 @@ function dumpFnObj(value: any) {
  * @param additionalArgs - [Optional] Additional arguments that will be passed to the PromiseCreatorFn
  */
 export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: PromisePendingProcessor, executor: PromiseExecutor<T>, ...additionalArgs: any): IPromise<T>;
+
+/**
+ * @ignore
+ * @internal
+ *
+ * Implementing a simple synchronous promise interface for support within any environment that
+ * doesn't support the Promise API
+ * @param newPromise - The delegate function used to create a new promise object
+ * @param processor - The function to use to process the pending
+ * @param executor - The resolve function
+ * @param additionalArgs - [Optional] Additional arguments that will be passed to the PromiseCreatorFn
+ */
 export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: PromisePendingProcessor, executor: PromiseExecutor<T>): IPromise<T> {
     let additionalArgs = arrSlice(arguments, 3);
     let _state = ePromiseState.Pending;
@@ -72,17 +107,18 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = lazySafeGetInst(STR_PROMISE + "RejectionEvent"));
     
     // https://tc39.es/ecma262/#sec-promise.prototype.then
-    const _then = <TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2> => {
+    function _then<TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2> {
         try {
             _currentPromiseId.push(_id);
             _handled = true;
             _unHandledRejectionHandler && _unHandledRejectionHandler.cancel();
             _unHandledRejectionHandler = null;
 
-            //#ifdef DEBUG
-            _debugLog(_toString(), "then(" + dumpFnObj(onResolved)+ ", " + dumpFnObj(onResolved) +  ")");
-            //#endif
             let thenPromise = newPromise<TResult1, TResult2>(function (resolve, reject) {
+                //#ifdef DEBUG
+                _debugLog(_toString(), _getCaller("_then", 7));
+                //#endif
+
                 // Queue the new promise returned to be resolved or rejected
                 // when this promise settles.
                 _queue.push(function () {
@@ -145,13 +181,13 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     }
 
     // https://tc39.es/ecma262/#sec-promise.prototype.catch
-    const _catch = <TResult1 = T>(onRejected: RejectedPromiseHandler<TResult1>) => {
+    function _catch<TResult1 = T>(onRejected: RejectedPromiseHandler<TResult1>) {
         // Reuse then onRejected to support rejection
         return _then(undefined, onRejected);
     }
 
     // https://tc39.es/ecma262/#sec-promise.prototype.finally
-    const _finally = <TResult1 = T, TResult2 = never>(onFinally: FinallyPromiseHandler): IPromise<TResult1 | TResult2> => {
+    function _finally<TResult1 = T, TResult2 = never>(onFinally: FinallyPromiseHandler): IPromise<TResult1 | TResult2> {
         let thenFinally: any = onFinally;
         let catchFinally: any = onFinally;
         if (isFunction(onFinally)) {
@@ -169,11 +205,11 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         return _then<TResult1, TResult2>(thenFinally as any, catchFinally as any);
     }
 
-    const _strState = () => {
+    function _strState() {
         return STRING_STATES[_state];
     }
 
-    const _processQueue = () => {
+    function _processQueue() {
         if (_queue.length > 0) {
             // The onFulfilled and onRejected handlers must be called asynchronously. Thus,
             // we make a copy of the queue and work on it once the current call stack unwinds.
@@ -185,12 +221,12 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             //#endif
 
             _handled = true;
+            _unHandledRejectionHandler && _unHandledRejectionHandler.cancel();
+            _unHandledRejectionHandler = null;
             processor(pending);
             //#ifdef DEBUG
             _debugLog(_toString(), "Processing done");
             //#endif
-            _unHandledRejectionHandler && _unHandledRejectionHandler.cancel();
-            _unHandledRejectionHandler = null;
 
         } else {
             //#ifdef DEBUG
@@ -199,7 +235,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         }
     }
 
-    const _createSettleIfFn = (newState: ePromiseState, allowState: ePromiseState) => {
+    function _createSettleIfFn(newState: ePromiseState, allowState: ePromiseState) {
         return (theValue: T) => {
             if (_state === allowState) {
                 if (newState === ePromiseState.Resolved && isPromiseLike(theValue)) {
@@ -221,6 +257,9 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                 //#endif
                 _processQueue();
                 if (!_handled && newState === ePromiseState.Rejected && !_unHandledRejectionHandler) {
+                    //#ifdef DEBUG
+                    _debugLog(_toString(), "Setting up unhandled rejection");
+                    //#endif
                     _unHandledRejectionHandler = scheduleTimeout(_notifyUnhandledRejection, _unhandledRejectionTimeout)
                 }
             } else {
@@ -231,8 +270,10 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         };
     }
 
-    const _notifyUnhandledRejection = () => {
+    function _notifyUnhandledRejection() {
         if (!_handled) {
+            // Mark as handled so we don't keep notifying
+            _handled = true;
             if (isNode()) {
                 //#ifdef DEBUG
                 _debugLog(_toString(), "Emitting " + NODE_UNHANDLED_REJECTION);
@@ -272,8 +313,12 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         _thePromise[getKnownSymbol<symbol>(WellKnownSymbols.toStringTag)] = "IPromise";
     }
 
-    const _toString = () => {
-        return "IPromise" + (_promiseDebugEnabled ? "[" + _id + (!isUndefined(_parentId) ? (":" + _parentId) : "") + "]" : "") + " " + _strState() + (_hasResolved ? (" - " + dumpFnObj(_settledValue)) : "");
+    let createStack: string;
+    //#if DEBUG
+    createStack = _getCaller("Created", 5);
+    //#endif
+    function _toString() {
+        return "IPromise" + (_promiseDebugEnabled ? "[" + _id + (!isUndefined(_parentId) ? (":" + _parentId) : "") + "]" : "") + " " + _strState() + (_hasResolved ? (" - " + dumpFnObj(_settledValue)) : "") + (createStack ? " @ " + createStack : "");
     }
 
     _thePromise.toString = _toString;
@@ -293,8 +338,15 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                 _createSettleIfFn(ePromiseState.Resolved, ePromiseState.Pending),
                 _rejectFn);
         } catch (e) {
+            //#ifdef DEBUG
+            _debugLog(_toString(), "Exception thrown: " + dumpFnObj(e));
+            //#endif
             _rejectFn(e);
         }
+
+        //#ifdef DEBUG
+        _debugLog(_toString(), "~Executing");
+        //#endif
     })();
 
     //#ifdef DEBUG
@@ -313,6 +365,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
  * @param newPromise - The delegate function used to create a new promise object the new promise instance.
  * @returns A function to create a promise that will be resolved when all arguments are resolved.
  */
+/*#__NO_SIDE_EFFECTS__*/
 export function _createAllPromise(newPromise: PromiseCreatorFn): <T>(input: Iterable<T | PromiseLike<T>>, ...additionalArgs: any) => IPromise<Awaited<T>[]> {
     return function <T>(input: Iterable<T | PromiseLike<T>>): IPromise<Awaited<T>[]> {
         let additionalArgs = arrSlice(arguments, 1);
@@ -359,6 +412,7 @@ export function _createAllPromise(newPromise: PromiseCreatorFn): <T>(input: Iter
  * @param additionalArgs - Any additional arguments that should be passed to the delegate to assist with the creation of
  * the new promise instance.
  */
+/*#__NO_SIDE_EFFECTS__*/
 export function _createResolvedPromise(newPromise: PromiseCreatorFn): <T>(value: T, ...additionalArgs: any) => IPromise<T> {
     return function <T>(value: T): IPromise<T> {
         let additionalArgs = arrSlice(arguments, 1);
@@ -367,6 +421,9 @@ export function _createResolvedPromise(newPromise: PromiseCreatorFn): <T>(value:
         }
     
         return newPromise((resolve) => {
+            //#ifdef DEBUG
+            _debugLog(String(this), "Resolving Promise");
+            //#endif
             resolve(value);
         }, additionalArgs);
     };
@@ -381,10 +438,14 @@ export function _createResolvedPromise(newPromise: PromiseCreatorFn): <T>(value:
  * @param additionalArgs - Any additional arguments that should be passed to the delegate to assist with the creation of
  * the new promise instance.
  */
+/*#__NO_SIDE_EFFECTS__*/
 export function _createRejectedPromise(newPromise: PromiseCreatorFn): <T>(reason: any, ...additionalArgs: any) => IPromise<T> {
     return function <T>(reason: any): IPromise<T> {
         let additionalArgs = arrSlice(arguments, 1);
         return newPromise((_resolve, reject) => {
+            //#ifdef DEBUG
+            _debugLog(String(this), "Rejecting Promise");
+            //#endif
             reject(reason);
         }, additionalArgs);
     };
@@ -401,6 +462,7 @@ export function _createRejectedPromise(newPromise: PromiseCreatorFn): <T>(reason
  * @param newPromise - The delegate function used to create a new promise object the new promise instance.
  * @returns A function to create a promise that will be resolved when all arguments are resolved.
  */
+/*#__NO_SIDE_EFFECTS__*/
 export function _createAllSettledPromise(newPromise: PromiseCreatorFn, ..._args: any[]): ICachedValue<<T extends readonly unknown[] | []>(input: T, timeout?: number) => IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }>> {
     return createCachedValue(function <T>(input: T, ..._args: any[]): IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }> {
         let additionalArgs = arrSlice(arguments, 1);
@@ -433,8 +495,10 @@ export function _createAllSettledPromise(newPromise: PromiseCreatorFn, ..._args:
 
                 if (isArray(input)) {
                     arrForEach(input, processItem);
-                } else if (isIterator(input) || isIterable(input)) {
+                } else if (isIterable(input)) {
                     iterForOf(input, processItem);
+                } else {
+                    throwTypeError("Input is not an iterable");
                 }
 
                 // Now decrement the pending so that we finish correctly
@@ -442,6 +506,118 @@ export function _createAllSettledPromise(newPromise: PromiseCreatorFn, ..._args:
                 if (pending === 0) {
                     // All promises were either resolved or where not a promise
                     resolve(values);
+                }
+            } catch (e) {
+                reject(e);
+            }
+        }, additionalArgs);
+    });
+}
+
+/**
+ * @ignore
+ * @internal
+ * @since 0.5.0
+ * Returns a function takes an iterable of promises as input and returns a single Promise.
+ * This returned promise settles with the eventual state of the first promise that settles.
+ * @description The returned promise is one of the promise concurrency methods. It's useful when you want
+ * the first async task to complete, but do not care about its eventual state (i.e. it can either succeed
+ * or fail).
+ * @param newPromise - The delegate function used to create a new promise object the new promise instance.
+ * @returns A function to create a promise that will resolve when the first promise to settle is fulfilled,
+ * and rejects if the first promise to settle is rejected. The returned promise remains pending forever
+ * if the iterable passed is empty. If the iterable passed is non-empty but contains no pending promises,
+ * the returned promise is still settled.
+ */
+/*#__NO_SIDE_EFFECTS__*/
+export function  _createRacePromise(newPromise: PromiseCreatorFn, ..._args: any[]): ICachedValue<<T extends readonly unknown[] | []>(values: T, timeout?: number) => IPromise<Awaited<T[number]>>> {
+    return createCachedValue(function <T extends readonly unknown[] | []>(input: T, ..._args: any[]): IPromise<Awaited<T[number]>> {
+        let additionalArgs = arrSlice(arguments, 1);
+        return newPromise<Awaited<T[number]>>((resolve, reject) => {
+            let isDone = false;
+
+            function processItem(item: any) {
+                doAwaitResponse(item, (value) => {
+                    if (!isDone) {
+                        isDone = true;
+                        if (value.rejected) {
+                            reject(value.reason);
+                        } else {
+                            resolve(value.value);
+                        }
+                    }
+                });
+            }
+
+            try {
+                if (isArray(input)) {
+                    arrForEach(input, processItem);
+                } else if (isIterable(input)) {
+                    iterForOf(input, processItem);
+                } else {
+                    throwTypeError("Input is not an iterable");
+                }
+
+            } catch (e) {
+                reject(e);
+            }
+        }, additionalArgs);
+    });
+}
+
+/**
+ * @internal
+ * @ignore
+ * @since 0.5.0
+ * Returns a function takes an iterable of promises as input and returns a single Promise.
+ * This returned promise fulfills when any of the input's promises fulfills, with this first fulfillment
+ * value. It rejects when all of the input's promises reject (including when an empty iterable is passed),
+ * with an AggregateError containing an array of rejection reasons.
+ * @param newPromise - The delegate function used to create a new promise object the new promise instance.
+ * @returns A function to create a promise that will resolve when the any of the input's promises fulfills,
+ * with this first fulfillment value. It rejects when all of the input's promises reject (including when
+ * an empty iterable is passed), with an AggregateError containing an array of rejection reasons.
+ */
+/*#__NO_SIDE_EFFECTS__*/
+export function  _createAnyPromise(newPromise: PromiseCreatorFn, ..._args: any[]): ICachedValue<<T extends readonly unknown[] | []>(values: T) => IPromise<Awaited<T[number]>>> {
+    return createCachedValue(function <T extends readonly unknown[] | []>(input: T, ..._args: any[]): IPromise<Awaited<T[number]>> {
+        let additionalArgs = arrSlice(arguments, 1);
+        return newPromise<Awaited<T[number]>>((resolve, reject) => {
+            let theErros: Array<any> = [] as any;
+            let pending = 1;            // Prefix to 1 so we finish iterating over all of the input promises first
+            let isDone = false;
+
+            function processItem(item: any, idx: number) {
+                pending++;
+                doAwaitResponse(item, (value ) => {
+                    if (!value.rejected) {
+                        isDone = true;
+                        resolve(value.value);
+                        return;
+                    } else {
+                        theErros[idx] = value.reason;
+                    }
+
+                    if (--pending === 0 && !isDone) {
+                        reject(_createAggregationError(theErros));
+                    }
+                });
+            }
+
+            try {
+                if (isArray(input)) {
+                    arrForEach(input, processItem);
+                } else if (isIterable(input)) {
+                    iterForOf(input, processItem);
+                } else {
+                    throwTypeError("Input is not an iterable");
+                }
+
+                // Now decrement the pending so that we finish correctly
+                pending--;
+                if (pending === 0 && !isDone) {
+                    // All promises were either resolved or where not a promise
+                    reject(_createAggregationError(theErros));
                 }
             } catch (e) {
                 reject(e);
