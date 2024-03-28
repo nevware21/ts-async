@@ -31,7 +31,7 @@ function _doneChk<T>(isDone: boolean, state: IWhileState<T>, value: T, thisArg?:
     state.iter++;
 
     return result;
-};
+}
 
 /**
  * Performs a while loop, calling the provided `callbackFn` function until the `state.isDone`
