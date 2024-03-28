@@ -93,25 +93,7 @@ describe("Validate forEachAsync", () => {
 
     });
 
-    it("Asynchronous example using await", async () => {
-        const items = ["item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9", "item10"];
-        const copyItems: Array<string> = [];
-        
-        let result = arrForEachAsync(items, (value, index) => {
-            copyItems.push(value);
-            return createTimeoutPromise(10, true);
-        });
-
-        assert.equal(isPromiseLike(result), true, "The forEach loop did not return a promise");
-        let res = await result;
-
-        assert.equal(res, undefined, "The forEach loop was not canceled");
-
-        assert.equal(copyItems.length, items.length, "The forEach loop did not iterate over all items");
-        assert.deepEqual(copyItems, items);
-    });
-
-    it("Asynchronous example using doAwait", async () => {
+    it("Asynchronous example using doAwait stopping the iteration", async () => {
         const items = ["item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9", "item10"];
         const copyItems: Array<string> = [];
         
@@ -132,6 +114,24 @@ describe("Validate forEachAsync", () => {
             assert.deepEqual(copyItems, arrSlice(items, 0, 6));
         });
 
+    });
+
+    it("Asynchronous example using await", async () => {
+        const items = ["item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9", "item10"];
+        const copyItems: Array<string> = [];
+        
+        let result = arrForEachAsync(items, (value, index) => {
+            copyItems.push(value);
+            return createTimeoutPromise(10, true);
+        });
+
+        assert.equal(isPromiseLike(result), true, "The forEach loop did not return a promise");
+        let res = await result;
+
+        assert.equal(res, undefined, "The forEach loop was not canceled");
+
+        assert.equal(copyItems.length, items.length, "The forEach loop did not iterate over all items");
+        assert.deepEqual(copyItems, items);
     });
 
     it("Asynchronous example using await and stopping iteration", async () => {
