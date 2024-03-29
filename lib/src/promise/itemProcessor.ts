@@ -14,7 +14,13 @@ export type PromisePendingProcessor = (pending: PromisePendingFn[]) => void;
 export type PromisePendingFn = () => void;
 export type PromiseCreatorFn = <T, TResult2 = never>(newExecutor: PromiseExecutor<T>, ...extraArgs: any) => IPromise<T | TResult2>;
 
-const _processPendingItems = /*#__PURE__*/(pending: PromisePendingFn[]) => {
+/**
+ * @internal
+ * @ignore
+ * Return an item processor that processes all of the pending items synchronously
+ * @return An item processor
+ */
+export function syncItemProcessor(pending: PromisePendingFn[]): void {
     arrForEach(pending, (fn: PromisePendingFn) => {
         try {
             fn();
@@ -23,16 +29,6 @@ const _processPendingItems = /*#__PURE__*/(pending: PromisePendingFn[]) => {
             // TODO: Add some form of error reporting (i.e. Call any registered JS error handler so the error is reported)
         }
     });
-}
-
-/**
- * @internal
- * @ignore
- * Return an item processor that processes all of the pending items synchronously
- * @return An item processor
- */
-export function syncItemProcessor(): (pending: PromisePendingFn[]) => void {
-    return _processPendingItems;
 }
 
 /**
@@ -47,7 +43,7 @@ export function timeoutItemProcessor(timeout?: number): (pending: PromisePending
 
     return (pending: PromisePendingFn[]) => {
         scheduleTimeout(() => {
-            _processPendingItems(pending);
+            syncItemProcessor(pending);
         }, callbackTimeout);
     }
 }
@@ -70,7 +66,7 @@ export function idleItemProcessor(timeout?: number): (pending: PromisePendingFn[
 
     return (pending: PromisePendingFn[]) => {
         scheduleIdleCallback((deadline: IdleDeadline) => {
-            _processPendingItems(pending);
+            syncItemProcessor(pending);
         }, options);
     };
 }
