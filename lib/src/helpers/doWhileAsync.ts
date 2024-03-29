@@ -13,7 +13,7 @@ import { doAwait } from "../promise/await";
 import { RejectPromiseHandler, ResolvePromiseHandler } from "../interfaces/types";
 import { IWhileState } from "../interfaces/IWhileState";
 
-const _doneChk = /*#__PURE__*/<T>(isDone: boolean, state: IWhileState<T>, value: T, thisArg?: any) => {
+function _doneChk<T>(isDone: boolean, state: IWhileState<T>, value: T, thisArg?: any) {
     let result: boolean | IPromise<boolean> = isDone;
     state.res = value;
     if (!result) {

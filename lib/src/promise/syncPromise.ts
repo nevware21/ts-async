@@ -30,7 +30,7 @@ let _anySyncCreator: ICachedValue<<T extends readonly unknown[] | []>(values: T,
  * cause the promise to be rejected. The return value of the executor is always ignored
  */
 export function createSyncPromise<T>(executor: PromiseExecutor<T>): IPromise<T>  {
-    return _createPromise(createSyncPromise, syncItemProcessor(), executor);
+    return _createPromise(createSyncPromise, syncItemProcessor, executor);
 }
 
 /**
