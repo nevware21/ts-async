@@ -1,3 +1,15 @@
+# v0.5.0 Mar 29th, 2024
+
+## Changelog
+
+- #115 [Feature] Add size tests
+- #116 [Bug] createAllPromise signature is different from native Promise.all
+- #117 [Feature] Add Asynchronous helper functions
+- #132 [Bug] Package sizes are too large
+- #148 [Feature] Add Race and Any Promise support
+- #149 Update rush.json to 5.118.1
+- #119 Update generation for better Tree-Shaking
+
 # v0.4.0 Dec 13th, 2023
 
 ## Changelog
