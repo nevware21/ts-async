@@ -8,12 +8,17 @@
 
 import { assert } from "chai";
 import { createIdlePromise, setDefaultIdlePromiseTimeout } from "../../../src/promise/idlePromise";
-import { getGlobal } from "@nevware21/ts-utils";
+import { getGlobal, setBypassLazyCache } from "@nevware21/ts-utils";
 import { setPromiseDebugState } from "../../../src/promise/debug";
 
 describe("createIdlePromise", () => {
     beforeEach(() => {
         setDefaultIdlePromiseTimeout();
+        setBypassLazyCache(true);
+    });
+
+    afterEach(() => {
+        setBypassLazyCache(false);
     });
 
     it("should create a new idle promise with timeout from parameter", async () => {

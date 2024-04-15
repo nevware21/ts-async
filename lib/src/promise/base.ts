@@ -9,8 +9,8 @@
 import {
     arrSlice, dumpObj, getKnownSymbol, hasSymbol, isFunction, isPromiseLike, isUndefined,
     throwTypeError, WellKnownSymbols, objToString, scheduleTimeout, ITimerHandler, getWindow, isNode,
-    getGlobal, ILazyValue, objDefine, objDefineProp, lazySafeGetInst, iterForOf, isIterable,
-    isArray, arrForEach, createCachedValue, ICachedValue, safe, getInst, createCustomError
+    getGlobal, objDefine, objDefineProp, iterForOf, isIterable, isArray, arrForEach, createCachedValue,
+    ICachedValue, safe, getInst, createCustomError
 } from "@nevware21/ts-utils";
 import { doAwait, doAwaitResponse } from "./await";
 import { _addDebugState, _promiseDebugEnabled } from "./debug";
@@ -36,7 +36,22 @@ let _uniquePromiseId = 0;
 let _unhandledRejectionTimeout = 10;
 let _aggregationError: ICachedValue<any>;
 
-let _hasPromiseRejectionEvent: ILazyValue<any>;
+/**
+ * [MDN Reference](https://developer.mozilla.org/docs/Web/API/PromiseRejectionEvent)
+ */
+interface _PromiseRejectionEvent extends Event {
+    /**
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/PromiseRejectionEvent/promise)
+     */
+    readonly promise: IPromise<any>;
+
+    /**
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/PromiseRejectionEvent/reason)
+     */
+    readonly reason: any;
+}
+
+let _hasPromiseRejectionEvent: ICachedValue<_PromiseRejectionEvent>;
 
 function dumpFnObj(value: any) {
     if (isFunction(value)) {
@@ -103,8 +118,6 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     let _handled = false;
     let _unHandledRejectionHandler: ITimerHandler = null;
     let _thePromise: IPromise<T>;
-
-    !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = lazySafeGetInst(STR_PROMISE + "RejectionEvent"));
     
     // https://tc39.es/ecma262/#sec-promise.prototype.then
     function _then<TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2> {
@@ -282,6 +295,8 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             } else {
                 let gbl = getWindow() || getGlobal();
     
+                !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = createCachedValue(safe(getInst<_PromiseRejectionEvent>, [STR_PROMISE + "RejectionEvent"]).v));
+
                 //#ifdef DEBUG
                 _debugLog(_toString(), "Emitting " + UNHANDLED_REJECTION);
                 //#endif

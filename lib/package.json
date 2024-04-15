@@ -34,8 +34,8 @@
     ],
     "main": "dist/es5/main/ts-async.js",
     "esnext:main": "dist/es6/main/ts-async.js",
-    "module": "dist/es5/mod/index.js",
-    "esnext": "dist/es6/mod/index.js",
+    "module": "dist/es5/mod/ts-async.js",
+    "esnext": "dist/es6/mod/ts-async.js",
     "types": "dist/types/ts-async.d.ts",    
     "repository": {
         "type": "git",
@@ -74,7 +74,7 @@
     },
 
     "dependencies": {
-        "@nevware21/ts-utils": ">= 0.11.0 < 2.x"
+        "@nevware21/ts-utils": ">= 0.11.2 < 2.x"
     },
     "devDependencies": {
         "@nevware21/tools-pre-proc": "0.1.0",
