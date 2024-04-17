@@ -226,7 +226,7 @@ export function createIdleRacePromise<T>(values: Iterable<T | PromiseLike<T>>, t
  * if the iterable passed is empty. If the iterable passed is non-empty but contains no pending promises, the returned promise will settle
  * asynchronously when the system detects that the runtime is idle.
  */
-export function  createIdleRacePromise<T extends readonly unknown[] | []>(values: T, timeout?: number): IPromise<Awaited<T[number]>> {
+export function createIdleRacePromise<T extends readonly unknown[] | []>(values: T, timeout?: number): IPromise<Awaited<T[number]>> {
     !_raceIdleCreator && (_raceIdleCreator = _createRacePromise(createIdlePromise));
     return _raceIdleCreator.v(values, timeout);
 }
