@@ -1,3 +1,13 @@
+# v0.5.1 Apr 16th, 2024
+
+## Clangelog
+
+- #165 Generate single unified es module for exports
+  - Minification hints and optimizations for webpack using ts-utils 0.11.2
+- #162 Bump @microsoft/rush from 5.118.7 to 5.120.0
+- #164 Bump @microsoft/rush from 5.120.0 to 5.120.2
+- #167 Bump @microsoft/rush from 5.120.2 to 5.120.4
+
 # v0.5.0 Mar 29th, 2024
 
 ## Changelog
