@@ -1,5 +1,5 @@
 
-<h1 align="center">@nevware21 ts-async</h1>
+<h1 align="center">@nevware21/ts-async</h1>
 <h2 align="center">Promise support implementations and helpers for TypeScriptbuilt for minification</h2>
 
 ![GitHub Workflow Status (main)](https://img.shields.io/github/actions/workflow/status/nevware21/ts-async/ci.yml?branch=main)
