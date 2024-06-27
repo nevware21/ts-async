@@ -18,14 +18,14 @@ export type PromiseExecutor<T> = (resolve: ResolvePromiseHandler<T>, reject: Rej
 
 /**
 * This defines the handler function for when a promise is resolved.
-* @param value This is the value passed as part of resolving the Promise
+* @param value - This is the value passed as part of resolving the Promise
 * @return This may return a value, another Promise or void. @see {@link IPromise.then} for how the value is handled.
  */
 export type ResolvedPromiseHandler<T, TResult1 = T> = (((value: T) => TResult1 | IPromise<TResult1> | PromiseLike<TResult1>) | undefined | null);
 
 /**
 * This defines the handler function for when a promise is rejected.
-* @param value This is the value passed as part of resolving the Promise
+* @param value - This is the value passed as part of resolving the Promise
 * @return This may return a value, another Promise or void. @see {@link IPromise.then} for how the value is handled.
 */
 export type RejectedPromiseHandler<T = never> = (((reason: any) => T | IPromise<T> | PromiseLike<T>) | undefined | null);
@@ -37,14 +37,14 @@ export type FinallyPromiseHandler = (() => void) | undefined | null;
 
 /**
  * Defines the signature of the resolve function passed to the resolverFunc (in the Promise constructor)
- * @param value The value to resolve the Promise with
+ * @param value - The value to resolve the Promise with
  * @returns Nothing
  */
 export type ResolvePromiseHandler<T> = (value: T | IPromise<T> | PromiseLike<T>) => void;
  
 /**
  * Defines the signature of the reject function passed to the resolverFunc (in the Promise constructor)
- * @param value The value to reject the Promise with
+ * @param reason - The reason to reject the Promise with
  * @returns Nothing
  */
 export type RejectPromiseHandler = (reason?: any) => void;
