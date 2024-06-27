@@ -10,7 +10,7 @@
       "dependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.34.4",
-        "@nevware21/ts-utils": ">= 0.11.2 < 2.x",
+        "@nevware21/ts-utils": ">= 0.11.3 < 2.x",
         "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
@@ -615,9 +615,9 @@
       }
     },
     "node_modules/@nevware21/ts-utils": {
-      "version": "0.11.2",
-      "resolved": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.11.2.tgz",
-      "integrity": "sha512-80W8BkS09kkGuUHJX50Fqq+QqAslxUaOQytH+3JhRacXs1EpEt2JOOkYKytqFZAYir3SeH9fahniEaDzIBxlUw=="
+      "version": "0.11.3",
+      "resolved": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.11.3.tgz",
+      "integrity": "sha512-oipW+tyKN68bREjoESYAzOZiatM+1LF+ez1TX3BaeinhCkI18xsLgmpH9tvwHaVgKf1Tsth25sdbXVtYmgRYvQ=="
     },
     "node_modules/@nodelib/fs.scandir": {
       "version": "2.1.5",
@@ -881,9 +881,9 @@
     "node_modules/@rush-temp/tools-pre-proc": {
       "version": "0.0.0",
       "resolved": "file:projects/tools-pre-proc.tgz",
-      "integrity": "sha512-1oPmtLbtWCnKnVTXE8MLkhY50Y60yBi3Eteuda4bNK7PijmCTKgQIvUQ8PZTjMKGI9jZmb7+M6wDzg9XpizU4w==",
+      "integrity": "sha512-Fg+Zr1B4ww5JkpjO3PufxKYiint4r6AsynhBoeHoWZJLBU5skpQf3bdboqUE3ZPuXXSvy90yrDdu4Nt8jx5DWw==",
       "dependencies": {
-        "@nevware21/ts-utils": ">= 0.11.2 < 2.x",
+        "@nevware21/ts-utils": ">= 0.11.3 < 2.x",
         "@types/node": "^18.14.2",
         "globby": "^11.0.0",
         "typescript": "^4.9.5"
@@ -892,11 +892,11 @@
     "node_modules/@rush-temp/ts-async": {
       "version": "0.0.0",
       "resolved": "file:projects/ts-async.tgz",
-      "integrity": "sha512-dJpqGRzbH8EcaizszInkCdTkl5sVQE3k4c9gdnKug0Dyb8oHDtfVye+AlaHk7io5vAg8gbl52g7GE7Fl72Js9A==",
+      "integrity": "sha512-acJgfUNJwDzYihk7Xuxl+UxY1UhFjsPkTvb3O396lx33E56WI+tYYfxaz6Hm/TkjCL+YK7AuE5BGYnhn47s9Ew==",
       "dependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.34.4",
-        "@nevware21/ts-utils": ">= 0.11.2 < 2.x",
+        "@nevware21/ts-utils": ">= 0.11.3 < 2.x",
         "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
@@ -1901,9 +1901,9 @@
       }
     },
     "node_modules/caniuse-lite": {
-      "version": "1.0.30001636",
-      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001636.tgz",
-      "integrity": "sha512-bMg2vmr8XBsbL6Lr0UHXy/21m84FTxDLWn2FSqMd5PrlbMxwJlQnC2YWYxVgp66PZE+BBNF2jYQUBKCo1FDeZg==",
+      "version": "1.0.30001638",
+      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001638.tgz",
+      "integrity": "sha512-5SuJUJ7cZnhPpeLHaH0c/HPAnAHZvS6ElWyHK9GSIbVOQABLzowiI2pjmpvZ1WEbkyz46iFd4UXlOHR5SqgfMQ==",
       "funding": [
         {
           "type": "opencollective",
@@ -5428,9 +5428,9 @@
       "integrity": "sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A=="
     },
     "node_modules/mocha": {
-      "version": "10.5.1",
-      "resolved": "https://registry.npmjs.org/mocha/-/mocha-10.5.1.tgz",
-      "integrity": "sha512-eq5tEnaz2kM9ade8cuGJBMh5fBb9Ih/TB+ddlmPR+wLQmwLhUwa0ovqDlg7OTfKquW0BI7NUcNWX7DH8sC+3gw==",
+      "version": "10.5.2",
+      "resolved": "https://registry.npmjs.org/mocha/-/mocha-10.5.2.tgz",
+      "integrity": "sha512-9btlN3JKCefPf+vKd/kcKz2SXxi12z6JswkGfaAF0saQvnsqLJk504ZmbxhSoENge08E9dsymozKgFMTl5PQsA==",
       "dependencies": {
         "ansi-colors": "4.1.1",
         "browser-stdout": "1.3.1",
@@ -8921,9 +8921,9 @@
       }
     },
     "@nevware21/ts-utils": {
-      "version": "0.11.2",
-      "resolved": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.11.2.tgz",
-      "integrity": "sha512-80W8BkS09kkGuUHJX50Fqq+QqAslxUaOQytH+3JhRacXs1EpEt2JOOkYKytqFZAYir3SeH9fahniEaDzIBxlUw=="
+      "version": "0.11.3",
+      "resolved": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.11.3.tgz",
+      "integrity": "sha512-oipW+tyKN68bREjoESYAzOZiatM+1LF+ez1TX3BaeinhCkI18xsLgmpH9tvwHaVgKf1Tsth25sdbXVtYmgRYvQ=="
     },
     "@nodelib/fs.scandir": {
       "version": "2.1.5",
@@ -9077,9 +9077,9 @@
     },
     "@rush-temp/tools-pre-proc": {
       "version": "file:projects\\tools-pre-proc.tgz",
-      "integrity": "sha512-1oPmtLbtWCnKnVTXE8MLkhY50Y60yBi3Eteuda4bNK7PijmCTKgQIvUQ8PZTjMKGI9jZmb7+M6wDzg9XpizU4w==",
+      "integrity": "sha512-Fg+Zr1B4ww5JkpjO3PufxKYiint4r6AsynhBoeHoWZJLBU5skpQf3bdboqUE3ZPuXXSvy90yrDdu4Nt8jx5DWw==",
       "requires": {
-        "@nevware21/ts-utils": ">= 0.11.2 < 2.x",
+        "@nevware21/ts-utils": ">= 0.11.3 < 2.x",
         "@types/node": "^18.14.2",
         "globby": "^11.0.0",
         "typescript": "^4.9.5"
@@ -9087,11 +9087,11 @@
     },
     "@rush-temp/ts-async": {
       "version": "file:projects\\ts-async.tgz",
-      "integrity": "sha512-dJpqGRzbH8EcaizszInkCdTkl5sVQE3k4c9gdnKug0Dyb8oHDtfVye+AlaHk7io5vAg8gbl52g7GE7Fl72Js9A==",
+      "integrity": "sha512-acJgfUNJwDzYihk7Xuxl+UxY1UhFjsPkTvb3O396lx33E56WI+tYYfxaz6Hm/TkjCL+YK7AuE5BGYnhn47s9Ew==",
       "requires": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.34.4",
-        "@nevware21/ts-utils": ">= 0.11.2 < 2.x",
+        "@nevware21/ts-utils": ">= 0.11.3 < 2.x",
         "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
@@ -9873,9 +9873,9 @@
       "integrity": "sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg=="
     },
     "caniuse-lite": {
-      "version": "1.0.30001636",
-      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001636.tgz",
-      "integrity": "sha512-bMg2vmr8XBsbL6Lr0UHXy/21m84FTxDLWn2FSqMd5PrlbMxwJlQnC2YWYxVgp66PZE+BBNF2jYQUBKCo1FDeZg=="
+      "version": "1.0.30001638",
+      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001638.tgz",
+      "integrity": "sha512-5SuJUJ7cZnhPpeLHaH0c/HPAnAHZvS6ElWyHK9GSIbVOQABLzowiI2pjmpvZ1WEbkyz46iFd4UXlOHR5SqgfMQ=="
     },
     "chai": {
       "version": "4.3.10",
@@ -12511,9 +12511,9 @@
       "integrity": "sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A=="
     },
     "mocha": {
-      "version": "10.5.1",
-      "resolved": "https://registry.npmjs.org/mocha/-/mocha-10.5.1.tgz",
-      "integrity": "sha512-eq5tEnaz2kM9ade8cuGJBMh5fBb9Ih/TB+ddlmPR+wLQmwLhUwa0ovqDlg7OTfKquW0BI7NUcNWX7DH8sC+3gw==",
+      "version": "10.5.2",
+      "resolved": "https://registry.npmjs.org/mocha/-/mocha-10.5.2.tgz",
+      "integrity": "sha512-9btlN3JKCefPf+vKd/kcKz2SXxi12z6JswkGfaAF0saQvnsqLJk504ZmbxhSoENge08E9dsymozKgFMTl5PQsA==",
       "requires": {
         "ansi-colors": "4.1.1",
         "browser-stdout": "1.3.1",
