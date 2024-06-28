@@ -1,6 +1,19 @@
+# v0.5.2 June 27th, 2024
+
+## Changelog
+
+- #173 Bump @microsoft/rush from 5.120.4 to 5.121.0
+- #174 Bump @microsoft/rush from 5.121.0 to 5.122.0
+- #183 Bump @microsoft/rush from 5.122.0 to 5.124.6
+- #210 Update Copyright message to comply with LLC operating agreement
+- #195 Bump nyc from 15.1.0 to 17.0.0
+- #212 Bump @nevware21/ts-utils from 0.11.2 to 0.11.3
+- #213 Bump typedoc from 0.25.13 to 0.26.2
+- #214 Bump @microsoft/rush from 5.124.6 to 5.129.6
+
 # v0.5.1 Apr 16th, 2024
 
-## Clangelog
+## Changelog
 
 - #165 Generate single unified es module for exports
   - Minification hints and optimizations for webpack using ts-utils 0.11.2
