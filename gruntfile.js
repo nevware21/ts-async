@@ -38,12 +38,16 @@ module.exports = function (grunt) {
             },
             "ts_async": {
                 // Default ES5
-                tsconfig: "./lib/tsconfig.json",
-                outDir: "./lib/build/es5/mod"
-            },
-            "ts_async_es6": {
-                tsconfig: "./lib/tsconfig.es6.json",
-                outDir: "./lib/build/es6/mod"
+                tsconfig: [
+                    {
+                        name: "./lib/tsconfig.json",
+                        outDir: "./lib/build/es5/mod"
+                    },
+                    {
+                        name:"./lib/tsconfig.es6.json",
+                        outDir: "./lib/build/es6/mod"
+                    }
+                ]
             },
             "ts_async-test": {
                 tsconfig: "./lib/test/tsconfig.test.json",
@@ -83,7 +87,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("@nevware21/grunt-eslint-ts");
 
     grunt.registerTask("rollupuglify", ["ts:rollupuglify" ]);
-    grunt.registerTask("ts_async", [ "lint:ts_async-fix", "lint:ts_async-test-fix", "ts:ts_async", "ts:ts_async_es6", "ts:ts_async-test" ]);
+    grunt.registerTask("ts_async", [ "lint:ts_async-fix", "lint:ts_async-test-fix", "ts:ts_async", "ts:ts_async-test" ]);
     grunt.registerTask("ts_async-test", [ "lint:ts_async-test-fix", "ts:ts_async-test" ]);
     grunt.registerTask("ts_async-lint", [ "lint:ts_async-fix", "lint:ts_async-test-fix" ]);
     grunt.registerTask("dolint", [ "lint:ts_async", "lint:ts_async-test" ]);
