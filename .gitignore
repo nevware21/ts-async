@@ -69,6 +69,7 @@ types/
 build/
 dist/
 dist-es**/
+docs/typedoc/**
 
 # Misc
 statistics.html
