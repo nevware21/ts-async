@@ -10,7 +10,7 @@
       "dependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.34.4",
-        "@nevware21/ts-utils": ">= 0.11.3 < 2.x",
+        "@nevware21/ts-utils": ">= 0.11.4 < 2.x",
         "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
@@ -838,9 +838,9 @@
     "node_modules/@rush-temp/tools-pre-proc": {
       "version": "0.0.0",
       "resolved": "file:projects/tools-pre-proc.tgz",
-      "integrity": "sha512-Fg+Zr1B4ww5JkpjO3PufxKYiint4r6AsynhBoeHoWZJLBU5skpQf3bdboqUE3ZPuXXSvy90yrDdu4Nt8jx5DWw==",
+      "integrity": "sha512-5e00Dwh+8x1RjXR97kcqElzVXsG7P9+RsFpW5JSS3IRp8ntovlHzsD4fwA0+N56VULLyyzBKF4W0MobvgINLZA==",
       "dependencies": {
-        "@nevware21/ts-utils": ">= 0.11.3 < 2.x",
+        "@nevware21/ts-utils": ">= 0.11.4 < 2.x",
         "@types/node": "^18.14.2",
         "globby": "^11.0.0",
         "typescript": "^4.9.5"
@@ -849,11 +849,11 @@
     "node_modules/@rush-temp/ts-async": {
       "version": "0.0.0",
       "resolved": "file:projects/ts-async.tgz",
-      "integrity": "sha512-saTAR0Y9b9ZdVTQ98INH0ZblbBbG81/ImuavZMdieBgqWN9akh+A+r1Ap0TDaxKlw7KHrU70sFoL8JU5M5TUCw==",
+      "integrity": "sha512-BvSF24i0IX2WCxeDlL2ayF7dyGBJhiI9XAGf/O2gRrrhikqCUVDAAD/VpTjmkEvj52FSSRovRUS+mdaxpRDyog==",
       "dependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.34.4",
-        "@nevware21/ts-utils": ">= 0.11.3 < 2.x",
+        "@nevware21/ts-utils": ">= 0.11.4 < 2.x",
         "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
@@ -9335,9 +9335,9 @@
     },
     "@rush-temp/tools-pre-proc": {
       "version": "file:projects\\tools-pre-proc.tgz",
-      "integrity": "sha512-Fg+Zr1B4ww5JkpjO3PufxKYiint4r6AsynhBoeHoWZJLBU5skpQf3bdboqUE3ZPuXXSvy90yrDdu4Nt8jx5DWw==",
+      "integrity": "sha512-5e00Dwh+8x1RjXR97kcqElzVXsG7P9+RsFpW5JSS3IRp8ntovlHzsD4fwA0+N56VULLyyzBKF4W0MobvgINLZA==",
       "requires": {
-        "@nevware21/ts-utils": ">= 0.11.3 < 2.x",
+        "@nevware21/ts-utils": ">= 0.11.4 < 2.x",
         "@types/node": "^18.14.2",
         "globby": "^11.0.0",
         "typescript": "^4.9.5"
@@ -9345,11 +9345,11 @@
     },
     "@rush-temp/ts-async": {
       "version": "file:projects\\ts-async.tgz",
-      "integrity": "sha512-saTAR0Y9b9ZdVTQ98INH0ZblbBbG81/ImuavZMdieBgqWN9akh+A+r1Ap0TDaxKlw7KHrU70sFoL8JU5M5TUCw==",
+      "integrity": "sha512-BvSF24i0IX2WCxeDlL2ayF7dyGBJhiI9XAGf/O2gRrrhikqCUVDAAD/VpTjmkEvj52FSSRovRUS+mdaxpRDyog==",
       "requires": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.34.4",
-        "@nevware21/ts-utils": ">= 0.11.3 < 2.x",
+        "@nevware21/ts-utils": ">= 0.11.4 < 2.x",
         "@rollup/plugin-commonjs": "^25.0.0",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",
