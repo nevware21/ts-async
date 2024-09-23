@@ -223,6 +223,7 @@ export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | PromiseLik
  * @param value - The value or promise like value to wait for
  * @param resolveFn - The callback to call on the promise successful resolving.
  * @param rejectFn - The callback to call when the promise rejects
+ * @param finallyFn - The callback to call once the promise has resolved or rejected
  * @returns The passed value, if it is a promise and there is either a resolve or reject handler
  * then it will return a chained promise with the value from the resolve or reject handler (depending
  * whether it resolve or rejects)
