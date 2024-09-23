@@ -15,6 +15,7 @@
     "excludeExternals": true,
     "excludeInternal": true,
     "excludePrivate": true,
+    "includeVersion": true,
     "tsconfig": "./lib/tsconfig.json",
     "out": "./docs/typedoc",
     "readme": "none",
