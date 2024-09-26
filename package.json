@@ -89,7 +89,7 @@
         "@size-limit/esbuild-why": "^11.1.4",
         "@size-limit/preset-small-lib": "^11.1.4",
         "@size-limit/time": "^11.1.4",
-        "@types/chai": "^4.3.1",
+        "@types/chai": "^5.0.0",
         "@types/eslint": "^8.56.10",
         "@types/estree": "^1.0.0",
         "@types/jquery": "^3.5.14",
