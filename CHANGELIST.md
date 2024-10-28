@@ -1,3 +1,22 @@
+# v0.5.3 Oct 27th, 2024
+
+## Changelog
+
+- [#237](https://github.com/nevware21/ts-async/issues/237) [BUG] Sourcemap load errors in debugger from @nevware21 dependencies
+  - Also Bumps ts-utils to 0.11.5
+- [#218](https://github.com/nevware21/ts-async/pull/218) Bump @nevware21/grunt-ts-plugin from 0.4.5 to 0.4.6
+- [#219](https://github.com/nevware21/ts-async/pull/219) Bump @nevware21/grunt-eslint-ts from 0.2.4 to 0.2.5
+- [#220](https://github.com/nevware21/ts-async/pull/220) Bump @nevware/grunt-ts-plugin and grunt-es-plugin to 0.5.0
+- [#229](https://github.com/nevware21/ts-async/pull/229) chore: Update codecov uploading
+- [#230](https://github.com/nevware21/ts-async/pull/230) chore: Update to auto generate docs and remove typedoc from repo
+- [#228](https://github.com/nevware21/ts-async/pull/228) chore: Update to ts-utils 0.11.4
+- [#231](https://github.com/nevware21/ts-async/pull/231) Exclude typedoc folder
+- [#232](https://github.com/nevware21/ts-async/pull/232) update @nevware21/grunt plugins from 0.5.0 to ^0.5.1
+- [#233](https://github.com/nevware21/ts-async/pull/233) Update doAwait docs
+- [#234](https://github.com/nevware21/ts-async/pull/234) Typeedoc: Fixup name issue
+- [#235](https://github.com/nevware21/ts-async/pull/235) Bump puppeteer from 21.6.0 to 23.4.0
+- [#236](https://github.com/nevware21/ts-async/pull/236) Bump @types/chai from 4.3.20 to 5.0.0
+
 # v0.5.2 June 27th, 2024
 
 ## Changelog
