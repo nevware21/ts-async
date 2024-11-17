@@ -10,11 +10,6 @@
         "packageName": "@nevware21/ts-async",
         "projectFolder": "lib",
         "shouldPublish": true
-      },
-      {
-        "packageName": "@nevware21/tools-pre-proc",
-        "projectFolder": "tools/build-tools/pre-proc",
-        "shouldPublish": false
       }
     ]
   }

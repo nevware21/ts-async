@@ -2,7 +2,7 @@
 // NPM Publish group definitions
 // ------------------------------
 {
-    "repoRoot": "../../..",
+    "repoRoot": ".",
     "default": "ts-async",
     "groups": {
         "ts-async": [

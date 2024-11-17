@@ -2,7 +2,7 @@
 // Pre-processing group definitions
 // ------------------------------
 {
-    "repoRoot": "../../..",
+    "repoRoot": ".",
     "default": {
         "group": "ts-async",
         "definition": "prod"
