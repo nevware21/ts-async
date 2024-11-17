@@ -51,10 +51,10 @@
         }
     ],
     "scripts": {
-        "build": "npm run pre-proc && grunt ts_async --verbose && npm run pre-proc -- -restore && npm run package && npm run dtsgen",
+        "build": "npm run preproc && grunt ts_async --verbose && npm run preproc -- -restore && npm run package && npm run dtsgen",
         "rebuild": "npm run build && npm run test",
         "package": "rollup -c rollup.config.js --bundleConfigAsCjs",
-        "test": "npm run pre-proc test && grunt ts_async-test && npm run test:node && npm run test:browser && npm run test:worker && npm run coverage:report&& npm run pre-proc -- -restore",
+        "test": "npm run preproc test && grunt ts_async-test && npm run test:node && npm run test:browser && npm run test:worker && npm run coverage:report&& npm run preproc -- -restore",
         "test:node": "nyc ts-mocha --type-check -p ./test/tsconfig.test.json ./test/**/*.test.ts --trace-uncaught",
         "test:browser": "karma start karma.browser.conf.js --single-run",
         "test:worker": "cross-env NODE_OPTIONS=--max-old-space-size=8192 karma start karma.worker.conf.js --single-run",
@@ -63,21 +63,21 @@
         "lint": "grunt ts_async-lint",
         "coverage:report": "npm run coverage:nyc && npm run coverage:merge",
         "coverage:nyc": "nyc report --reporter=json",
-        "coverage:merge": "node ../tools/coverage/merge-coverage.js",
+        "coverage:merge": "merge-coverage",
         "codecov": "npm run coverage:report",
         "clean": "git clean -xdf && npm install",
         "cleanBuild": "npm run clean && npm run rebuild && npm run docs",
         "docs": "cd .. && npx typedoc",
         "rush-update": "rush update --recheck --purge --full",
         "dtsgen": "api-extractor run --local --verbose",
-        "pre-proc": "node ../tools/build-tools/pre-proc/build/pre-proc.js -C ../tools/build-tools/pre-proc.json -R .."
+        "preproc": "ts-preproc -C ../preproc.json -R .."
     },
 
     "dependencies": {
         "@nevware21/ts-utils": ">= 0.11.5 < 2.x"
     },
     "devDependencies": {
-        "@nevware21/tools-pre-proc": "0.1.0",
+        "@nevware21/ts-preproc": "^0.1.1",
         "@microsoft/api-extractor": "^7.34.4",
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@rollup/plugin-commonjs": "^28.0.1",
