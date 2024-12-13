@@ -80,7 +80,7 @@ export const createSyncRejectedPromise: <T = unknown>(reason: any) => IPromise<T
 /**
  * Returns a single Promise instance that resolves to an array of the results from the input promises.
  * This returned promise will resolve and execute it's pending chained operations based on the
- * {@link createSyncPromise synchronous} promise implementation. Any chained operations will execute
+ * {@link createSyncPromise | synchronous} promise implementation. Any chained operations will execute
  * __synchronously__ in the same execution cycle as the final operation pending promises have resolved,
  * or if the input contains no promises. It will resolve only after all of the input promises have either
  * resolved or rejected, and will resolve with an array of {@link IPromiseResult } objects that each describe
@@ -118,7 +118,7 @@ export function createSyncAllSettledPromise<T>(values: Iterable<T | PromiseLike<
 /**
  * Returns a single Promise instance that resolves to an array of the results from the input promises.
  * This returned promise will resolve and execute it's pending chained operations based on the
- * {@link createSyncPromise synchronous} promise implementation. Any chained operations will execute
+ * {@link createSyncPromise | synchronous} promise implementation. Any chained operations will execute
  * __synchronously__ in the same execution cycle as the final operation pending promises have resolved,
  * or if the input contains no promises. It will resolve only after all of the input promises have either
  * resolved or rejected, and will resolve with an array of {@link IPromiseResult } objects that each describe

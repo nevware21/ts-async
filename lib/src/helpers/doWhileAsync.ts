@@ -36,7 +36,7 @@ function _doneChk<T>(isDone: boolean, state: IWhileState<T>, value: T, thisArg?:
 /**
  * Performs a while loop, calling the provided `callbackFn` function until the `state.isDone`
  * property is set to `true` or the optional `isDOneFn` returns `true`. The callback function will
- * receive a single {@link IWhileState state} argument and may return either a value or a promise,
+ * receive a single {@link IWhileState | state} argument and may return either a value or a promise,
  * if a promise is returned the while loop will wait until the promise is resolved before calling
  * the callback function again. If the callback function never returns a promise the while loop
  * will be executed synchronous and last value returned by the callback will be returned, if the
@@ -46,14 +46,14 @@ function _doneChk<T>(isDone: boolean, state: IWhileState<T>, value: T, thisArg?:
  * @since 0.5.0
  * @group Loop
  * @typeParam T - Identifies the element type returned by the callback function.
- * @param callbackFn A function that will be called until the `state.isDone` flag is set to `true`
- * the function will receive a single {@link IWhileState state} argument. The callback function
+ * @param callbackFn - A function that will be called until the `state.isDone` flag is set to `true`
+ * the function will receive a single {@link IWhileState | state} argument. The callback function
  * may return either a value or a promise, if a promise is returned the while loop will wait
  * until the promise is resolved before calling the callback function again.
- * @param isDoneFn An optional function that will be called after the callback function is called,
- * that can be used to stop the while loop. The function will receive a single {@link IWhileState state}
+ * @param isDoneFn - An optional function that will be called after the callback function is called,
+ * that can be used to stop the while loop. The function will receive a single {@link IWhileState | state}
  * argument. If the function returns `true` the while loop will stop, otherwise the while loop will continue.
- * @param thisArg An object to which the this keyword can refer in the callbackfn function.
+ * @param thisArg - An object to which the this keyword can refer in the callbackfn function.
  * If thisArg is omitted, null or undefined the array will be used as the this value.
  * @remarks
  * - If an `isDoneFn` is provided the `state.isDone` property will be set to the provided value and
@@ -61,8 +61,8 @@ function _doneChk<T>(isDone: boolean, state: IWhileState<T>, value: T, thisArg?:
  * `state.isDone` property within the callback function with a boolean value or another function that
  * returns a boolean value.
  * - The callback function is called until until the `state.isDone` property is set to `true` or if
- * `state.isDone` is a function until the function returns `true.
- * - The callback function will receive a single {@link IWhileState state} argument that contains
+ * `state.isDone` is a function until the function returns `true`.
+ * - The callback function will receive a single {@link IWhileState | state} argument that contains
  * the following properties:
  *  - `iter` - The zero-based iteration count, which is incremented after each call to the `callbackFn`
  * and any `isDone` function (if provided), the `iter` property is accessible withing the callback
