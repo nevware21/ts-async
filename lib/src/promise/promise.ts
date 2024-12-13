@@ -60,7 +60,7 @@ export function createPromise<T>(executor: PromiseExecutor<T>, timeout?: number)
  * @group Promise
  * @group All
  * @param input - The array of promises to wait to be resolved / rejected before resolving or rejecting the new promise
- * @param timeout
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  * @returns
  * <ul>
  * <li> An already resolved `Promise`, if the input passed is empty.

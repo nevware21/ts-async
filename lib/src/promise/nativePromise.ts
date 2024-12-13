@@ -61,7 +61,7 @@ let _anyNativeCreator: ICachedValue<<T extends readonly unknown[] | []>(values: 
  * @internal
  * @ignore
  * Test Hook function to clear the cached values and set whether to use the native Promise class
- * @param useNative
+ * @param useNative - Flag to determine if the native Promise class should be used if available
  */
 export function _clearPromiseCache(useNative: boolean) {
 //#ifdef _DEBUG
@@ -152,7 +152,7 @@ export function createNativePromise<T>(executor: PromiseExecutor<T>, timeout?: n
  * @group All
  * @group Native
  * @param input - The array of promises to wait to be resolved / rejected before resolving or rejecting the new promise
- * @param timeout
+ * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  * @returns
  * <ul>
  * <li> An already resolved `Promise`, if the input passed is empty.
@@ -195,7 +195,7 @@ export const createNativeRejectedPromise: <T = unknown>(reason: any, timeout?: n
 
 /**
  * Returns a single asynchronous Promise instance that resolves to an array of the results from the input promises.
- * This returned promise will resolve and execute it's pending chained operations using {@link createNativePromise native}
+ * This returned promise will resolve and execute it's pending chained operations using {@link createNativePromise | native}
  * environment promise implementation, if the runtime does not provide any native then the optional provided
  * timeout value will be used to schedule when the chained items will be executed or if the input contains no promises.
  * It will resolve only after all of the input promises have either resolved or rejected, and will resolve with an array
@@ -233,7 +233,7 @@ export function createNativeAllSettledPromise<T>(values: Iterable<T | PromiseLik
 
 /**
  * Returns a single asynchronous Promise instance that resolves to an array of the results from the input promises.
- * This returned promise will resolve and execute it's pending chained operations using {@link createNativePromise native}
+ * This returned promise will resolve and execute it's pending chained operations using {@link createNativePromise | native}
  * environment promise implementation, if the runtime does not provide any native then the optional provided
  * timeout value will be used to schedule when the chained items will be executed or if the input contains no promises.
  * It will resolve only after all of the input promises have either resolved or rejected, and will resolve with an array

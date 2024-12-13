@@ -164,7 +164,7 @@ export interface PolyPromiseConstructor {
     /**
      * Returns a single Promise instance that resolves to an array of the results from the input promises.
      * This returned promise will resolve and execute it's pending chained operations based on the
-     * {@link createAsyncPromise Aasynchronous} promise implementation. Any chained operations will execute
+     * {@link createAsyncPromise | Asynchronous} promise implementation. Any chained operations will execute
      * __asynchronously__  when the final operation pending promises have resolved, or if the input contains
      * no promises. It will resolve only after all of the input promises have either resolved or rejected,
      * and will resolve with an array of {@link IPromiseResult } objects that each describe the outcome of
@@ -180,7 +180,7 @@ export interface PolyPromiseConstructor {
     /**
      * Returns a single Promise instance that resolves to an array of the results from the input promises.
      * This returned promise will resolve and execute it's pending chained operations based on the
-     * {@link createAsyncPromise Aasynchronous} promise implementation. Any chained operations will execute
+     * {@link createAsyncPromise | Asynchronous} promise implementation. Any chained operations will execute
      * __asynchronously__  when the final operation pending promises have resolved, or if the input contains
      * no promises. It will resolve only after all of the input promises have either resolved or rejected,
      * and will resolve with an array of {@link IPromiseResult } objects that each describe the outcome of
@@ -206,7 +206,7 @@ export let PolyPromise = /*#__PURE__*/(function () {
     /**
      * Creates a new Promise.
      * @constructor
-     * @param executor A callback used to initialize the promise. This callback is passed two arguments:
+     * @param executor - A callback used to initialize the promise. This callback is passed two arguments:
      * a resolve callback used to resolve the promise with a value or the result of another promise,
      * and a reject callback used to reject the promise with a provided reason or error.
      */

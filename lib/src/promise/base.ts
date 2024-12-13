@@ -423,7 +423,7 @@ export function _createAllPromise(newPromise: PromiseCreatorFn): <T>(input: Iter
  * state; otherwise the returned promise will be fulfilled with the value. This function flattens nested layers
  * of promise-like objects (e.g. a promise that resolves to a promise that resolves to something) into a single layer.
  * @param newPromise - The delegate function used to create a new promise object
- * @param value Argument to be resolved by this Promise. Can also be a Promise or a thenable to resolve.
+ * @param value - Argument to be resolved by this Promise. Can also be a Promise or a thenable to resolve.
  * @param additionalArgs - Any additional arguments that should be passed to the delegate to assist with the creation of
  * the new promise instance.
  */

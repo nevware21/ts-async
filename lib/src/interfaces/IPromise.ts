@@ -59,8 +59,8 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
 
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onResolved The callback to execute when the Promise is resolved.
-     * @param onRejected The callback to execute when the Promise is rejected.
+     * @param onResolved - The callback to execute when the Promise is resolved.
+     * @param onRejected - The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      * @example
      * ```ts
@@ -78,8 +78,8 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
 
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onResolved The callback to execute when the Promise is resolved.
-     * @param onRejected The callback to execute when the Promise is rejected.
+     * @param onResolved - The callback to execute when the Promise is resolved.
+     * @param onRejected - The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      * @example
      * ```ts
@@ -97,8 +97,8 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
 
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onResolved The callback to execute when the Promise is resolved.
-     * @param onRejected The callback to execute when the Promise is rejected.
+     * @param onResolved - The callback to execute when the Promise is resolved.
+     * @param onRejected - The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      * @example
      * ```ts
@@ -116,7 +116,7 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
 
     /**
      * Attaches a callback for only the rejection of the Promise.
-     * @param onRejected The callback to execute when the Promise is rejected.
+     * @param onRejected - The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      * @example
      * ```ts
@@ -134,7 +134,7 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
 
     /**
      * Attaches a callback for only the rejection of the Promise.
-     * @param onRejected The callback to execute when the Promise is rejected.
+     * @param onRejected - The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      * @example
      * ```ts
@@ -152,7 +152,7 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
 
     /**
      * Attaches a callback for only the rejection of the Promise.
-     * @param onRejected The callback to execute when the Promise is rejected.
+     * @param onRejected - The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      * @example
      * ```ts
@@ -171,7 +171,7 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @param onfinally - The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      * @example
      * ```ts
