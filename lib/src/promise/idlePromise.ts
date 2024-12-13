@@ -71,7 +71,10 @@ export function createIdlePromise<T>(executor: PromiseExecutor<T>, timeout?: num
  * @group Promise
  * @group All
  * @param input - The array of promises to wait to be resolved / rejected before resolving or rejecting the new promise
- * @param timeout
+ * @param timeout - Optional deadline timeout to wait before processing the items, defaults to undefined. If the number of
+ * milliseconds represented by this parameter has elapsed and the callback has not already been called, then a task to execute
+ * the callback is queued in the event loop (even if doing so risks causing a negative performance impact). timeout must be a
+ * positive value or it is ignored.
  * @returns
  * <ul>
  * <li> An already resolved `Promise`, if the input passed is empty.
@@ -112,7 +115,7 @@ export const createIdleRejectedPromise: <T = unknown>(reason: any, timeout?: num
 /**
  * Returns a single Promise instance that resolves to an array of the results from the input promises.
  * This returned promise will resolve and execute it's pending chained operations based on the
- * {@link createIdlePromise idle} promise implementation. Any chained operations will execute
+ * {@link createIdlePromise | idle} promise implementation. Any chained operations will execute
  * __asynchronously__ when the environment is idle as the final operation pending promises have resolved,
  * or if the input contains no promises. It will resolve only after all of the input promises have either
  * resolved or rejected, and will resolve with an array of {@link IPromiseResult } objects that each describe
@@ -150,7 +153,7 @@ export function createIdleAllSettledPromise<T>(values: Iterable<T | PromiseLike<
 /**
  * Returns a single Promise instance that resolves to an array of the results from the input promises.
  * This returned promise will resolve and execute it's pending chained operations based on the
- * {@link createIdlePromise idle} promise implementation. Any chained operations will execute
+ * {@link createIdlePromise | idle} promise implementation. Any chained operations will execute
  * __asynchronously__ when the environment is idle as the final operation pending promises have resolved,
  * or if the input contains no promises. It will resolve only after all of the input promises have either
  * resolved or rejected, and will resolve with an array of {@link IPromiseResult } objects that each describe

@@ -17,7 +17,7 @@ import { StartQueuedTaskFn } from "./types";
  */
 export interface ITaskScheduler {
     /**
-     * Identifies if this scheduler is currently idle (`true`) or has waiting or currently processing tasks (`false).
+     * Identifies if this scheduler is currently idle (`true`) or has waiting or currently processing tasks (`false`).
      * @example
      * ```ts
      * let scheduler = createTaskScheduler();

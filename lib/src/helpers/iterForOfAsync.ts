@@ -24,7 +24,7 @@ let _iterAsyncSymbol: ICachedValue<symbol>;
  * The order of processing is not reset if you add or remove elemenets to the iterator, the actual behavior will
  * depend on the iterator implementation.
  *
- * if the passed `iter` is both an Iterable<T> and Iterator<T> the Iterator<T> interface takes precedence. And if
+ * if the passed `iter` is both an Iterable\<T\> and Iterator\<T\> the Iterator\<T\> interface takes precedence. And if
  * an iterable and does not have a `Symbol.iterator` property then the `iter` will be used as the iterator.
  *
  * The `callbackFn` may execute `synchronously` or `asynchronously` and if the `callbackFn` returns a `Promise`
@@ -33,8 +33,8 @@ let _iterAsyncSymbol: ICachedValue<symbol>;
  * the same error.
  * @remarks
  * If Symbols are NOT supported then the iterable MUST be using the same polyFill for the well know symbols, as used
- * by the library. If the iterable is using a different polyFill then the `iter` MUST be an Iterator<T> and not an
- * Iterable<T>.
+ * by the library. If the iterable is using a different polyFill then the `iter` MUST be an Iterator\<T\> and not an
+ * Iterable\<T\>.
  * If you are targetting a mixed environment you SHOULD either
  * - only use the polyfill Symbol's provided by this library
  * - ensure that you add any symbol polyfills BEFORE these utilities
@@ -76,6 +76,7 @@ let _iterAsyncSymbol: ICachedValue<symbol>;
  *  }), (result) => {
  *    console.log(result); // returns -1 if the loop was stopped, otherwise returns undefined
  *  });
+ * ```
  */
 export function iterForOfAsync<T = any>(iter: Iterator<T> | Iterable<T> | AsyncIterator<T> | AsyncIterable<T>, callbackFn: (value: T, count: number, iter?: Iterator<T> | AsyncIterator<T>) => void | number | IPromise<void | number>, thisArg?: any): void | number | IPromise<void | number> {
     let err: { e: any };
