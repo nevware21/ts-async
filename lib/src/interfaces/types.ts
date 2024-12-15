@@ -19,14 +19,14 @@ export type PromiseExecutor<T> = (resolve: ResolvePromiseHandler<T>, reject: Rej
 /**
 * This defines the handler function for when a promise is resolved.
 * @param value - This is the value passed as part of resolving the Promise
-* @return This may return a value, another Promise or void. @see {@link IPromise.then} for how the value is handled.
+* @return This may return a value, another Promise or void. @see {@link https://nevware21.github.io/ts-async/typedoc/interfaces/IPromise.html#then | IPromise.then} for how the value is handled.
  */
 export type ResolvedPromiseHandler<T, TResult1 = T> = (((value: T) => TResult1 | IPromise<TResult1> | PromiseLike<TResult1>) | undefined | null);
 
 /**
 * This defines the handler function for when a promise is rejected.
 * @param value - This is the value passed as part of resolving the Promise
-* @return This may return a value, another Promise or void. @see {@link IPromise.then} for how the value is handled.
+* @return This may return a value, another Promise or void. @see {@link https://nevware21.github.io/ts-async/typedoc/interfaces/IPromise.html#then | IPromise.then} for how the value is handled.
 */
 export type RejectedPromiseHandler<T = never> = (((reason: any) => T | IPromise<T> | PromiseLike<T>) | undefined | null);
 
