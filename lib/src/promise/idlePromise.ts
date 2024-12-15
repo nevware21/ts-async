@@ -12,6 +12,7 @@ import { IPromise } from "../interfaces/IPromise";
 import { idleItemProcessor } from "./itemProcessor";
 import { PromiseExecutor } from "../interfaces/types";
 import { IPromiseResult } from "../interfaces/IPromiseResult";
+import { _pureAssign } from "../internal/treeshake_helpers";
 
 let _defaultIdleTimeout: number | undefined;
 
@@ -36,7 +37,7 @@ export function setDefaultIdlePromiseTimeout(idleDeadline?: number | undefined) 
  * outstanding chained items should be executed.
  * @group Idle
  */
-export const setDefaultIdleTimeout = (/*#__PURE__*/setDefaultIdlePromiseTimeout);
+export const setDefaultIdleTimeout = (/*#__PURE__*/_pureAssign(setDefaultIdlePromiseTimeout));
 
 /**
  * Creates an idle Promise instance that when resolved or rejected will execute it's pending chained operations
