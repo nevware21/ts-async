@@ -1,3 +1,31 @@
+# v0.5.4 Dec 14th, 2024
+
+## Changelog
+
+- [#241](https://github.com/nevware21/ts-async/issues/241) Update dependabot.yml
+- [#242](https://github.com/nevware21/ts-async/issues/242) Bump actions/checkout from 2 to 4
+- [#243](https://github.com/nevware21/ts-async/issues/243) Bump github/codeql-action from 2 to 3
+- [#244](https://github.com/nevware21/ts-async/issues/244) Bump actions/configure-pages from 4 to 5
+- [#247](https://github.com/nevware21/ts-async/issues/247) Bump rollup-plugin-istanbul from 4.0.0 to 5.0.0 in /lib
+- [#246](https://github.com/nevware21/ts-async/issues/246) Bump @types/sinon from 10.0.20 to 17.0.3 in /lib
+- [#249](https://github.com/nevware21/ts-async/issues/249) Bump nyc from 15.1.0 to 17.1.0 in /lib
+- [#250](https://github.com/nevware21/ts-async/issues/250) Bump @rollup/plugin-typescript from 11.1.6 to 12.1.1 in /lib
+- [#251](https://github.com/nevware21/ts-async/issues/251) Bump rollup from 3.29.5 to 4.26.0 in /lib
+- [#245](https://github.com/nevware21/ts-async/issues/245) Bump codecov/codecov-action from 2 to 4
+- [#254](https://github.com/nevware21/ts-async/issues/254) Bump @rollup/plugin-commonjs from 25.0.8 to 28.0.1 in /lib
+- [#255](https://github.com/nevware21/ts-async/issues/255) Bump @microsoft/rush from 5.140.0 to 5.140.1
+- [#257](https://github.com/nevware21/ts-async/issues/257) Update to use ts-build-tools instead of local
+  - [#260](https://github.com/nevware21/ts-async/issues/260) Bump @nevware21/ts-build-tools to ^0.1.3
+- [#259](https://github.com/nevware21/ts-async/issues/259) Bump codecov/codecov-action from 4 to 5
+- [#267](https://github.com/nevware21/ts-async/issues/267) Create FUNDING.yml
+  - [#268](https://github.com/nevware21/ts-async/issues/268) Update FUNDING.yml
+- [#277](https://github.com/nevware21/ts-async/issues/277) [doc] TSDoc Error During Build
+  - [#280](https://github.com/nevware21/ts-async/issues/280) [doc] TSDoc Error During Build #277
+- [#281](https://github.com/nevware21/ts-async/issues/281) Bump @microsoft/rush from 5.140.1 to 5.147.0
+- [#282](https://github.com/nevware21/ts-async/issues/282) Bump @nevware21/ts-utils from 0.11.5 to 0.11.6
+- [#283](https://github.com/nevware21/ts-async/issues/283) Fixup rollup pure warnings
+
+
 # v0.5.3 Oct 27th, 2024
 
 ## Changelog
