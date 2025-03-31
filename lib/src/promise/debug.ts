@@ -24,6 +24,7 @@ let _theLogger: (id: string, message: string) => void = null;
 //#endif
 
 /**
+ * @function
  * @internal
  * @ignore Internal function enable logging the internal state of the promise during execution, this code and references are
  * removed from the production artifacts
