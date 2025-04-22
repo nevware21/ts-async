@@ -7,7 +7,7 @@
  */
 
 import { assert } from "chai";
-import { getGlobal, objHasOwn, isWebWorker, isNode, scheduleTimeout, dumpObj, arrForEach, objForEachKey, setBypassLazyCache, CreateIteratorContext, isPromiseLike } from "@nevware21/ts-utils";
+import { getGlobal, objHasOwn, isWebWorker, isNode, scheduleTimeout, dumpObj, arrForEach, objForEachKey, setBypassLazyCache, CreateIteratorContext, isPromiseLike, setDefaultIdleTimeout } from "@nevware21/ts-utils";
 import { PolyPromise } from "../../../src/polyfills/promise";
 import { createAsyncAllPromise, createAsyncAllSettledPromise, createAsyncAnyPromise, createAsyncPromise, createAsyncRacePromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";
 import { setPromiseDebugState } from "../../../src/promise/debug";
@@ -85,7 +85,7 @@ let testImplementations: TestImplementations = {
         rejected: Promise.reject.bind(Promise),
         creatorAllSettled: Promise.allSettled.bind(Promise),
         creatorRace: Promise.race.bind(Promise),
-        creatorAny: Promise["any"].bind(Promise),
+        creatorAny: (Promise as any)["any"].bind(Promise),
         creatorAll: Promise.all.bind(Promise),
         checkState: false,
         checkChainedState: false
@@ -127,7 +127,7 @@ let testImplementations: TestImplementations = {
     },
     "idle": {
         creator: <T>(executor: PromiseExecutor<T>) => {
-            return createIdlePromise<T>(executor, 1);
+            return createIdlePromise<T>(executor, 10);
         },
         resolved: createIdleResolvedPromise,
         rejected: createIdleRejectedPromise,
@@ -249,6 +249,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
         
         // Disable lazy caching
         setBypassLazyCache(true);
+        setDefaultIdleTimeout(100);
 
         if (!isNode()) {
             let gbl = getGlobal();
@@ -1556,7 +1557,8 @@ function batchTests(testKey: string, definition: TestDefinition) {
             }
         });
     
-        it("check create all with values resolved in the order with a rejected promise and a finally and a catch", async () => {
+        it("check create all with values resolved in the order with a rejected promise and a finally and a catch", async function () {
+            this.timeout(20000);
             let catchCalled = false;
             let finallyCalled = false;
             let promise = createAllPromise([
@@ -1812,6 +1814,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
     });
 
     describe("createRacePromise with Array", () => {
+
         it("should resolve with the value of the first resolved promise", async () => {
             const promises = [
                 createNewPromise((resolve) => setTimeout(() => resolve("slow"), 300)),

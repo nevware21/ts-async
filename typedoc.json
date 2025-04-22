@@ -42,6 +42,7 @@
         "@categoryDescription",
         "@default",
         "@document",
+        "@function",
         "@group",
         "@groupDescription",
         "@import",
@@ -58,6 +59,7 @@
         "@typedef",
         "@since",
         "@description",
-        "@constructor"
+        "@constructor",
+        "@class"
     ],
 }

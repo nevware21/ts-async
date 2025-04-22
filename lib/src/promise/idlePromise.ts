@@ -35,6 +35,8 @@ export function setDefaultIdlePromiseTimeout(idleDeadline?: number | undefined) 
  * Sets the global default idle timeout / deadline to use when no timeout is passed during promise creation.
  * @param idleDeadline - Specifies the time in milliseconds to use as the idle timeout / deadline by when any
  * outstanding chained items should be executed.
+ *
+ * @function
  * @group Idle
  */
 export const setDefaultIdleTimeout = (/*#__PURE__*/_pureAssign(setDefaultIdlePromiseTimeout));
@@ -68,6 +70,8 @@ export function createIdlePromise<T>(executor: PromiseExecutor<T>, timeout?: num
  * When resolved or rejected any additional chained operations will execute __asynchronously__ using
  * the `requestIdleCallback` API (if available) with the optional provided timeout value to schedule
  * when the chained items will be executed. (eg. `then()`; `catch()`; `finally()`).
+ *
+ * @function
  * @group Idle
  * @group Promise
  * @group All
@@ -84,7 +88,7 @@ export function createIdlePromise<T>(executor: PromiseExecutor<T>, timeout?: num
  * promises reject.
  * </ul>
  */
-export const createIdleAllPromise: <T>(input: Iterable<PromiseLike<T>>, timeout?: number) => IPromise<T[]> = /*#__PURE__*/_createAllPromise(createIdlePromise);
+export const createIdleAllPromise: <T>(input: Iterable<PromiseLike<T>>, timeout?: number) => IPromise<T[]> = (/*#__PURE__*/_createAllPromise(createIdlePromise));
 
 /**
  * Returns an idle Promise instance that is already resolved with the given value. If the value passed is
@@ -92,26 +96,30 @@ export const createIdleAllPromise: <T>(input: Iterable<PromiseLike<T>>, timeout?
  * If a new instance is returned then any chained operations will execute __asynchronously__ using the
  * `requestIdleCallback` API (if available) with the optional provided timeout value to schedule when
  * the chained items will be executed. (eg. `then()`; `finally()`).
+ *
+ * @function
  * @group Idle
  * @group Promise
  * @group Resolved
  * @param value - The value to be used by this `Promise`. Can also be a `Promise` or a thenable to resolve.
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createIdleResolvedPromise: <T>(value: T, timeout?: number) => IPromise<T> = /*#__PURE__*/_createResolvedPromise(createIdlePromise);
+export const createIdleResolvedPromise: <T>(value: T, timeout?: number) => IPromise<T> = (/*#__PURE__*/_createResolvedPromise(createIdlePromise));
 
 /**
  * Returns an idle Promise instance that is already rejected with the given reason.
  * Any chained operations will execute __asynchronously__ using the o`requestIdleCallback` API
  * (if available) with the optional provided timeout value to schedule when the chained items will
  * be executed. (eg. `catch()`; `finally()`).
+ *
+ * @function
  * @group Idle
  * @group Promise
  * @group Rejected
  * @param reason - The rejection reason
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createIdleRejectedPromise: <T = unknown>(reason: any, timeout?: number) => IPromise<T> = /*#__PURE__*/_createRejectedPromise(createIdlePromise);
+export const createIdleRejectedPromise: <T = unknown>(reason: any, timeout?: number) => IPromise<T> = (/*#__PURE__*/_createRejectedPromise(createIdlePromise));
 
 /**
  * Returns a single Promise instance that resolves to an array of the results from the input promises.

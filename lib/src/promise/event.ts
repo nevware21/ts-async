@@ -54,7 +54,7 @@ export function emitEvent(target: any, evtName: string, populateEvent: (theEvt: 
         if (handler) {
             handler(theEvt);
         } else {
-            let theConsole = getInst("console");
+            let theConsole: any = getInst("console");
             theConsole && (theConsole["error"] || theConsole["log"])(evtName, dumpObj(theEvt));
         }
     }

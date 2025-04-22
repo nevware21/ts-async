@@ -41,6 +41,8 @@ export function createSyncPromise<T>(executor: PromiseExecutor<T>): IPromise<T> 
  * and will reject with this first rejection message / error.
  * When resolved or rejected any additional chained operations will execute __synchronously__ at the point of
  * being added (eg. `then()`; `catch()`; `finally()`).
+ *
+ * @function
  * @group Synchronous
  * @group Promise
  * @group All
@@ -53,29 +55,33 @@ export function createSyncPromise<T>(executor: PromiseExecutor<T>): IPromise<T> 
  * promises reject.
  * </ul>
  */
-export const createSyncAllPromise: <T>(input: Iterable<PromiseLike<T>>) => IPromise<T[]> = /*#__PURE__*/_createAllPromise(createSyncPromise);
+export const createSyncAllPromise: <T>(input: Iterable<PromiseLike<T>>) => IPromise<T[]> = (/*#__PURE__*/_createAllPromise(createSyncPromise));
 
 /**
  * Returns a single synchronous Promise instance that is already resolved with the given value. If the value passed is
  * a promise then that promise is returned instead of creating a new synchronous promise instance.
  * If a new instance is returned then any chained operations will execute __synchronously__ at the point of being
  * added (calling `then()`).
+ *
+ * @function
  * @group Synchronous
  * @group Promise
  * @group Resolved
  * @param value - The value to be used by this `Promise`. Can also be a `Promise` or a thenable to resolve.
  */
-export const createSyncResolvedPromise: <T>(value: T) => IPromise<T> = /*#__PURE__*/_createResolvedPromise(createSyncPromise);
+export const createSyncResolvedPromise: <T>(value: T) => IPromise<T> = (/*#__PURE__*/_createResolvedPromise(createSyncPromise));
 
 /**
  * Returns a single synchronous Promise instance that is already rejected with the given reason.
  * Any chained operations will execute __synchronously__ at the point of being added (eg. `catch()`; `finally()`).
+ *
+ * @function
  * @group Synchronous
  * @group Promise
  * @group Rejected
  * @param reason - The rejection reason
  */
-export const createSyncRejectedPromise: <T = unknown>(reason: any) => IPromise<T> = /*#__PURE__*/_createRejectedPromise(createSyncPromise);
+export const createSyncRejectedPromise: <T = unknown>(reason: any) => IPromise<T> = (/*#__PURE__*/_createRejectedPromise(createSyncPromise));
 
 /**
  * Returns a single Promise instance that resolves to an array of the results from the input promises.

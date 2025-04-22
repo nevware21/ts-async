@@ -34,6 +34,10 @@
             "syntaxKind": "modifier"
         },
         {
+            "tagName": "@function",
+            "syntaxKind": "modifier"
+        },
+        {
             "tagName": "@interface",
             "syntaxKind": "block"
         },
@@ -51,7 +55,7 @@
         },
         {
             "tagName": "@class",
-            "syntaxKind": "block"
+            "syntaxKind": "modifier"
         },
         {
             "tagName": "@constructor",
@@ -83,7 +87,8 @@
       "@group": true,
       "@remarks": true,
       "@class": true,
-      "@constructor": true
+      "@constructor": true,
+      "@function": true
     }
   }
   
