@@ -110,11 +110,11 @@ export function iterForOfAsync<T = any>(iter: Iterator<T> | Iterable<T> | AsyncI
         if (!isIterator(iter)) {
             // Get the asyncIterator from the iterable
             !_iterAsyncSymbol && (_iterAsyncSymbol = createCachedValue(getKnownSymbol(WellKnownSymbols.asyncIterator)));
-            theIter = iter[_iterAsyncSymbol.v] ? iter[_iterAsyncSymbol.v]() : null;
+            theIter = (iter as any)[_iterAsyncSymbol.v] ? (iter as any)[_iterAsyncSymbol.v]() : null;
             if (!theIter) {
                 // Get the iterator from the iterable
                 !_iterSymbol && (_iterSymbol = createCachedValue(getKnownSymbol(WellKnownSymbols.iterator)));
-                theIter = iter[_iterSymbol.v] ? iter[_iterSymbol.v]() : null;
+                theIter = (iter as any)[_iterSymbol.v] ? (iter as any)[_iterSymbol.v]() : null;
             }
         }
         

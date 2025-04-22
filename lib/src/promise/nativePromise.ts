@@ -77,10 +77,10 @@ export function _clearPromiseCache(useNative: boolean) {
 /*#__NO_SIDE_EFFECTS__*/
 export function _createNativePromiseHelper<F>(name: string, func: () => ICachedValue<F>): ICachedValue<F> {
     !_promiseCls && (_promiseCls = createCachedValue<PromiseConstructor>((_useNative && safe(getInst, [STR_PROMISE]).v) || null as any));
-    if (_promiseCls.v && _promiseCls.v[name]) {
+    if (_promiseCls.v && (_promiseCls.v as any)[name]) {
         return createCachedValue(function<T extends readonly unknown[] | []>(input: T, timeout?: number) {
             return createNativePromise((resolve, reject) => {
-                _promiseCls.v[name](input).then(resolve, reject);
+                (_promiseCls.v as any)[name](input).then(resolve, reject);
             });
         } as F);
     }
@@ -171,6 +171,8 @@ export function createNativeAllPromise<T>(input: Iterable<PromiseLike<T>>, timeo
  * a promise then that promise is returned instead of creating a new asynchronous promise instance.
  * If a new instance is returned then any chained operations will execute __asynchronously__ using the optional
  * timeout value to schedule when the chained items will be executed.(eg. `then()`; `finally()`).
+ *
+ * @function
  * @group Alias
  * @group Promise
  * @group Resolved
@@ -178,12 +180,14 @@ export function createNativeAllPromise<T>(input: Iterable<PromiseLike<T>>, timeo
  * @param value - The value to be used by this `Promise`. Can also be a `Promise` or a thenable to resolve.
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createNativeResolvedPromise: <T>(value: T, timeout?: number) => Promise<T> =  /*#__PURE__*/_createResolvedPromise(createNativePromise);
+export const createNativeResolvedPromise: <T>(value: T, timeout?: number) => Promise<T> =  (/*#__PURE__*/_createResolvedPromise(createNativePromise));
 
 /**
  * Returns a single asynchronous Promise instance that is already rejected with the given reason.
  * Any chained operations will execute __asynchronously__ using the optional timeout value to schedule
  * when then chained items will be executed. (eg. `catch()`; `finally()`).
+ *
+ * @function
  * @group Alias
  * @group Promise
  * @group Rejected
@@ -191,7 +195,7 @@ export const createNativeResolvedPromise: <T>(value: T, timeout?: number) => Pro
  * @param reason - The rejection reason
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
-export const createNativeRejectedPromise: <T = unknown>(reason: any, timeout?: number) => Promise<T> = /*#__PURE__*/_createRejectedPromise(createNativePromise);
+export const createNativeRejectedPromise: <T = unknown>(reason: any, timeout?: number) => Promise<T> = (/*#__PURE__*/_createRejectedPromise(createNativePromise));
 
 /**
  * Returns a single asynchronous Promise instance that resolves to an array of the results from the input promises.

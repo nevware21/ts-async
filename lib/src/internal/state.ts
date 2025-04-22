@@ -23,6 +23,6 @@ export const enum ePromiseState {
  * @ignore -- Don't include in the generated documentation
  * @internal
  */
-export const STRING_STATES: string[] = /*#__PURE__*/[
+export const STRING_STATES: string[] = [
     "pending", "resolving", "resolved", REJECTED
 ];

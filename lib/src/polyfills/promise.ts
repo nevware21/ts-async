@@ -197,12 +197,13 @@ export interface PolyPromiseConstructor {
 /**
  * A full polyfill for the Promise class.
  * Represents the completion of an asynchronous operation, and its resulting value.
+ * @class PolyPromise
+ * @description The `PolyPromise` class is a polyfill for the native Promise class. It provides a way to work with asynchronous operations in a more manageable way.
  * @since 0.5.0
- * @class
  * @group Polyfill
  * @group Promise
  */
-export let PolyPromise = /*#__PURE__*/(function () {
+export let PolyPromise = (/*#__PURE__*/(function () {
     /**
      * Creates a new Promise.
      * @constructor
@@ -242,4 +243,4 @@ export let PolyPromise = /*#__PURE__*/(function () {
         return this._$.finally(onfinally);
     };
     return PolyPromiseImpl as unknown as PolyPromiseConstructor;
-}());
+}()));

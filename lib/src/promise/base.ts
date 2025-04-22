@@ -325,7 +325,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
     }
 
     if (hasSymbol()) {
-        _thePromise[getKnownSymbol<symbol>(WellKnownSymbols.toStringTag)] = "IPromise";
+        (_thePromise as any)[getKnownSymbol<symbol>(WellKnownSymbols.toStringTag)] = "IPromise";
     }
 
     let createStack: string;
@@ -489,12 +489,12 @@ export function _createAllSettledPromise(newPromise: PromiseCreatorFn, ..._args:
                 pending++;
                 doAwaitResponse(item, (value) => {
                     if (value.rejected) {
-                        values[idx] = {
+                        (values as any)[idx] = {
                             status: REJECTED,
                             reason: value.reason
                         };
                     } else {
-                        values[idx] = {
+                        (values as any)[idx] = {
                             status: "fulfilled",
                             value: value.value
                         };
