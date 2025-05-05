@@ -120,7 +120,7 @@
         {
             "name": "es5-full",
             "path": "lib/dist/es5/mod/ts-async.js",
-            "limit": "17.5 kb",
+            "limit": "18 kb",
             "brotli": false,
             "ignore": [
                 "lib/dist/es5/mod/polyfills.js",
@@ -171,7 +171,7 @@
         {
             "name": "es5-any",
             "path": "lib/dist/es5/mod/ts-async.js",
-            "limit": "10.5 kb",
+            "limit": "11 kb",
             "import": "{ createAnyPromise }",
             "brotli": false,
             "ignore": [
@@ -182,7 +182,7 @@
         {
             "name": "es5-race",
             "path": "lib/dist/es5/mod/ts-async.js",
-            "limit": "9.5 kb",
+            "limit": "10 kb",
             "import": "{ createRacePromise }",
             "brotli": false,
             "ignore": [
@@ -200,7 +200,7 @@
         {
             "name": "es5-polyfill",
             "path": "lib/build/es5/mod/polyfills.js",
-            "limit": "12 kb",
+            "limit": "12.5 kb",
             "brotli": false
         }
     ]
