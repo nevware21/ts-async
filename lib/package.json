@@ -110,7 +110,7 @@
         "rollup-plugin-istanbul": "^5.0.0",
         "rollup-plugin-cleanup": "^3.2.1",
         "rollup-plugin-sourcemaps": "^0.6.3",
-        "sinon": "^15.0.0",
+        "sinon": "^14.0.0",
         "ts-mocha": "^11.1.0",
         "typedoc": "^0.28.2",
         "typedoc-github-theme": "^0.3.0",
