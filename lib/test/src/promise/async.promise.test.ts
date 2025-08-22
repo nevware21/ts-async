@@ -115,15 +115,15 @@ describe("Validate createAsyncPromise() timeout usages", () => {
 
     it("Test promise with invalid resolver", () => {
         _expectException(() => {
-            createAsyncPromise(<any>"Hello World");
+            createAsyncPromise("Hello World" as any);
         }, "executor is not a function");
 
         _expectException(() => {
-            createAsyncPromise(<any>false);
+            createAsyncPromise(false as any);
         }, "executor is not a function");
 
         _expectException(() => {
-            createAsyncPromise(<any>true);
+            createAsyncPromise(true as any);
         }, "executor is not a function");
     });
 

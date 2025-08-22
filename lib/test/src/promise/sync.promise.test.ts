@@ -115,15 +115,15 @@ describe("Validate createSyncPromise() timeout usages", () => {
 
     it("Test promise with invalid resolver", () => {
         _expectException(() => {
-            createSyncPromise(<any>"Hello World");
+            createSyncPromise("Hello World" as any);
         }, "executor is not a function");
 
         _expectException(() => {
-            createSyncPromise(<any>false);
+            createSyncPromise(false as any);
         }, "executor is not a function");
 
         _expectException(() => {
-            createSyncPromise(<any>true);
+            createSyncPromise(true as any);
         }, "executor is not a function");
     });
 
