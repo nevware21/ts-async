@@ -295,15 +295,15 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
     it("Test promise with invalid resolver", () => {
         _expectException(() => {
-            createNewPromise(<any>"Hello World");
+            createNewPromise("Hello World" as any);
         }, " is not a function");
 
         _expectException(() => {
-            createNewPromise(<any>false);
+            createNewPromise(false as any);
         }, " is not a function");
 
         _expectException(() => {
-            createNewPromise(<any>true);
+            createNewPromise(true as any);
         }, " is not a function");
     });
 
