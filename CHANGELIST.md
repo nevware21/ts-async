@@ -1,3 +1,12 @@
+# v0.5.5 TBD
+
+## Changelog
+
+- [#363](https://github.com/nevware21/ts-async/issues/363) [BUG] Fix @sinonjs/samsam dependency compatibility issue
+  - Downgrade sinon from v15.0.0 to v14.0.0 to resolve optional chaining syntax parsing error in browser tests
+  - This fixes karma-typescript parser error: "Unexpected token (197:30)" in @sinonjs/samsam v8.0.3
+  - Now uses @sinonjs/samsam v7.0.1 which is compatible with the karma-typescript parser
+
 # v0.5.4 Dec 14th, 2024
 
 ## Changelog
