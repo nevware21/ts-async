@@ -9,13 +9,16 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 5
 
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    open-pull-requests-limit: 5
 
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/lib" # Location of package manifests
     schedule:
       interval: "daily"
+    open-pull-requests-limit: 5
