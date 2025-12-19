@@ -74,6 +74,8 @@ jobs:
           if [ -f rush.json ]; then git add rush.json; fi
           if [ -f common-versions.json ]; then git add common-versions.json; fi
           if [ -f common/config/rush/npm-shrinkwrap.json ]; then git add common/config/rush/npm-shrinkwrap.json; fi
+          # Add all changes in common/scripts folder if it exists
+          if [ -d common/scripts ]; then git add common/scripts/; fi
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
