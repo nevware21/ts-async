@@ -1,6 +1,6 @@
 name: Sync Rush.json Version
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize]
     paths:
       - "**/package.json"
@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 2  # Fetch current commit + previous commit
       - name: Detect Rush bump
         id: detect
@@ -42,7 +44,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -68,8 +71,8 @@ jobs:
 
       - name: Commit changes
         run: |
-          git config --global user.name "dependabot-sync[bot]"
-          git config --global user.email "dependabot-sync[bot]@users.noreply.github.com"
+          git config --global user.name "dependabot[bot]"
+          git config --global user.email "49699333+dependabot[bot]@users.noreply.github.com"
           # Add files that exist
           if [ -f rush.json ]; then git add rush.json; fi
           if [ -f common-versions.json ]; then git add common-versions.json; fi
