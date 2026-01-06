@@ -175,7 +175,7 @@ export interface PolyPromiseConstructor {
      * @param timeout - Optional timeout to wait before processing the items, defaults to zero, only used when Native promises are not available.
      * @returns A pending `Promise` that will resolve to an array of {@link IPromiseResult } objects that each describe the outcome of each promise.
      */
-    allSettled<T extends readonly unknown[] | []>(values: T, timeout?: number): Promise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }>;
+    allSettled<T extends readonly unknown[] | []>(values: T, timeout?: number): IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }>;
 
     /**
      * Returns a single Promise instance that resolves to an array of the results from the input promises.

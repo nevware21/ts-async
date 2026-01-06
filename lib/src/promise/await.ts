@@ -48,7 +48,7 @@ import { REJECTED } from "../internal/constants";
  * });
  * ```
  */
-export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | Promise<T>, cb: (response: AwaitResponse<T | TResult1>) => T | TResult1 | TResult2 | Promise<T | TResult1 | TResult2>): T | TResult1 | TResult2 | Promise<T | TResult1 | TResult2>;
+export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T> | PromiseLike<T>, cb: (response: AwaitResponse<T | TResult1>) => T | TResult1 | TResult2 | IPromise<T | TResult1 | TResult2> | PromiseLike<T | TResult1 | TResult2>): T | TResult1 | TResult2 | IPromise<T | TResult1 | TResult2>;
 
 /**
  * Helper to coallesce the promise resolved / reject into a single callback to simplify error handling.
@@ -176,7 +176,7 @@ export function doAwaitResponse<T, TResult1 = T, TResult2 = never>(value: T | IP
  * });
  * ```
  */
-export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | Promise<T>, resolveFn: ResolvedPromiseHandler<T, TResult1>, rejectFn?: RejectedPromiseHandler<TResult2>, finallyFn?: FinallyPromiseHandler): TResult1 | TResult2 | Promise<TResult1 | TResult2>;
+export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T> | PromiseLike<T>, resolveFn: ResolvedPromiseHandler<T, TResult1>, rejectFn?: RejectedPromiseHandler<TResult2>, finallyFn?: FinallyPromiseHandler): TResult1 | TResult2 | IPromise<TResult1 | TResult2>;
 
 /**
  * Wait for the promise to resolve or reject, if resolved the callback function will be called with it's value and if
@@ -288,7 +288,7 @@ export function doAwait<T, TResult1 = T, TResult2 = never>(value: T | IPromise<T
  * @param value - The value or promise like value to wait for
  * @param finallyFn - The finally function to call once the promise has resolved or rejected
  */
-export function doFinally<T>(value: T | Promise<T>, finallyFn: FinallyPromiseHandler): T | Promise<T>;
+export function doFinally<T>(value: T | IPromise<T> | PromiseLike<T>, finallyFn: FinallyPromiseHandler): T | IPromise<T>;
 
 /**
  * Wait for the promise to resolve or reject and then call the finallyFn. If the passed promise argument is not a promise the callback

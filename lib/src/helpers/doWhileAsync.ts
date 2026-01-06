@@ -185,7 +185,7 @@ function _doneChk<T>(isDone: boolean, state: IWhileState<T>, value: T, thisArg?:
  * console.log(result); // my old friend
  * ```
  */
-export function doWhileAsync<T>(callbackFn: (state: IWhileState<T>) => T | IPromise<T>, isDoneFn?: (state: IWhileState<T>) => boolean | void | IPromise<boolean | void>, thisArg?: any): T | IPromise<T> {
+export function doWhileAsync<T>(callbackFn: (state: IWhileState<T>) => T | IPromise<T> | PromiseLike<T>, isDoneFn?: (state: IWhileState<T>) => boolean | void | IPromise<boolean | void> | PromiseLike<boolean | void>, thisArg?: any): T | IPromise<T> {
     let promise: T | IPromise<T>;
     let resolve: ResolvePromiseHandler<T>;
     let reject: RejectPromiseHandler | never = (reason: any) => {

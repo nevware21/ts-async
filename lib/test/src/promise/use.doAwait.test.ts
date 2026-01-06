@@ -7,7 +7,7 @@
  */
 
 import { assert } from "chai";
-import { CreateIteratorContext, arrForEach, createIterable, dumpObj, getGlobal, isNode, isWebWorker, objForEachKey, objHasOwn, scheduleTimeout, setBypassLazyCache, setDefaultIdleTimeout } from "@nevware21/ts-utils";
+import { CreateIteratorContext, arrForEach, createIterable, dumpObj, getGlobal, isNode, isPlainObject, isWebWorker, objForEachKey, objHasOwn, scheduleTimeout, setBypassLazyCache, setDefaultIdleTimeout } from "@nevware21/ts-utils";
 import { createAsyncAllPromise, createAsyncAllSettledPromise, createAsyncPromise, createAsyncRacePromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";
 import { doAwait, doAwaitResponse } from "../../../src/promise/await";
 import { setPromiseDebugState } from "../../../src/promise/debug";
@@ -74,6 +74,7 @@ interface TestDefinition {
     creatorRace: <T>(values: Iterable<T | PromiseLike<T>>, timeout?: number) => IPromise<Awaited<T>>;
     checkState: boolean;
     checkChainedState: boolean;
+    isPlainObject: boolean;
 }
 
 type TestImplementations = { [key: string]: TestDefinition };
@@ -89,7 +90,8 @@ let testImplementations: TestImplementations = {
         creatorAllSettled: Promise.allSettled.bind(Promise),
         creatorRace: Promise.race.bind(Promise),
         checkState: false,
-        checkChainedState: false
+        checkChainedState: false,
+        isPlainObject: false
     },
     "native": {
         creator: <T>(executor: PromiseExecutor<T>) => {
@@ -101,7 +103,8 @@ let testImplementations: TestImplementations = {
         creatorAllSettled: createNativeAllSettledPromise,
         creatorRace: createNativeRacePromise,
         checkState: true,
-        checkChainedState: false
+        checkChainedState: false,
+        isPlainObject: false
     },
     "async": {
         creator: <T>(executor: PromiseExecutor<T>) => {
@@ -113,7 +116,8 @@ let testImplementations: TestImplementations = {
         creatorAllSettled: createAsyncAllSettledPromise,
         creatorRace: createAsyncRacePromise,
         checkState: true,
-        checkChainedState: true
+        checkChainedState: true,
+        isPlainObject: true
     },
     "idle": {
         creator: <T>(executor: PromiseExecutor<T>) => {
@@ -125,7 +129,8 @@ let testImplementations: TestImplementations = {
         creatorAllSettled: createIdleAllSettledPromise,
         creatorRace: createIdleRacePromise,
         checkState: true,
-        checkChainedState: true
+        checkChainedState: true,
+        isPlainObject: true
     },
     "sync": {
         creator: <T>(executor: PromiseExecutor<T>) => {
@@ -137,7 +142,8 @@ let testImplementations: TestImplementations = {
         creatorAllSettled: createSyncAllSettledPromise,
         creatorRace: createSyncRacePromise,
         checkState: true,
-        checkChainedState: true
+        checkChainedState: true,
+        isPlainObject: true
     },
     "polyfill": {
         creator: <T>(executor: PromiseExecutor<T>) => {
@@ -149,7 +155,8 @@ let testImplementations: TestImplementations = {
         creatorAllSettled: PolyPromise.allSettled,
         creatorRace: PolyPromise.race,
         checkState: true,
-        checkChainedState: true
+        checkChainedState: true,
+        isPlainObject: false
     },
     "default": {
         creator: createPromise,
@@ -159,7 +166,8 @@ let testImplementations: TestImplementations = {
         creatorAllSettled: createAllSettledPromise,
         creatorRace: createRacePromise,
         checkState: false,
-        checkChainedState: false
+        checkChainedState: false,
+        isPlainObject: false
     }
 }
 
@@ -200,7 +208,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
         }
 
         setPromiseDebugState(true, _debug);
-        
+
         if (testKey === "default") {
             setCreatePromiseImpl(null as any);
         // } else {
@@ -282,6 +290,7 @@ function batchTests(testKey: string, definition: TestDefinition) {
 
         assert.equal(executorRun, true, "Expecting the executor should have been run already");
         assert.equal(executorResolved, false, "Expecting the executor should not have called the resolve");
+        assert.equal(isPlainObject(promise), definition.isPlainObject, "isPlainObject - " + typeof promise);
         
         if (checkState) {
             // The asynchronous promise should be pending
