@@ -1,11 +1,15 @@
-# v0.5.5 TBD
+# v0.5.5 Jan 5th, 2026
 
 ## Changelog
 
+- [#420](https://github.com/nevware21/ts-async/issues/420) [REFACTOR] Fix signatures to use and return IPromise interface instead of Promise
+  - Add isPlainObject validation to Promise tests to ensure different Promise implementations return expected object types
 - [#363](https://github.com/nevware21/ts-async/issues/363) [BUG] Fix @sinonjs/samsam dependency compatibility issue
   - Downgrade sinon from v15.0.0 to v14.0.0 to resolve optional chaining syntax parsing error in browser tests
   - This fixes karma-typescript parser error: "Unexpected token (197:30)" in @sinonjs/samsam v8.0.3
   - Now uses @sinonjs/samsam v7.0.1 which is compatible with the karma-typescript parser
+
+For full details see [v0.5.4...v0.5.5](https://github.com/nevware21/ts-async/compare/v0.5.4...v0.5.5)
 
 # v0.5.4 Dec 14th, 2024
 
