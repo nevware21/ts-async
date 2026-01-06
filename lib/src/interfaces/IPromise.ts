@@ -112,7 +112,7 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
      * });
      * ```
      */
-    then<TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): Promise<TResult1 | TResult2>;
+    then<TResult1 = T, TResult2 = never>(onResolved?: ResolvedPromiseHandler<T, TResult1>, onRejected?: RejectedPromiseHandler<TResult2>): IPromise<TResult1 | TResult2>;
 
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -166,7 +166,7 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
      * // expected output: Uh-oh!
      * ```
      */
-    catch<TResult = never>(onRejected?: ((reason: any) => TResult | IPromise<TResult>) | undefined | null): Promise<T | TResult>;
+    catch<TResult = never>(onRejected?: ((reason: any) => TResult | IPromise<TResult>) | undefined | null): IPromise<T | TResult>;
  
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The

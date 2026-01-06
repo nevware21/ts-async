@@ -36,5 +36,5 @@ export interface IWhileState<T> {
     /**
      * Callback to enable the caller stop the while loop.
      */
-    isDone: boolean | ((state: IWhileState<T>) => boolean | void | IPromise<boolean | void>);
+    isDone: boolean | ((state: IWhileState<T>) => boolean | void | IPromise<boolean | void> | PromiseLike<boolean | void>);
 }
