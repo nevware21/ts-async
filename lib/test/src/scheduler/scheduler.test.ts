@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { assert } from "chai";
+import { assert } from "@nevware21/tripwire";
 import { arrForEach, asString, dumpObj, getGlobal, getLength, isNode, isPromiseLike, isString, isWebWorker, objForEachKey, objHasOwn, scheduleTimeout, setBypassLazyCache } from "@nevware21/ts-utils";
 import { PromiseExecutor } from "../../../src/interfaces/types";
 import { IPromise } from "../../../src/interfaces/IPromise";

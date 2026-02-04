@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { assert } from "chai";
+import { assert } from "@nevware21/tripwire";
 import { doWhileAsync } from "../../../src/helpers/doWhileAsync";
 import { isPromiseLike } from "@nevware21/ts-utils";
 import { createResolvedPromise } from "../../../src/promise/promise";

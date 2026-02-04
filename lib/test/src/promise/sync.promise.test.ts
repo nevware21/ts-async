@@ -7,7 +7,7 @@
  */
 
 import * as sinon from "sinon";
-import { assert } from "chai";
+import { assert } from "@nevware21/tripwire";
 import { arrForEach, dumpObj, getGlobal, isNode, isWebWorker, objHasOwn, scheduleTimeout, setBypassLazyCache } from "@nevware21/ts-utils";
 import { IPromise } from "../../../src/interfaces/IPromise";
 import { createSyncAllPromise, createSyncPromise, createSyncRejectedPromise, createSyncResolvedPromise } from "../../../src/promise/syncPromise";

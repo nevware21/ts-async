@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { assert } from "chai";
+import { assert } from "@nevware21/tripwire";
 import { getGlobal, objHasOwn, isWebWorker, isNode, scheduleTimeout, dumpObj, arrForEach, objForEachKey, setBypassLazyCache, CreateIteratorContext, isPromiseLike, setDefaultIdleTimeout } from "@nevware21/ts-utils";
 import { PolyPromise } from "../../../src/polyfills/promise";
 import { createAsyncAllPromise, createAsyncAllSettledPromise, createAsyncAnyPromise, createAsyncPromise, createAsyncRacePromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";

@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { assert, expect } from "chai";
+import { assert, expect } from "@nevware21/tripwire";
 import { doAwait, doAwaitResponse, doFinally } from "../../../src/promise/await";
 import { arrForEach } from "@nevware21/ts-utils";
 import { isPromiseLike } from "@nevware21/ts-utils";
