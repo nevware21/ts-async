@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { assert } from "chai";
+import { assert } from "@nevware21/tripwire";
 import { iterForOfAsync } from "../../../src/helpers/iterForOfAsync";
 import { CreateIteratorContext, arrSlice, createArrayIterator, createIterator, createRangeIterator, isPromiseLike, objKeys } from "@nevware21/ts-utils";
 import { createTimeoutPromise } from "../../../src/promise/timeoutPromise";
