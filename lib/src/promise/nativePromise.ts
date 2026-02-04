@@ -65,12 +65,12 @@ let _anyNativeCreator: ICachedValue<<T extends readonly unknown[] | []>(values: 
  */
 export function _clearPromiseCache(useNative: boolean) {
 //#ifdef _DEBUG
-    _useNative = !!useNative;
-    _promiseCls = null as any;
-    _allCreator = null as any;
-    _allNativeSettledCreator = null as any;
-    _raceNativeCreator = null as any;
-    _anyNativeCreator = null as any;
+//#:(!_DEBUG)     _useNative = !!useNative;
+//#:(!_DEBUG)     _promiseCls = null as any;
+//#:(!_DEBUG)     _allCreator = null as any;
+//#:(!_DEBUG)     _allNativeSettledCreator = null as any;
+//#:(!_DEBUG)     _raceNativeCreator = null as any;
+//#:(!_DEBUG)     _anyNativeCreator = null as any;
 //#endif
 }
 

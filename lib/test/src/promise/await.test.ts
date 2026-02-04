@@ -333,7 +333,7 @@ describe("Validate doAwaitResponse", () => {
             value: "resolved",
             rejected: false
         });
-        expect(result).to.equal("callback return value");
+        expect(result).to.be.equal("callback return value");
     });
 
     it ("should handle callbacks that return promises", async () => {
@@ -348,7 +348,7 @@ describe("Validate doAwaitResponse", () => {
             value: "resolved",
             rejected: false
         });
-        expect(result).to.equal("callback return value");
+        expect(result).to.be.equal("callback return value");
     });
 
     it("should handle callbacks that throw errors", async () => {
