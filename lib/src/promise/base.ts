@@ -25,7 +25,7 @@ import { REJECTED, STR_PROMISE } from "../internal/constants";
 import { IPromiseResult } from "../interfaces/IPromiseResult";
 
 //#ifdef DEBUG
-import { _debugLog } from "./debug";
+//#:(!DEBUG) import { _debugLog } from "./debug";
 //#endif
 
 const NODE_UNHANDLED_REJECTION = "unhandledRejection";
@@ -62,16 +62,16 @@ function dumpFnObj(value: any) {
 }
 
 //#ifdef DEBUG
-function _getCaller(prefix: string, start: number) {
-    let stack = new Error().stack;
-    if (stack) {
-        let lines = stack.split("\n");
-        if (lines.length > start) {
-            return prefix + ":" + arrSlice(lines, start, start + 5).join("\n") + "\n...";
-        }
-    }
-    return null;
-}
+//#:(!DEBUG) function _getCaller(prefix: string, start: number) {
+//#:(!DEBUG)     let stack = new Error().stack;
+//#:(!DEBUG)     if (stack) {
+//#:(!DEBUG)         let lines = stack.split("\n");
+//#:(!DEBUG)         if (lines.length > start) {
+//#:(!DEBUG)             return prefix + ":" + arrSlice(lines, start, start + 5).join("\n") + "\n...";
+//#:(!DEBUG)         }
+//#:(!DEBUG)     }
+//#:(!DEBUG)     return null;
+//#:(!DEBUG) }
 //#endif
 
 /*#__NO_SIDE_EFFECTS__*/
@@ -129,7 +129,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
 
             let thenPromise = newPromise<TResult1, TResult2>(function (resolve, reject) {
                 //#ifdef DEBUG
-                _debugLog(_toString(), _getCaller("_then", 7));
+                //#:(!DEBUG) _debugLog(_toString(), _getCaller("_then", 7));
                 //#endif
 
                 // Queue the new promise returned to be resolved or rejected
@@ -142,12 +142,12 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                         // of this promise. If the corresponding `handler` does not exist, simply
                         // pass through the settled value.
                         //#ifdef DEBUG
-                        _debugLog(_toString(), "Handling settled value " + dumpFnObj(_settledValue));
+                        //#:(!DEBUG) _debugLog(_toString(), "Handling settled value " + dumpFnObj(_settledValue));
                         //#endif
                         let handler = _state === ePromiseState.Resolved ? onResolved : onRejected;
                         let value = isUndefined(handler) ? _settledValue : (isFunction(handler) ? handler(_settledValue) : handler);
                         //#ifdef DEBUG
-                        _debugLog(_toString(), "Handling Result " + dumpFnObj(value));
+                        //#:(!DEBUG) _debugLog(_toString(), "Handling Result " + dumpFnObj(value));
                         //#endif
     
                         if (isPromiseLike(value)) {
@@ -172,7 +172,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                 });
     
                 //#ifdef DEBUG
-                _debugLog(_toString(), "Added to Queue " + _queue.length);
+                //#:(!DEBUG) _debugLog(_toString(), "Added to Queue " + _queue.length);
                 //#endif
     
                 // If this promise is already settled, then immediately process the callback we
@@ -183,7 +183,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             }, additionalArgs);
     
             //#ifdef DEBUG
-            _debugLog(_toString(), "Created -> " + thenPromise.toString());
+            //#:(!DEBUG) _debugLog(_toString(), "Created -> " + thenPromise.toString());
             //#endif
     
             return thenPromise;
@@ -230,7 +230,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             _queue = [];
 
             //#ifdef DEBUG
-            _debugLog(_toString(), "Processing queue " + pending.length);
+            //#:(!DEBUG) _debugLog(_toString(), "Processing queue " + pending.length);
             //#endif
 
             _handled = true;
@@ -238,12 +238,12 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             _unHandledRejectionHandler = null;
             processor(pending);
             //#ifdef DEBUG
-            _debugLog(_toString(), "Processing done");
+            //#:(!DEBUG) _debugLog(_toString(), "Processing done");
             //#endif
 
         } else {
             //#ifdef DEBUG
-            _debugLog(_toString(), "Empty Processing queue ");
+            //#:(!DEBUG) _debugLog(_toString(), "Empty Processing queue ");
             //#endif
         }
     }
@@ -254,7 +254,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                 if (newState === ePromiseState.Resolved && isPromiseLike(theValue)) {
                     _state = ePromiseState.Resolving;
                     //#ifdef DEBUG
-                    _debugLog(_toString(), "Resolving");
+                    //#:(!DEBUG) _debugLog(_toString(), "Resolving");
                     //#endif
                     theValue.then(
                         _createSettleIfFn(ePromiseState.Resolved, ePromiseState.Resolving),
@@ -266,18 +266,18 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                 _hasResolved = true;
                 _settledValue = theValue;
                 //#ifdef DEBUG
-                _debugLog(_toString(), _strState());
+                //#:(!DEBUG) _debugLog(_toString(), _strState());
                 //#endif
                 _processQueue();
                 if (!_handled && newState === ePromiseState.Rejected && !_unHandledRejectionHandler) {
                     //#ifdef DEBUG
-                    _debugLog(_toString(), "Setting up unhandled rejection");
+                    //#:(!DEBUG) _debugLog(_toString(), "Setting up unhandled rejection");
                     //#endif
                     _unHandledRejectionHandler = scheduleTimeout(_notifyUnhandledRejection, _unhandledRejectionTimeout)
                 }
             } else {
                 //#ifdef DEBUG
-                _debugLog(_toString(), "Already " + _strState());
+                //#:(!DEBUG) _debugLog(_toString(), "Already " + _strState());
                 //#endif
             }
         };
@@ -289,7 +289,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
             _handled = true;
             if (isNode()) {
                 //#ifdef DEBUG
-                _debugLog(_toString(), "Emitting " + NODE_UNHANDLED_REJECTION);
+                //#:(!DEBUG) _debugLog(_toString(), "Emitting " + NODE_UNHANDLED_REJECTION);
                 //#endif
                 process.emit(NODE_UNHANDLED_REJECTION, _settledValue, _thePromise);
             } else {
@@ -298,7 +298,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                 !_hasPromiseRejectionEvent && (_hasPromiseRejectionEvent = createCachedValue(safe(getInst<_PromiseRejectionEvent>, [STR_PROMISE + "RejectionEvent"]).v));
 
                 //#ifdef DEBUG
-                _debugLog(_toString(), "Emitting " + UNHANDLED_REJECTION);
+                //#:(!DEBUG) _debugLog(_toString(), "Emitting " + UNHANDLED_REJECTION);
                 //#endif
                 emitEvent(gbl, UNHANDLED_REJECTION, (theEvt: any) => {
                     objDefine(theEvt, "promise", { g: () => _thePromise });
@@ -330,7 +330,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
 
     let createStack: string;
     //#if DEBUG
-    createStack = _getCaller("Created", 5);
+    //#:(!{DEBUG}) createStack = _getCaller("Created", 5);
     //#endif
     function _toString() {
         return "IPromise" + (_promiseDebugEnabled ? "[" + _id + (!isUndefined(_parentId) ? (":" + _parentId) : "") + "]" : "") + " " + _strState() + (_hasResolved ? (" - " + dumpFnObj(_settledValue)) : "") + (createStack ? " @ " + createStack : "");
@@ -346,7 +346,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         const _rejectFn = _createSettleIfFn(ePromiseState.Rejected, ePromiseState.Pending);
         try {
             //#ifdef DEBUG
-            _debugLog(_toString(), "Executing");
+            //#:(!DEBUG) _debugLog(_toString(), "Executing");
             //#endif
             executor.call(
                 _thePromise,
@@ -354,18 +354,18 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                 _rejectFn);
         } catch (e) {
             //#ifdef DEBUG
-            _debugLog(_toString(), "Exception thrown: " + dumpFnObj(e));
+            //#:(!DEBUG) _debugLog(_toString(), "Exception thrown: " + dumpFnObj(e));
             //#endif
             _rejectFn(e);
         }
 
         //#ifdef DEBUG
-        _debugLog(_toString(), "~Executing");
+        //#:(!DEBUG) _debugLog(_toString(), "~Executing");
         //#endif
     })();
 
     //#ifdef DEBUG
-    _debugLog(_toString(), "Returning");
+    //#:(!DEBUG) _debugLog(_toString(), "Returning");
     //#endif
     return _thePromise;
 }
@@ -437,7 +437,7 @@ export function _createResolvedPromise(newPromise: PromiseCreatorFn): <T>(value:
     
         return newPromise((resolve) => {
             //#ifdef DEBUG
-            _debugLog(String(this), "Resolving Promise");
+            //#:(!DEBUG) _debugLog(String(this), "Resolving Promise");
             //#endif
             resolve(value);
         }, additionalArgs);
@@ -459,7 +459,7 @@ export function _createRejectedPromise(newPromise: PromiseCreatorFn): <T>(reason
         let additionalArgs = arrSlice(arguments, 1);
         return newPromise((_resolve, reject) => {
             //#ifdef DEBUG
-            _debugLog(String(this), "Rejecting Promise");
+            //#:(!DEBUG) _debugLog(String(this), "Rejecting Promise");
             //#endif
             reject(reason);
         }, additionalArgs);

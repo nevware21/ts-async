@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { assert } from "chai";
+import { assert } from "@nevware21/tripwire";
 import { CreateIteratorContext, arrForEach, createIterable, dumpObj, getGlobal, isNode, isPlainObject, isWebWorker, objForEachKey, objHasOwn, scheduleTimeout, setBypassLazyCache, setDefaultIdleTimeout } from "@nevware21/ts-utils";
 import { createAsyncAllPromise, createAsyncAllSettledPromise, createAsyncPromise, createAsyncRacePromise, createAsyncRejectedPromise, createAsyncResolvedPromise } from "../../../src/promise/asyncPromise";
 import { doAwait, doAwaitResponse } from "../../../src/promise/await";

@@ -20,7 +20,7 @@ let _debugHandled: any;
 export let _promiseDebugEnabled = false;
 
 //#ifdef DEBUG
-let _theLogger: (id: string, message: string) => void = null;
+//#:(!DEBUG) let _theLogger: (id: string, message: string) => void = null;
 //#endif
 
 /**
@@ -31,9 +31,9 @@ let _theLogger: (id: string, message: string) => void = null;
  */
 export const _debugLog = (/*#__PURE__*/_pureAssign((id: string, message: string) => {
     //#ifdef DEBUG
-    if (_theLogger) {
-        _theLogger(id, message);
-    }
+    //#:(!DEBUG) if (_theLogger) {
+    //#:(!DEBUG)     _theLogger(id, message);
+    //#:(!DEBUG) }
     //#endif
 }));
 
@@ -100,6 +100,6 @@ export function _addDebugState(thePromise: any, stateFn: () => string, resultFn:
 export function setPromiseDebugState(enabled: boolean, logger?: (id: string, message: string) => void) {
     _promiseDebugEnabled = enabled;
     //#ifdef DEBUG
-    _theLogger = logger;
+    //#:(!DEBUG) _theLogger = logger;
     //#endif
 }

@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { assert } from "chai";
+import { assert } from "@nevware21/tripwire";
 import { createIdlePromise, setDefaultIdlePromiseTimeout } from "../../../src/promise/idlePromise";
 import { getGlobal, setBypassLazyCache } from "@nevware21/ts-utils";
 import { setPromiseDebugState } from "../../../src/promise/debug";
