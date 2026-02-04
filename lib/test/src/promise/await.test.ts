@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-import { assert, expect } from "chai";
+import { assert, expect } from "@nevware21/tripwire";
 import { doAwait, doAwaitResponse, doFinally } from "../../../src/promise/await";
 import { arrForEach } from "@nevware21/ts-utils";
 import { isPromiseLike } from "@nevware21/ts-utils";
@@ -333,7 +333,7 @@ describe("Validate doAwaitResponse", () => {
             value: "resolved",
             rejected: false
         });
-        expect(result).to.equal("callback return value");
+        expect(result).to.be.equal("callback return value");
     });
 
     it ("should handle callbacks that return promises", async () => {
@@ -348,7 +348,7 @@ describe("Validate doAwaitResponse", () => {
             value: "resolved",
             rejected: false
         });
-        expect(result).to.equal("callback return value");
+        expect(result).to.be.equal("callback return value");
     });
 
     it("should handle callbacks that throw errors", async () => {
