@@ -7,10 +7,7 @@
     {
       "packageName": "@nevware21/ts-async",
       "projectFolder": "lib",
-      "shouldPublish": true,
-      "cyclicDependencyProjects": [
-        "@nevware21/tripwire"
-      ]
+      "shouldPublish": true
     }
   ]
 }
