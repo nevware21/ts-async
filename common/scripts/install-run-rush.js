@@ -16,16 +16,6 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 176760
-/*!****************************!*\
-  !*** external "node:path" ***!
-  \****************************/
-(module) {
-
-module.exports = require("node:path");
-
-/***/ },
-
 /***/ 973024
 /*!**************************!*\
   !*** external "node:fs" ***!
@@ -33,6 +23,16 @@ module.exports = require("node:path");
 (module) {
 
 module.exports = require("node:fs");
+
+/***/ },
+
+/***/ 176760
+/*!****************************!*\
+  !*** external "node:path" ***!
+  \****************************/
+(module) {
+
+module.exports = require("node:path");
 
 /***/ }
 
