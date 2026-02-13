@@ -49,26 +49,6 @@ function escapeArgumentIfNeeded(command, isWindows = IS_WINDOWS) {
 
 /***/ },
 
-/***/ 176760
-/*!****************************!*\
-  !*** external "node:path" ***!
-  \****************************/
-(module) {
-
-module.exports = require("node:path");
-
-/***/ },
-
-/***/ 731421
-/*!*************************************!*\
-  !*** external "node:child_process" ***!
-  \*************************************/
-(module) {
-
-module.exports = require("node:child_process");
-
-/***/ },
-
 /***/ 832286
 /*!************************************************!*\
   !*** ./lib-esnext/utilities/npmrcUtilities.js ***!
@@ -337,13 +317,13 @@ function isVariableSetInNpmrcFile(sourceNpmrcFolder, variableKey, supportEnvVarF
 
 /***/ },
 
-/***/ 848161
-/*!**************************!*\
-  !*** external "node:os" ***!
-  \**************************/
+/***/ 731421
+/*!*************************************!*\
+  !*** external "node:child_process" ***!
+  \*************************************/
 (module) {
 
-module.exports = require("node:os");
+module.exports = require("node:child_process");
 
 /***/ },
 
@@ -354,6 +334,26 @@ module.exports = require("node:os");
 (module) {
 
 module.exports = require("node:fs");
+
+/***/ },
+
+/***/ 848161
+/*!**************************!*\
+  !*** external "node:os" ***!
+  \**************************/
+(module) {
+
+module.exports = require("node:os");
+
+/***/ },
+
+/***/ 176760
+/*!****************************!*\
+  !*** external "node:path" ***!
+  \****************************/
+(module) {
+
+module.exports = require("node:path");
 
 /***/ }
 
