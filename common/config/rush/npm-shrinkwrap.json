@@ -10,7 +10,7 @@
       "dependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.48.1",
-        "@nevware21/tripwire": ">= 0.1.5 < 2.x",
+        "@nevware21/tripwire": ">= 0.1.7 < 2.x",
         "@nevware21/ts-preproc": "^0.1.3",
         "@nevware21/ts-utils": ">= 0.12.6 < 2.x",
         "@rollup/plugin-commonjs": "^29.0.0",
@@ -1140,11 +1140,11 @@
     "node_modules/@rush-temp/ts-async": {
       "version": "0.0.0",
       "resolved": "file:projects/ts-async.tgz",
-      "integrity": "sha512-cv8MsCoITAAMeamo3uoIEknIRTO42lIflBiLT8gy8Yi1GhktslPEKOkCo3XrU2NFIxpPTxXo2SW9KmtSm3fwgA==",
+      "integrity": "sha512-hUqLsJpDDzZR2o8xKhAUfH2tULEpWx6Rq3BsGjh4GU62GEFYJyssxelLnpuQJc3iwF/ga3pPaO2hn1d/jl2AvA==",
       "dependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.48.1",
-        "@nevware21/tripwire": ">= 0.1.5 < 2.x",
+        "@nevware21/tripwire": ">= 0.1.7 < 2.x",
         "@nevware21/ts-preproc": "^0.1.3",
         "@nevware21/ts-utils": ">= 0.12.6 < 2.x",
         "@rollup/plugin-commonjs": "^29.0.0",
