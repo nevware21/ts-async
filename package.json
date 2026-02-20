@@ -106,7 +106,7 @@
         "copyfiles": "^2.4.1",
         "eslint": "^8.56.0",
         "eslint-formatter-codeframe": "^7.32.1",
-        "eslint-plugin-security": "^1.7.1",
+        "eslint-plugin-security": "^4.0.0",
         "grunt": "^1.5.3",
         "grunt-cli": "^1.4.3",
         "nyc": "^17.0.0",
