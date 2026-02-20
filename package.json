@@ -87,7 +87,7 @@
     "devDependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@microsoft/api-extractor": "^7.48.1",
-        "@microsoft/rush": "5.168.0",
+        "@microsoft/rush": "5.169.1",
         "@nevware21/grunt-eslint-ts": "^0.5.1",
         "@nevware21/grunt-ts-plugin": "^0.5.1",
         "@nevware21/coverage-tools": "^0.1.3",
