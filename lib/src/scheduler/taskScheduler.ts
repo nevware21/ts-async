@@ -15,7 +15,7 @@ import { ITaskScheduler } from "../interfaces/ITaskScheduler";
 import { createPromise } from "../promise/promise";
 
 //#ifdef DEBUG
-import { _debugLog } from "../promise/debug";
+//#:(!DEBUG) import { _debugLog } from "../promise/debug";
 //#endif
 
 const REJECT = "reject";
@@ -210,7 +210,7 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
             _blockedTimer && (_blockedTimer.enabled = hasTasks);
         } else {
             //#ifdef DEBUG
-            _debugLog(_schedulerName, "Stale Timer disabled");
+            //#:(!DEBUG) _debugLog(_schedulerName, "Stale Timer disabled");
             //#endif
         }
     }
@@ -273,7 +273,7 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
                 _promiseReject(taskDetail.rj);
             } else {
                 //#ifdef DEBUG
-                _debugLog(_schedulerName, "Task [" + taskId + "] Started after " + _calcTime(taskDetail.st, taskDetail.cr));
+                //#:(!DEBUG) _debugLog(_schedulerName, "Task [" + taskId + "] Started after " + _calcTime(taskDetail.st, taskDetail.cr));
                 //#endif
                 taskDetail[REJECT] = _promiseReject;
 
@@ -308,9 +308,9 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
 
         return newPromise((onWaitResolve, onWaitReject) => {
             //#ifdef DEBUG
-            let taskId = taskDetail.id;
-            let prevTaskId = prevTask.id;
-            _debugLog(_schedulerName, "[" + taskId + "] is waiting for [" + prevTaskId + "] to complete before starting -- [" + _waiting.length + "] waiting");
+            //#:(!DEBUG) let taskId = taskDetail.id;
+            //#:(!DEBUG) let prevTaskId = prevTask.id;
+            //#:(!DEBUG) _debugLog(_schedulerName, "[" + taskId + "] is waiting for [" + prevTaskId + "] to complete before starting -- [" + _waiting.length + "] waiting");
             //#endif
 
             // Wait for the previous tasks to complete before starting this one.
