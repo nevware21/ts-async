@@ -76,7 +76,8 @@ Update the recommended version range in the Quickstart section:
 ```
 
 #### `CHANGELIST.md`
-- Convert the `# Unreleased` section into a versioned release section
+- Leave the `# Unreleased` section in place and keep it empty except for the `## Changelog` heading
+- Move all current unreleased entries under a new versioned release section immediately below `# Unreleased`
 - Preserve all unreleased changes as-is — do not remove or reduce them
 - Add a full changelog comparison link at the end of the new version section
 - The format for a new release section is:
