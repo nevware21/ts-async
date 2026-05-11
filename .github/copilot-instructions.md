@@ -86,7 +86,7 @@ Update the recommended version range in the Quickstart section:
 
 ## Changelog
 
-# v{new-version} {Month} {Day}th, {Year}
+# v{new-version} {Month} {Day}, {Year}
 
 ## Changelog
 
