@@ -101,7 +101,7 @@ For full details see [v{prev-version}...v{new-version}](https://github.com/nevwa
 **Important CHANGELIST.md rules:**
 - Only include significant changes (features, bugs, important dependency updates)
 - If there are listed unreleased items, include them exactly as-is — do not summarize or reduce them
-- Always add a `For full details see [v{prev}...v{new}](...)` comparison link using the GitHub compare URL
+- Always add a `For full details see [v{prev-version}...v{new-version}](...)` comparison link using the GitHub compare URL
 - Leave the `# Unreleased` section empty (with `## Changelog`) above the new version section for future changes
 
 ### Example CHANGELIST.md After a Release
