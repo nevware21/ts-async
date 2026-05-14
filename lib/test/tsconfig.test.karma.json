@@ -1,9 +1,5 @@
 {
     "compilerOptions": {
-        "lib": [
-            "es2021",
-            "dom"
-        ],
         "sourceMap": true,
         "inlineSources": true,
         "noImplicitAny": true,

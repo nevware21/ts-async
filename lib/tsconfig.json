@@ -1,6 +1,10 @@
 {
     "extends": "./tsconfig.base.json",
     "compilerOptions": {
+        "lib": [
+            "es2021",
+            "dom"
+        ],
         "target": "es5",
         "declaration": true,
         "declarationDir": "./build/types",
