@@ -101,10 +101,10 @@ Install the npm packare: `npm install @nevware21/ts-async --save`
 > "@nevware21/ts-async": ">= 0.5.5 < 2.x"
 > ```
 
-This package still targets ES5 at runtime, but its public TypeScript types use later built-in definitions such as `Promise`, `Iterable`, `AsyncIterable`, and `AggregateError`. If your project currently compiles with only ES5 libs, update your `tsconfig.json` to include a later ES lib, for example:
+This package still targets ES5 at runtime, but its public TypeScript types use later built-in definitions such as `Promise`, `Iterable`, and `AsyncIterable`. If your project currently compiles with only ES5 libs, update your `tsconfig.json` to include a later ES lib, for example:
 
-- Browser / mixed environments: `"lib": ["ES2021", "DOM"]`
-- Node-only environments: `"lib": ["ES2021"]`
+- Browser / mixed environments: `"lib": ["ES2018", "DOM"]`
+- Node-only environments: `"lib": ["ES2018"]`
 
 And then just import the helpers and use them.
 

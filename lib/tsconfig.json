@@ -2,8 +2,11 @@
     "extends": "./tsconfig.base.json",
     "compilerOptions": {
         "lib": [
-            "es2021",
-            "dom"
+            "es5",
+            "dom",
+            "es2015.promise",
+            "es2015.iterable",
+            "es2018.asynciterable"
         ],
         "target": "es5",
         "declaration": true,
