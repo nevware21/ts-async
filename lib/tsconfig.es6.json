@@ -1,6 +1,11 @@
 {
     "extends": "./tsconfig.base.json",
     "compilerOptions": {
+        "lib": [
+            "dom",
+            "es6",
+            "es2018.asynciterable"
+        ],
         "target": "es6",
         "outDir": "./build/es6"
     }
