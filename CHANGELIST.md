@@ -4,7 +4,7 @@
 
 - [#488](https://github.com/nevware21/ts-async/issues/488) [CHORE] Drop Node.js 16 from CI matrix and add Node.js 24
   - Node.js 16 is end-of-life and is no longer supported by key tooling dependencies (for example `puppeteer` and `@pnpm/error` require Node.js >= 18)
-- [#500](https://github.com/nevware21/ts-async/pull/500) [BUG] Add explicit ES2021 libs to the package tsconfig and document the required consumer TypeScript lib setting
+- [#499](https://github.com/nevware21/ts-async/issues/499) [BUG] Add explicit ES2021 libs to the package tsconfig and document the required consumer TypeScript lib setting
 
 # v0.5.5 Jan 5th, 2026
 
