@@ -67,11 +67,6 @@ test-esm/
 types/
 build/
 dist/
-!lib/dist/
-lib/dist/**
-!lib/dist/types/
-lib/dist/types/**
-!lib/dist/types/ts-async.d.ts
 dist-es**/
 docs/typedoc/**
 
