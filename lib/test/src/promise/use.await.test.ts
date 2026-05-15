@@ -1413,6 +1413,44 @@ function batchTests(testKey: string, definition: TestDefinition) {
         }).finally(()=> 77), 2, "Expect the result to be 2");
     });
 
+    it("check finally waits for returned promise on resolve", async () => {
+        let finallyCalled = false;
+        let promise = createNewPromise((resolve, reject) => {
+            resolve(2);
+        }).finally(() => {
+            return createNewPromise<void>((resolve) => {
+                scheduleTimeout(() => {
+                    finallyCalled = true;
+                    resolve();
+                }, 10);
+            });
+        });
+
+        assert.equal(finallyCalled, false, "finally should not be called synchronously");
+        let result = await promise;
+        assert.equal(result, 2, "Expect the result to be 2");
+        assert.equal(finallyCalled, true, "finally promise should complete before resolve");
+    });
+
+    it("check finally waits for returned promise on reject", async () => {
+        let finallyCalled = false;
+        let rejectReason = new Error("finally-reject");
+        try {
+            await createRejectedPromise<number>(new Error("main-reject")).finally(() => {
+                return createNewPromise<void>((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        finallyCalled = true;
+                        reject(rejectReason);
+                    }, 10);
+                });
+            });
+            assert.ok(false, "Expected the promise to reject");
+        } catch (e) {
+            assert.equal(e, rejectReason, "Expected the finally rejection reason");
+            assert.equal(finallyCalled, true, "finally promise should complete before reject");
+        }
+    });
+
     it("check creating a resolved promise with another promise", async () => {
 
         let otherPromise = createNewPromise((resolve, reject) => {

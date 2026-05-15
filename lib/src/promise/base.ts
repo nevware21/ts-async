@@ -205,13 +205,15 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
         let catchFinally: any = onFinally;
         if (isFunction(onFinally)) {
             thenFinally = function(value: TResult1 | TResult2) {
-                onFinally && onFinally();
-                return value;
+                return doAwait(onFinally && onFinally(), () => {
+                    return value;
+                });
             }
     
             catchFinally = function(reason: any) {
-                onFinally && onFinally();
-                throw reason;
+                return doAwait(onFinally && onFinally(), () => {
+                    throw reason;
+                });
             }
         }
 
