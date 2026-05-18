@@ -1414,6 +1414,74 @@ function batchTests(testKey: string, definition: TestDefinition) {
         }).finally(()=> 77), 2, "Expect the result to be 2");
     });
 
+    it("check finally waits for returned promise on resolve", async () => {
+        let finallyInvoked = false;
+        let finallyCompleted = false;
+        let promise = createNewPromise((resolve, reject) => {
+            resolve(2);
+        }).finally(() => {
+            return createNewPromise<void>((resolve) => {
+                finallyInvoked = true;
+                scheduleTimeout(() => {
+                    finallyCompleted = true;
+                    resolve();
+                }, 10);
+            });
+        });
+
+        assert.equal(finallyCompleted, false, "finally promise should not complete synchronously");
+        if (testKey !== "sync") {
+            // Sync promises process handlers synchronously on already-settled promises,
+            // so the finally callback (and its executor) will have already been invoked
+            assert.equal(finallyInvoked, false, "finally should not be invoked synchronously");
+        } else {
+            assert.equal(finallyInvoked, true, "finally should already have been invoked synchronously");
+        }
+
+        let result = await promise;
+        assert.equal(result, 2, "Expect the result to be 2");
+        assert.equal(finallyInvoked, true, "finally should be invoked before resolve");
+        assert.equal(finallyCompleted, true, "finally promise should complete before resolve");
+    });
+
+    it("check finally waits for returned promise on reject", async () => {
+        let finallyCalled = false;
+        let finallyRejectReason = new Error("finally-reject");
+        try {
+            await createRejectedPromise<number>(new Error("main-reject")).finally(() => {
+                return createNewPromise<void>((resolve, reject) => {
+                    scheduleTimeout(() => {
+                        finallyCalled = true;
+                        reject(finallyRejectReason);
+                    }, 10);
+                });
+            });
+            assert.ok(false, "Expected the promise to reject");
+        } catch (e) {
+            assert.equal(e, finallyRejectReason, "Expected the finally rejection reason");
+            assert.equal(finallyCalled, true, "finally promise should complete before reject");
+        }
+    });
+
+    it("check finally preserves original rejection when returned promise resolves", async () => {
+        let finallyCalled = false;
+        let mainRejectReason = new Error("main-reject");
+        try {
+            await createRejectedPromise<number>(mainRejectReason).finally(() => {
+                return createNewPromise<void>((resolve) => {
+                    scheduleTimeout(() => {
+                        finallyCalled = true;
+                        resolve();
+                    }, 10);
+                });
+            });
+            assert.ok(false, "Expected the promise to reject");
+        } catch (e) {
+            assert.equal(e, mainRejectReason, "Expected the original rejection reason");
+            assert.equal(finallyCalled, true, "finally promise should complete before reject");
+        }
+    });
+
     it("check creating a resolved promise with another promise", async () => {
 
         let otherPromise = createNewPromise((resolve, reject) => {

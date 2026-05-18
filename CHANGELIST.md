@@ -2,6 +2,8 @@
 
 ## Changelog
 
+- [#508](https://github.com/nevware21/ts-async/pull/508) [Bug] Fix `IPromise.finally()` to await returned promises per ES2018 spec
+  - `Promise.finally()` was ignoring the return value of the `onFinally` callback. Per the ES2018 specification (ECMA-262 §27.2.5.3), if `onFinally` returns a promise/thenable, the resulting promise must wait for it to settle before propagating the original value or reason. If the returned promise rejects, that rejection takes precedence.
 - [#488](https://github.com/nevware21/ts-async/issues/488) [CHORE] Drop Node.js 16 from CI matrix and add Node.js 24
   - Node.js 16 is end-of-life and is no longer supported by key tooling dependencies (for example `puppeteer` and `@pnpm/error` require Node.js >= 18)
 

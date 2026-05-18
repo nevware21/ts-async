@@ -318,10 +318,20 @@ export function doFinally<T>(value: T | IPromise<T>, finallyFn: FinallyPromiseHa
                 // Simulate finally if not available
                 result = value.then(
                     function(value) {
-                        finallyFn();
+                        let r = finallyFn();
+                        if (isPromiseLike(r)) {
+                            return r.then(function() {
+                                return value;
+                            });
+                        }
                         return value;
                     }, function(reason: any) {
-                        finallyFn();
+                        let r = finallyFn();
+                        if (isPromiseLike(r)) {
+                            return r.then(function() {
+                                throw reason;
+                            });
+                        }
                         throw reason;
                     });
             }
