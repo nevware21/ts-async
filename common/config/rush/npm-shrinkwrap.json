@@ -569,9 +569,19 @@
       }
     },
     "node_modules/@nevware21/ts-utils": {
-      "version": "0.13.0",
-      "resolved": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.13.0.tgz",
-      "integrity": "sha512-F3mD+DsUn9OiZmZc5tg0oKqrJCtiCstwx+wE+DNzFYh2cCRUuzTYdK9zGGP/au2BWvbOQ6Tqlbjr2+dT1P3AlQ=="
+      "version": "0.14.0",
+      "resolved": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.14.0.tgz",
+      "integrity": "sha512-WoeqTIXQ8WPhl+lD2NbMHoAQ4sJl0n7EoRoDmVJui//Usg512enl9q1fdbVobuZt3omnxnmVsDrNIvPBvFgddQ==",
+      "funding": [
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/nevware21"
+        },
+        {
+          "type": "other",
+          "url": "https://buymeacoffee.com/nevware21"
+        }
+      ]
     },
     "node_modules/@nodelib/fs.scandir": {
       "version": "2.1.5",
@@ -606,9 +616,9 @@
       }
     },
     "node_modules/@puppeteer/browsers": {
-      "version": "3.0.2",
-      "resolved": "https://registry.npmjs.org/@puppeteer/browsers/-/browsers-3.0.2.tgz",
-      "integrity": "sha512-JnOSHrAdCQOj27P5QnTrd6bkYd9cXXeFMJS5UJF3UmQbpZQAMMO7AaL0NyrT7i2l/43bwjaHguU+LOpBRyx66w==",
+      "version": "3.0.3",
+      "resolved": "https://registry.npmjs.org/@puppeteer/browsers/-/browsers-3.0.3.tgz",
+      "integrity": "sha512-v3YaiGpzUTgOZkHBFR0iZg58Vto25SqBQxfLUXDiofJccwVl6Mlr7BdLCS1NZgxikdeIHf936cxYWL9IZp3tow==",
       "dependencies": {
         "debug": "^4.4.3",
         "progress": "^2.0.3",
@@ -1417,9 +1427,9 @@
       "integrity": "sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q=="
     },
     "node_modules/@types/node": {
-      "version": "25.8.0",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-25.8.0.tgz",
-      "integrity": "sha512-TCFSk8IZh+iLX1xtksoBVtdmgL+1IX0fC9BeU4QqFSuNdN/K+HUlhqOzEmSYYpZUVsLYcPqc9KX+60iDuninSQ==",
+      "version": "25.9.0",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-25.9.0.tgz",
+      "integrity": "sha512-AOQwYUNolgy3VosiRqXrACUXTN8nJUtPl7FJXMqZVyxiiCLhQuG3jXKvCS1ALr+Y2OmZhzzLVlYPEqJaiqkaJQ==",
       "dependencies": {
         "undici-types": ">=7.24.0 <7.24.7"
       }
@@ -1848,9 +1858,9 @@
       }
     },
     "node_modules/baseline-browser-mapping": {
-      "version": "2.10.30",
-      "resolved": "https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.10.30.tgz",
-      "integrity": "sha512-xjOFN16Ha1+Rz4nFYKqHU/LSB+gx/Vi3yQLX7r7sAW+Wa+8hhF2h4pvqTrTMc8+WcDBEunnUurr46Jvv0jk3Vg==",
+      "version": "2.10.31",
+      "resolved": "https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.10.31.tgz",
+      "integrity": "sha512-MujYO3eP72uvmSE0i4wltsodRfIpZATP3jvzRNRGGxgzId7aVocVJJV3nf01qnzzKFGxQVC9bpWxl5cjxTr/7Q==",
       "bin": {
         "baseline-browser-mapping": "dist/cli.cjs"
       },
@@ -3002,9 +3012,9 @@
       "integrity": "sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow=="
     },
     "node_modules/electron-to-chromium": {
-      "version": "1.5.357",
-      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.357.tgz",
-      "integrity": "sha512-NHlTIQDK8fmVwHwuIzmXYEJ1Ewq3D9wDNc0cWXxDGysP6Pb21giwGNkxiTifyKy/4SoPuN5l6GLP1W9Sv7zB2g=="
+      "version": "1.5.359",
+      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.359.tgz",
+      "integrity": "sha512-8lPELWuYZIWk7NDvCNthtmMw/7Q5Wu25NpM4djFMHBmk8DubPAtL4YTOp7ou0e7HyJtwkVlWv8XMLURnrtgJQw=="
     },
     "node_modules/elliptic": {
       "version": "6.6.1",
@@ -6375,9 +6385,9 @@
       }
     },
     "node_modules/path-scurry/node_modules/lru-cache": {
-      "version": "11.3.6",
-      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.3.6.tgz",
-      "integrity": "sha512-Gf/KoL3C/MlI7Bt0PGI9I+TeTC/I6r/csU58N4BSNc4lppLBeKsOdFYkK+dX0ABDUMJNfCHTyPpzwwO21Awd3A==",
+      "version": "11.4.0",
+      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.4.0.tgz",
+      "integrity": "sha512-W+R+kFL4HgVxONq2bhXPi3bGpzGe/yEhVOp233qw9wCRtgncJ15P3bC+e4zZMu4Cq7d+WAJjXGW0uUkifhcatA==",
       "engines": {
         "node": "20 || >=22"
       }
@@ -6572,16 +6582,16 @@
       }
     },
     "node_modules/puppeteer": {
-      "version": "25.0.2",
-      "resolved": "https://registry.npmjs.org/puppeteer/-/puppeteer-25.0.2.tgz",
-      "integrity": "sha512-cXj/5RlDCzSC7k1YdBIm6prb8lK8lEdmScVbcalX1rBn4fqNN1UNuEz/HZZYiDLsK8dOGvyLpGjh6CgxCyqKtg==",
+      "version": "25.0.4",
+      "resolved": "https://registry.npmjs.org/puppeteer/-/puppeteer-25.0.4.tgz",
+      "integrity": "sha512-QFdBAuNOqL0I+AdARTlRR1KcgPk0fo0dU127e1ZQFVxb9QPcpBDIiQp/dMgdbyLXHpF2GRjC/OezDmjKcLCKYw==",
       "hasInstallScript": true,
       "dependencies": {
-        "@puppeteer/browsers": "3.0.2",
+        "@puppeteer/browsers": "3.0.3",
         "chromium-bidi": "16.0.1",
         "cosmiconfig": "^9.0.0",
         "devtools-protocol": "0.0.1608973",
-        "puppeteer-core": "25.0.2",
+        "puppeteer-core": "25.0.4",
         "typed-query-selector": "^2.12.2"
       },
       "bin": {
@@ -6592,11 +6602,11 @@
       }
     },
     "node_modules/puppeteer-core": {
-      "version": "25.0.2",
-      "resolved": "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-25.0.2.tgz",
-      "integrity": "sha512-Q0IUIHER1S9PiNIfdNFc+pVOj79Tp4b9v0Fv4enigwsLy0Hbgq45KFgqzmN31DeCXh+Uvxnt9r7fMERhAMjs8Q==",
+      "version": "25.0.4",
+      "resolved": "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-25.0.4.tgz",
+      "integrity": "sha512-K1LQKDP6w1rIr1jUyN9obH16TO/DCy86k3q+FBd2prGY+TStxhFySxmaZZuRF+0D3BJXjwCYFke7tMHCH4olTA==",
       "dependencies": {
-        "@puppeteer/browsers": "3.0.2",
+        "@puppeteer/browsers": "3.0.3",
         "chromium-bidi": "16.0.1",
         "debug": "^4.4.3",
         "devtools-protocol": "0.0.1608973",
