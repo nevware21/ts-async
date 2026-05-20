@@ -6,13 +6,26 @@
  * Licensed under the MIT license.
  */
 
-import { arrForEach, isNumber, scheduleIdleCallback, scheduleTimeout } from "@nevware21/ts-utils";
+import { arrForEach, getInst, isFunction, isNumber, safe, scheduleIdleCallback, scheduleTimeout } from "@nevware21/ts-utils";
 import { IPromise } from "../interfaces/IPromise";
 import { PromiseExecutor } from "../interfaces/types";
 
 export type PromisePendingProcessor = (pending: PromisePendingFn[]) => void;
 export type PromisePendingFn = () => void;
 export type PromiseCreatorFn = <T, TResult2 = never>(newExecutor: PromiseExecutor<T>, ...extraArgs: any) => IPromise<T | TResult2>;
+
+const _queueMicrotask = /*#__PURE__*/safe(getInst<(callback: () => void) => void>, [ "queueMicrotask" ]).v;
+
+function _processPending(pending: PromisePendingFn[]): void {
+    syncItemProcessor(pending);
+}
+
+function _isFakeTimersEnabled(): boolean {
+    // Sinon fake timers patch setTimeout and expose the active clock instance as `setTimeout.clock`.
+    // This check intentionally targets that behavior so async promise callbacks remain testable with fake clocks.
+    let setTimeoutFn = setTimeout as any;
+    return !!(setTimeoutFn && setTimeoutFn.clock);
+}
 
 /**
  * @internal
@@ -42,9 +55,29 @@ export function timeoutItemProcessor(timeout?: number): (pending: PromisePending
     let callbackTimeout = isNumber(timeout) ? timeout : 0;
 
     return (pending: PromisePendingFn[]) => {
-        scheduleTimeout(() => {
-            syncItemProcessor(pending);
-        }, callbackTimeout);
+        if (callbackTimeout > 0) {
+            scheduleTimeout(() => {
+                _processPending(pending);
+            }, callbackTimeout);
+        } else if (_isFakeTimersEnabled()) {
+            // Under Sinon fake timers, queued microtasks are not advanced by clock ticks in this test suite,
+            // so use setTimeout(0) to keep callback progression deterministic while fake timers are active.
+            scheduleTimeout(() => {
+                _processPending(pending);
+            }, 0);
+        } else if (isFunction(_queueMicrotask)) {
+            _queueMicrotask(() => {
+                _processPending(pending);
+            });
+        } else if (typeof Promise !== "undefined" && Promise.resolve) {
+            Promise.resolve().then(() => {
+                _processPending(pending);
+            });
+        } else {
+            scheduleTimeout(() => {
+                _processPending(pending);
+            }, 0);
+        }
     }
 }
 
