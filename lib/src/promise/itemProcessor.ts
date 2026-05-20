@@ -6,13 +6,24 @@
  * Licensed under the MIT license.
  */
 
-import { arrForEach, isNumber, scheduleIdleCallback, scheduleTimeout } from "@nevware21/ts-utils";
+import { arrForEach, getInst, isFunction, isNumber, safe, scheduleIdleCallback, scheduleTimeout } from "@nevware21/ts-utils";
 import { IPromise } from "../interfaces/IPromise";
 import { PromiseExecutor } from "../interfaces/types";
 
 export type PromisePendingProcessor = (pending: PromisePendingFn[]) => void;
 export type PromisePendingFn = () => void;
 export type PromiseCreatorFn = <T, TResult2 = never>(newExecutor: PromiseExecutor<T>, ...extraArgs: any) => IPromise<T | TResult2>;
+
+const _queueMicroTask = /*#__PURE__*/safe(getInst<(callback: () => void) => void>, [ "queueMicrotask" ]).v;
+
+function _processPending(pending: PromisePendingFn[]): void {
+    syncItemProcessor(pending);
+}
+
+function _isFakeTimersEnabled(): boolean {
+    let timerFn = setTimeout as any;
+    return !!(timerFn && timerFn.clock);
+}
 
 /**
  * @internal
@@ -42,9 +53,27 @@ export function timeoutItemProcessor(timeout?: number): (pending: PromisePending
     let callbackTimeout = isNumber(timeout) ? timeout : 0;
 
     return (pending: PromisePendingFn[]) => {
-        scheduleTimeout(() => {
-            syncItemProcessor(pending);
-        }, callbackTimeout);
+        if (callbackTimeout > 0) {
+            scheduleTimeout(() => {
+                _processPending(pending);
+            }, callbackTimeout);
+        } else if (_isFakeTimersEnabled()) {
+            scheduleTimeout(() => {
+                _processPending(pending);
+            }, 0);
+        } else if (typeof Promise !== "undefined" && Promise.resolve) {
+            Promise.resolve().then(() => {
+                _processPending(pending);
+            });
+        } else if (isFunction(_queueMicroTask)) {
+            _queueMicroTask(() => {
+                _processPending(pending);
+            });
+        } else {
+            scheduleTimeout(() => {
+                _processPending(pending);
+            }, 0);
+        }
     }
 }
 
