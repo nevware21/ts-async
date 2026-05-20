@@ -84,6 +84,22 @@ The package provides a simple polyfill wrapper which is built around the `asynch
 
 This library plans to maintain ES5 compatibility for all versions of v0.x and v1.x releases
 
+### TypeScript Type Definitions
+
+The published type definitions (`.d.ts`) include a `/// <reference lib="es2018" />` directive. This means TypeScript will automatically load ES2018 type definitions when consuming this package. This is a **type-level requirement only** — no ES2018 runtime features are needed because the library provides its own internal polyfills/shims for environments that lack them.
+
+If your project explicitly sets `"lib"` in `tsconfig.json`, ensure it includes at least `"es2018"` (or the individual libs `"es2015.promise"` and `"es2018.asynciterable"`):
+
+```json
+{
+  "compilerOptions": {
+    "lib": ["es2018", "dom"]
+  }
+}
+```
+
+> Projects that omit the `"lib"` field entirely (defaulting to the libs implied by `"target"`) may need to add it explicitly if targeting ES5.
+
 ### ES(future [6 next, etc])
 
 Future versions of this library starting at version 2.x are planned to lift and remove the internal polyfills to support the new targetted baseline once it is defined.
