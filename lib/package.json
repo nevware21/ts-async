@@ -79,7 +79,7 @@
         "cleanBuild": "npm run clean && npm run rebuild && npm run docs",
         "docs": "cd .. && npx typedoc",
         "rush-update": "rush update --recheck --purge --full",
-        "dtsgen": "api-extractor run --local --verbose",
+        "dtsgen": "api-extractor run --local --verbose && node scripts/setTsReferences.js",
         "preproc": "ts-preproc -C ../preproc.json -R .."
     },
     "dependencies": {

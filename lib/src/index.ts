@@ -1,3 +1,4 @@
+/// <reference lib="es2018" />
 /*
  * @nevware21/ts-async
  * https://github.com/nevware21/ts-async
