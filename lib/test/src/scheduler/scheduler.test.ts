@@ -504,6 +504,24 @@ function batchTests(testKey: string, definition: TestDefinition) {
         );
     });
 
+    it("Disable Abort Stale timer clears settled tasks", (done) => {
+        let scheduler = createTaskScheduler(createAsyncPromise, "no-stale-" + testKey);
+        scheduler.setStaleTimeout(0);
+
+        for (let lp = 0; lp < 100; lp++) {
+            scheduler.queue(() => lp);
+        }
+
+        let finalTask = scheduler.queue(() => 100);
+        doAwait(finalTask, () => {
+            let schedulerState: any = (scheduler as any)["[[SchedulerState]]"];
+            assert.equal(true, scheduler.idle, "The scheduler should be idle");
+            assert.equal(getLength(schedulerState.r), 0, "Running tasks should be empty");
+            assert.equal(getLength(schedulerState.w), 0, "Waiting tasks should be empty");
+            done();
+        }, failOnCall);
+    });
+
     it("Aborting Multiple Stale events", (done) => {
         let scheduler = createTaskScheduler(null as any, "AbortMultiple-" + testKey);
         scheduler.setStaleTimeout(100);
