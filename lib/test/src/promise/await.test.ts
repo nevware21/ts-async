@@ -651,6 +651,84 @@ describe("Validate doFinally", () => {
 
         assert.ok(true, "Should not throw an exception");
     });
+
+    it("should call finallyFn and propagate fulfillment for PromiseLike without .finally (resolve path)", async () => {
+        let finallyCalled = false;
+        const promiseLike: PromiseLike<string> = {
+            then(onfulfilled?: any, onrejected?: any) {
+                return Promise.resolve("resolved-value").then(onfulfilled, onrejected);
+            }
+        };
+
+        assert.equal((promiseLike as any).finally, undefined, "PromiseLike should not have .finally");
+
+        const result = await doFinally(promiseLike, () => {
+            finallyCalled = true;
+        });
+
+        assert.equal(result, "resolved-value", "The original resolved value should be propagated");
+        assert.equal(finallyCalled, true, "finallyFn should have been called");
+    });
+
+    it("should call finallyFn and propagate rejection for PromiseLike without .finally (reject path)", async () => {
+        let finallyCalled = false;
+        const promiseLike: PromiseLike<string> = {
+            then(onfulfilled?: any, onrejected?: any) {
+                return Promise.reject("rejection-reason").then(onfulfilled, onrejected);
+            }
+        };
+
+        assert.equal((promiseLike as any).finally, undefined, "PromiseLike should not have .finally");
+
+        try {
+            await doFinally(promiseLike, () => {
+                finallyCalled = true;
+            });
+            assert.fail("Should have thrown");
+        } catch (e) {
+            assert.equal(e, "rejection-reason", "The original rejection should be propagated");
+        }
+
+        assert.equal(finallyCalled, true, "finallyFn should have been called");
+    });
+
+    it("should await async thenable returned by finallyFn before propagating fulfillment for PromiseLike without .finally", async () => {
+        let finallyCalled = false;
+        let finallyResolved = false;
+        const promiseLike: PromiseLike<string> = {
+            then(onfulfilled?: any, onrejected?: any) {
+                return Promise.resolve("resolved-value").then(onfulfilled, onrejected);
+            }
+        };
+
+        const result = await doFinally(promiseLike, () => {
+            finallyCalled = true;
+            return createTimeoutPromise(10, true, undefined).then(() => {
+                finallyResolved = true;
+            });
+        });
+
+        assert.equal(result, "resolved-value", "The original resolved value should be propagated after awaiting finallyFn thenable");
+        assert.equal(finallyCalled, true, "finallyFn should have been called");
+        assert.equal(finallyResolved, true, "finallyFn async thenable should have been awaited before continuation");
+    });
+
+    it("should propagate finallyFn thenable rejection and override original outcome for PromiseLike without .finally", async () => {
+        const promiseLike: PromiseLike<string> = {
+            then(onfulfilled?: any, onrejected?: any) {
+                return Promise.resolve("resolved-value").then(onfulfilled, onrejected);
+            }
+        };
+
+        try {
+            await doFinally(promiseLike, () => {
+                return createRejectedPromise("finally-rejection");
+            });
+            assert.fail("Should have thrown");
+        } catch (e) {
+            assert.equal(e, "finally-rejection", "finallyFn thenable rejection should override the original fulfilled value");
+        }
+    });
 });
 
 class TestRejectedPromiseLike<T> implements PromiseLike<T> {
