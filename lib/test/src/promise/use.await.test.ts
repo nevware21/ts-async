@@ -200,8 +200,9 @@ describe("Validate Promise Await Usage tests", async () => {
     objForEachKey(testImplementations, (testKey, definition) => {
         describe(`Testing [${testKey}] promise implementation`, function () {
             if (testKey === "idle") {
-                // Extend the default timeout for idle tests
-                this.timeout(10000);
+                // Extend the default timeout for idle tests as requestIdleCallback
+                // without a deadline can be deferred in headless browsers
+                this.timeout(30000);
             }
     
             batchTests(testKey, definition);
