@@ -145,7 +145,8 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                         _debugLog(_toString(), "Handling settled value " + dumpFnObj(_settledValue));
                         //#endif
                         let handler = _state === ePromiseState.Resolved ? onResolved : onRejected;
-                        let value = isUndefined(handler) ? _settledValue : (isFunction(handler) ? handler(_settledValue) : handler);
+                        // Promises/A+ 2.2.1: If onFulfilled/onRejected is not a function, it must be ignored
+                        let value = isFunction(handler) ? handler(_settledValue) : _settledValue;
                         //#ifdef DEBUG
                         _debugLog(_toString(), "Handling Result " + dumpFnObj(value));
                         //#endif
@@ -154,7 +155,7 @@ export function _createPromise<T>(newPromise: PromiseCreatorFn, processor: Promi
                             // The called handlers returned a new promise, so the chained promise
                             // will follow the state of this promise.
                             value.then(resolve as any, reject);
-                        } else if (handler) {
+                        } else if (isFunction(handler)) {
                             // If we have a handler then chained promises are always "resolved" with the result returned
                             resolve(value as any);
                         } else if (_state === ePromiseState.Rejected) {
