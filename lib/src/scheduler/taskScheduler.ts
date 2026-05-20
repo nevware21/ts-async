@@ -325,6 +325,7 @@ export function createTaskScheduler(newPromise?: <T>(executor: PromiseExecutor<T
 
     const _doCleanup = (taskDetail: ITaskDetail) => {
         _removeTask(_running, taskDetail);
+        _removeTask(_waiting, taskDetail);
 
         // If there was a timeout stop and clear
         taskDetail.t && taskDetail.t.cancel();
