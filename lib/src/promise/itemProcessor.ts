@@ -14,15 +14,17 @@ export type PromisePendingProcessor = (pending: PromisePendingFn[]) => void;
 export type PromisePendingFn = () => void;
 export type PromiseCreatorFn = <T, TResult2 = never>(newExecutor: PromiseExecutor<T>, ...extraArgs: any) => IPromise<T | TResult2>;
 
-const _queueMicroTask = /*#__PURE__*/safe(getInst<(callback: () => void) => void>, [ "queueMicrotask" ]).v;
+const _queueMicrotask = /*#__PURE__*/safe(getInst<(callback: () => void) => void>, [ "queueMicrotask" ]).v;
 
 function _processPending(pending: PromisePendingFn[]): void {
     syncItemProcessor(pending);
 }
 
 function _isFakeTimersEnabled(): boolean {
-    let timerFn = setTimeout as any;
-    return !!(timerFn && timerFn.clock);
+    // Sinon fake timers patch setTimeout and expose the active clock instance as `setTimeout.clock`.
+    // This check intentionally targets that behavior so async promise callbacks remain testable with fake clocks.
+    let setTimeoutFn = setTimeout as any;
+    return !!(setTimeoutFn && setTimeoutFn.clock);
 }
 
 /**
@@ -58,15 +60,17 @@ export function timeoutItemProcessor(timeout?: number): (pending: PromisePending
                 _processPending(pending);
             }, callbackTimeout);
         } else if (_isFakeTimersEnabled()) {
+            // Under Sinon fake timers, queued microtasks are not advanced by clock ticks in this test suite,
+            // so use setTimeout(0) to keep callback progression deterministic while fake timers are active.
             scheduleTimeout(() => {
                 _processPending(pending);
             }, 0);
-        } else if (typeof Promise !== "undefined" && Promise.resolve) {
-            Promise.resolve().then(() => {
+        } else if (isFunction(_queueMicrotask)) {
+            _queueMicrotask(() => {
                 _processPending(pending);
             });
-        } else if (isFunction(_queueMicroTask)) {
-            _queueMicroTask(() => {
+        } else if (typeof Promise !== "undefined" && Promise.resolve) {
+            Promise.resolve().then(() => {
                 _processPending(pending);
             });
         } else {

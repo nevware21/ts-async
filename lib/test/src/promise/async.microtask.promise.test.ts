@@ -10,7 +10,7 @@ import { assert } from "@nevware21/tripwire";
 import { createAsyncPromise } from "../../../src/promise/asyncPromise";
 
 describe("Validate createAsyncPromise() microtask timing", () => {
-    it("Test resolving promise using microtask queue by default", async () => {
+    it("should resolve using microtask queue by default", async () => {
         let callOrder: string[] = [];
 
         callOrder.push("1");
