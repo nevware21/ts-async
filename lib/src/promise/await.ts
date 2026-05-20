@@ -318,22 +318,14 @@ export function doFinally<T>(value: T | IPromise<T>, finallyFn: FinallyPromiseHa
                 // Simulate finally if not available
                 result = value.then(
                     function(value) {
-                        let r = finallyFn();
-                        if (isPromiseLike(r)) {
-                            return r.then(function() {
-                                return value;
-                            });
-                        }
-                        return value;
+                        return doAwait(finallyFn(), function() {
+                            return value;
+                        });
                     }, function(reason: any) {
-                        let r = finallyFn();
-                        if (isPromiseLike(r)) {
-                            return r.then(function() {
-                                throw reason;
-                            });
-                        }
-                        throw reason;
-                    });
+                        return doAwait(finallyFn(), function() {
+                            throw reason;
+                        });
+                    }) as any;
             }
         } else {
             finallyFn();
