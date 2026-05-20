@@ -31,7 +31,10 @@ export type ResolvedPromiseHandler<T, TResult1 = T> = (((value: T) => TResult1 |
 export type RejectedPromiseHandler<T = never> = (((reason: any) => T | IPromise<T> | PromiseLike<T>) | undefined | null);
 
 /**
- * This defines the handler function that is called via the finally when the promise is resolved or rejected
+ * A function to asynchronously execute when the promise becomes settled (fulfilled or rejected).
+ * If the function returns a promise, the resulting promise will wait for that promise to settle
+ * before continuing. If the returned promise is rejected, the resulting promise is rejected with
+ * the same reason. Any other returned value, or the fulfilled value of the returned promise, is ignored.
  */
 export type FinallyPromiseHandler = (() => void) | undefined | null;
 

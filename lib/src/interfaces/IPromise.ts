@@ -171,7 +171,10 @@ export interface IPromise<T> extends PromiseLike<T>, Promise<T> {
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
-     * @param onfinally - The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @param onfinally - A function to asynchronously execute when this promise becomes settled.
+     * If the function returns a promise, the resulting promise will wait for that promise to settle
+     * before continuing. If the returned promise is rejected, the resulting promise is rejected with
+     * the same reason. Any other returned value, or the fulfilled value of the returned promise, is ignored.
      * @returns A Promise for the completion of the callback.
      * @example
      * ```ts
