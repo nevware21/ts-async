@@ -6,13 +6,14 @@
  * Licensed under the MIT license.
  */
 
-import { ICachedValue, isUndefined } from "@nevware21/ts-utils";
+import { ICachedValue, isNumber, scheduleIdleCallback } from "@nevware21/ts-utils";
 import { _createAllPromise, _createAllSettledPromise, _createAnyPromise, _createPromise, _createRacePromise, _createRejectedPromise, _createResolvedPromise } from "./base";
 import { IPromise } from "../interfaces/IPromise";
-import { idleItemProcessor } from "./itemProcessor";
 import { PromiseExecutor } from "../interfaces/types";
 import { IPromiseResult } from "../interfaces/IPromiseResult";
 import { _pureAssign } from "../internal/treeshake_helpers";
+import { _normalizeTimeoutValue } from "../internal/timeout_helpers";
+import { PromisePendingFn, syncItemProcessor } from "./itemProcessor";
 
 let _defaultIdleTimeout: number | undefined;
 
@@ -56,8 +57,21 @@ export const setDefaultIdleTimeout = (/*#__PURE__*/_pureAssign(setDefaultIdlePro
  * positive value or it is ignored.
  */
 export function createIdlePromise<T>(executor: PromiseExecutor<T>, timeout?: number): IPromise<T>  {
-    let theTimeout = isUndefined(timeout) ? _defaultIdleTimeout : timeout;
-    return _createPromise(createIdlePromise, idleItemProcessor(theTimeout), executor, theTimeout);
+    let options: any;
+    let theTimeout = _normalizeTimeoutValue(timeout, _defaultIdleTimeout);
+    if (isNumber(theTimeout) && theTimeout >= 0) {
+        options = {
+            timeout: theTimeout
+        };
+    }
+
+    let processor = (pending: PromisePendingFn[]) => {
+        scheduleIdleCallback((deadline: IdleDeadline) => {
+            syncItemProcessor(pending);
+        }, options);
+    };
+
+    return _createPromise(createIdlePromise, processor, executor, theTimeout);
 }
 
 /**
