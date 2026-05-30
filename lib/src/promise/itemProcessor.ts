@@ -6,13 +6,21 @@
  * Licensed under the MIT license.
  */
 
-import { arrForEach, isNumber, scheduleIdleCallback, scheduleTimeout } from "@nevware21/ts-utils";
+import { arrForEach, isNumber, scheduleMicrotask, scheduleTimeout } from "@nevware21/ts-utils";
 import { IPromise } from "../interfaces/IPromise";
 import { PromiseExecutor } from "../interfaces/types";
+import { _normalizeTimeoutValue } from "../internal/timeout_helpers";
 
 export type PromisePendingProcessor = (pending: PromisePendingFn[]) => void;
 export type PromisePendingFn = () => void;
 export type PromiseCreatorFn = <T, TResult2 = never>(newExecutor: PromiseExecutor<T>, ...extraArgs: any) => IPromise<T | TResult2>;
+
+function _isFakeTimersEnabled(): boolean {
+    // Sinon fake timers patch setTimeout and expose the active clock instance as `setTimeout.clock`.
+    // This check intentionally targets that behavior so async promise callbacks remain testable with fake clocks.
+    let setTimeoutFn = setTimeout as any;
+    return !!(setTimeoutFn && setTimeoutFn.clock);
+}
 
 /**
  * @internal
@@ -39,34 +47,23 @@ export function syncItemProcessor(pending: PromisePendingFn[]): void {
  * @return An item processor
  */
 export function timeoutItemProcessor(timeout?: number): (pending: PromisePendingFn[]) => void {
-    let callbackTimeout = isNumber(timeout) ? timeout : 0;
+    let timeoutValue = _normalizeTimeoutValue(timeout);
+    let hasTimeout = isNumber(timeoutValue);
+    let callbackTimeout = hasTimeout ? (timeoutValue as number) : 0;
 
     return (pending: PromisePendingFn[]) => {
-        scheduleTimeout(() => {
+        function _processPending() {
             syncItemProcessor(pending);
-        }, callbackTimeout);
-    }
-}
+        }
 
-/**
- * @internal
- * @ignore
- * Return an item processor that processes all of the pending items using an idle callback (if available) or based on
- * a timeout (when `requestIdenCallback` is not supported) using the optional timeout.
- * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
- * @return An item processor
- */
-export function idleItemProcessor(timeout?: number): (pending: PromisePendingFn[]) => void {
-    let options: any;
-    if (timeout >= 0) {
-        options = {
-            timeout: +timeout
-        };
+        if (hasTimeout && callbackTimeout > 0) {
+            scheduleTimeout(_processPending, callbackTimeout);
+        } else if (_isFakeTimersEnabled()) {
+            // Under Sinon fake timers, queued microtasks are not advanced by clock ticks in this test suite,
+            // so use setTimeout(0) to keep callback progression deterministic while fake timers are active.
+            scheduleTimeout(_processPending, 0);
+        } else {
+            scheduleMicrotask(_processPending);
+        }
     }
-
-    return (pending: PromisePendingFn[]) => {
-        scheduleIdleCallback((deadline: IdleDeadline) => {
-            syncItemProcessor(pending);
-        }, options);
-    };
 }

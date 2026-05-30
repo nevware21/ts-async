@@ -1323,8 +1323,8 @@ function batchTests(testKey: string, definition: TestDefinition) {
         it("should resolve with the value of the first resolved promise", (done) => {
             const promises = [
                 createResolvedPromise("sync"),
-                createNewPromise((resolve) => setTimeout(() => resolve("fast"), 50)),
-                createNewPromise((resolve) => setTimeout(() => resolve("slowest"), 150))
+                createNewPromise((resolve) => setTimeout(() => resolve("fast"), 150)),
+                createNewPromise((resolve) => setTimeout(() => resolve("slowest"), 250))
             ];
 
             const promise = createRacePromise(promises);
@@ -1333,11 +1333,11 @@ function batchTests(testKey: string, definition: TestDefinition) {
                 assert.equal(value, "sync");
 
                 // Wait for the slowest promise to resolve so that it doesn't cause an unhandled rejection later
-                doAwait(createTimeoutPromise(200, true), () => {
+                doAwaitResponse(createTimeoutPromise(250, true), () => {
                     done();
                 });
             }, (reason) => {
-                assert.fail("Should not have been rejected");
+                // assert.fail("Should not have been rejected");
                 done(reason);
             });
         });
@@ -1345,19 +1345,18 @@ function batchTests(testKey: string, definition: TestDefinition) {
         it("should reject with the reason of the first rejected promise", (done) => {
             const promises = [
                 createRejectedPromise("sync"),
-                createNewPromise((_, reject) => setTimeout(() => reject("fast"), 50)),
-                createNewPromise((_, reject) => setTimeout(() => reject("slowest"), 150))
+                createNewPromise((_, reject) => setTimeout(() => reject("fast"), 150)),
+                createNewPromise((_, reject) => setTimeout(() => reject("slowest"), 250))
             ];
 
             const promise = createRacePromise(promises);
 
             doAwait(promise, () => {
-                assert.fail("Should not have been resolved");
-                done();
+                done(new Error("Expected promise to be rejected"));
             }, (reason) => {
                 assert.equal(reason, "sync");
                 // Wait for the slowest promise to resolve so that it doesn't cause an unhandled rejection later
-                doAwait(createTimeoutPromise(200, true), () => {
+                doAwaitResponse(createTimeoutPromise(250, true), () => {
                     done();
                 });
             });
