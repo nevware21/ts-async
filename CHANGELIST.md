@@ -18,7 +18,7 @@
 - [#509](https://github.com/nevware21/ts-async/pull/509) [BUG] Fix `Promise.then()` behavior to ignore non-function handlers per Promises/A+ 2.2.1
 - [#511](https://github.com/nevware21/ts-async/pull/511) [BUG] Fix `doFinally` fallback to await thenables returned by `onFinally`
 - [#505](https://github.com/nevware21/ts-async/pull/505) [BUG] Ensure settled tasks are removed from scheduler queues when stale timeout is disabled
-- [#514](https://github.com/nevware21/ts-async/pull/514) [REFACTOR] Use `setTimeout` instead of microtask queue for promise resolution behavior changes from [#503](https://github.com/nevware21/ts-async/issues/503)
+- [#514](https://github.com/nevware21/ts-async/pull/514) [REFACTOR] `setTimeout` used instead of microtask queue for promise resolution[#503](https://github.com/nevware21/ts-async/issues/503)
 - [#450](https://github.com/nevware21/ts-async/pull/450) [CHORE] Bump `@nevware21` components to latest recommended versions
 - [#430](https://github.com/nevware21/ts-async/pull/430) [TEST] Replace `chai` with `@nevware21/tripwire` for assertion testing
 
