@@ -2,6 +2,11 @@
 
 ## Changelog
 
+
+# v0.6.0 May 30th, 2026
+
+## Changelog
+
 - [#508](https://github.com/nevware21/ts-async/pull/508) [Bug] Fix `IPromise.finally()` to await returned promises per ES2018 spec
   - `Promise.finally()` was ignoring the return value of the `onFinally` callback. Per the ES2018 specification (ECMA-262 §27.2.5.3), if `onFinally` returns a promise/thenable, the resulting promise must wait for it to settle before propagating the original value or reason. If the returned promise rejects, that rejection takes precedence.
 - [#488](https://github.com/nevware21/ts-async/issues/488) [CHORE] Drop Node.js 16 from CI matrix and add Node.js 24
@@ -10,6 +15,14 @@
   - Add `/// <reference lib="es2018" />` directive to published declaration file so consumers no longer need to manually add ES2018 libs to their tsconfig
   - Add `"lib": ["es2018", "dom"]` to build and test tsconfig files
   - Add post-processing script to restore reference directive stripped by api-extractor
+- [#509](https://github.com/nevware21/ts-async/pull/509) [BUG] Fix `Promise.then()` behavior to ignore non-function handlers per Promises/A+ 2.2.1
+- [#511](https://github.com/nevware21/ts-async/pull/511) [BUG] Fix `doFinally` fallback to await thenables returned by `onFinally`
+- [#505](https://github.com/nevware21/ts-async/pull/505) [BUG] Ensure settled tasks are removed from scheduler queues when stale timeout is disabled
+- [#514](https://github.com/nevware21/ts-async/pull/514) [REFACTOR] Use `setTimeout` instead of microtask queue for promise resolution behavior changes from [#503](https://github.com/nevware21/ts-async/issues/503)
+- [#450](https://github.com/nevware21/ts-async/pull/450) [CHORE] Bump `@nevware21` components to latest recommended versions
+- [#430](https://github.com/nevware21/ts-async/pull/430) [TEST] Replace `chai` with `@nevware21/tripwire` for assertion testing
+
+For full details see [v0.5.5...v0.6.0](https://github.com/nevware21/ts-async/compare/v0.5.5...v0.6.0)
 
 # v0.5.5 Jan 5th, 2026
 
