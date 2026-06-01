@@ -535,11 +535,21 @@
       }
     },
     "node_modules/@nevware21/ts-async": {
-      "version": "0.5.5",
-      "resolved": "https://registry.npmjs.org/@nevware21/ts-async/-/ts-async-0.5.5.tgz",
-      "integrity": "sha512-vwqaL05iJPjLeh5igPi8MeeAu10i+Aq7xko1fbo9F5Si6MnVN5505qaV7AhSdk5MCBJVT/UYMk3kgInNjDb4Ig==",
+      "version": "0.6.0",
+      "resolved": "https://registry.npmjs.org/@nevware21/ts-async/-/ts-async-0.6.0.tgz",
+      "integrity": "sha512-pSc2Ynrz66bMDqs8Sw5qQOU4oeOLzFCeheAHJ6HZWpVz8yPGlZV4Ur03PiWli6qlFGR3Xls9Aov2TZRVb+izUA==",
+      "funding": [
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/nevware21"
+        },
+        {
+          "type": "buymeacoffee",
+          "url": "https://www.buymeacoffee.com/nevware21"
+        }
+      ],
       "dependencies": {
-        "@nevware21/ts-utils": ">= 0.12.2 < 2.x"
+        "@nevware21/ts-utils": ">= 0.15.0 < 2.x"
       }
     },
     "node_modules/@nevware21/ts-preproc": {
@@ -5474,9 +5484,19 @@
       }
     },
     "node_modules/mocha/node_modules/js-yaml": {
-      "version": "4.1.1",
-      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-4.1.1.tgz",
-      "integrity": "sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==",
+      "version": "4.2.0",
+      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-4.2.0.tgz",
+      "integrity": "sha512-ePWsvanv0DWuDRsW8dnt+R4jQ31SCRCQ7hhNcPXZPsoBZiemuZNYGf7adZdqX2D86j6rvKp3RpCxVTSb8WQlOw==",
+      "funding": [
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/puzrin"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/nodeca"
+        }
+      ],
       "dependencies": {
         "argparse": "^2.0.1"
       },
