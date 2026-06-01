@@ -3,6 +3,16 @@
 ## Changelog
 
 
+# v0.6.1 May 31st, 2026
+
+## Changelog
+
+- [#517](https://github.com/nevware21/ts-async/pull/517) [CHORE] Address issues with `/*#__PURE__*/` annotations placed inside parens causing Rolldown/Vite 8 issues
+  - /* #__PURE__*/ annotations in the published ESM/ES5 bundles are positioned inside the wrapping parentheses, between the open paren and the annotated expression. Rolldown, used by Vite 8 cannot associate the annotation with the expression that follows it, so the annotation is silently ignored and dead-code elimination does not kick in for the affected values.
+- [#516](https://github.com/nevware21/ts-async/pull/516) [TASK] Update changelog
+
+For full details see [v0.6.0...v0.6.1](https://github.com/nevware21/ts-async/compare/v0.6.0...v0.6.1)
+
 # v0.6.0 May 30th, 2026
 
 ## Changelog
