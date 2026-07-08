@@ -18,6 +18,7 @@ export {
 } from "./interfaces/types"
 export { doAwaitResponse, doAwait, doFinally } from "./promise/await";
 export { setPromiseDebugState } from "./promise/debug";
+export { setMaxSyncPromiseChainDepth } from "./promise/itemProcessor";
 export {
     createNativePromise, createNativeAllPromise, createNativeResolvedPromise, createNativeRejectedPromise,
     createNativeAnyPromise, createNativeRacePromise,

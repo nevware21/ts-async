@@ -2,6 +2,10 @@
 
 ## Changelog
 
+- [#527](https://github.com/nevware21/ts-async/pull/527) [Feature] Add `setMaxSyncPromiseChainDepth` to cap synchronous promise chain depth
+  - New exported function `setMaxSyncPromiseChainDepth(maxDepth?: number)` allows configuring the maximum number of synchronous `.then()` continuations that may execute in a single turn before the chain is deferred via a microtask hop. Defaults to 200.
+  - **Behavior change**: deep synchronous promise chains (longer than the configured max depth) will yield asynchronously once the limit is exceeded, meaning a `createSyncPromise`/`createSyncResolvedPromise` chain may remain pending temporarily for very deep/recursive chains.
+  - Pass no argument (or `undefined`) to reset back to the default depth.
 
 # v0.6.1 May 31st, 2026
 
