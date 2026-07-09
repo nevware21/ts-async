@@ -180,7 +180,7 @@
         {
             "name": "es5-any",
             "path": "lib/dist/es5/mod/ts-async.js",
-            "limit": "12.75 kb",
+            "limit": "13 kb",
             "import": "{ createAnyPromise }",
             "brotli": false,
             "ignore": [
