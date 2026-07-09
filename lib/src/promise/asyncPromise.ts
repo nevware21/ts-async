@@ -15,6 +15,7 @@ import { timeoutItemProcessor } from "./itemProcessor";
 import { PromiseExecutor } from "../interfaces/types";
 import { IPromiseResult } from "../interfaces/IPromiseResult";
 import { ICachedValue } from "@nevware21/ts-utils";
+import { _normalizeTimeoutValue } from "../internal/timeout_helpers";
 
 let _allAsyncSettledCreator: ICachedValue<<T extends readonly unknown[] | []>(input: T, timeout?: number) => IPromise<{ -readonly [P in keyof T]: IPromiseResult<Awaited<T[P]>>; }>>;
 let _raceAsyncCreator: ICachedValue<<T extends readonly unknown[] | []>(values: T, timeout?: number) => IPromise<Awaited<T[number]>>>;
@@ -30,7 +31,11 @@ let _anyAsyncCreator: ICachedValue<<T extends readonly unknown[] | []>(values: T
  * @param timeout - Optional timeout to wait before processing the items, defaults to zero.
  */
 export function createAsyncPromise<T>(executor: PromiseExecutor<T>, timeout?: number): IPromise<T> {
-    return _createPromise(createAsyncPromise, timeoutItemProcessor(timeout), executor, timeout);
+    // Normalize before storing as the chained promise's additional args (rather than passing the raw
+    // value through), so a timeout propagated across a long then/catch/finally chain is re-wrapped as
+    // a single-element array at each link instead of growing an extra level of array nesting per link.
+    let theTimeout = _normalizeTimeoutValue(timeout);
+    return _createPromise(createAsyncPromise, timeoutItemProcessor(theTimeout), executor, theTimeout);
 }
 
 /**

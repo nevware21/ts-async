@@ -11,6 +11,15 @@ import { isArray, isNumber, isUndefined } from "@nevware21/ts-utils";
 /**
  * @internal
  * @ignore
+ * The maximum number of nested array levels that {@link _normalizeTimeoutValue} will unwrap while
+ * looking for a numeric timeout value. This bounds the work performed against a self-referential
+ * array (e.g. `const a: any[] = []; a[0] = a;`), which would otherwise loop forever.
+ */
+const _MAX_TIMEOUT_UNWRAP_DEPTH = 5;
+
+/**
+ * @internal
+ * @ignore
  * Normalizes timeout values that may be passed either directly or inside an extra-args array.
  * @param timeout - The timeout value or argument array.
  * @param defaultTimeout - The fallback timeout when no explicit timeout is provided.
@@ -26,8 +35,10 @@ export function _normalizeTimeoutValue(timeout?: number | any, defaultTimeout?: 
 
             // Promise creation can re-wrap additional args for chained promises (for example [[10]]).
             // Unwrap nested array values so explicit timeouts keep flowing through then/catch/finally chains.
-            while(!isUndefined(timeout) && isArray(timeout) && timeout.length > 0) {
+            let depth = 0;
+            while(!isUndefined(timeout) && isArray(timeout) && timeout.length > 0 && depth < _MAX_TIMEOUT_UNWRAP_DEPTH) {
                 timeout = timeout[0];
+                depth++;
 
                 if (isNumber(timeout)) {
                     result = timeout;

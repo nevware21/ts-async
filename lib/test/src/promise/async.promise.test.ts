@@ -195,6 +195,30 @@ describe("Validate createAsyncPromise() timeout usages", () => {
         assert.equal(_unhandledEvents.length, 0, "No unhandled rejections");
     });
 
+    it("Test that an explicit timeout keeps propagating through a long then() chain", () => {
+        // Historically, chaining could cause the timeout extra-args to become increasingly nested arrays
+        // (see _normalizeTimeoutValue). This long chain guards against regressions where the explicit
+        // timeout would be dropped once the unwrap-depth cap is exceeded.
+        const linkCount = 20;
+        let times: number[] = [];
+        let p: IPromise<number> = createAsyncPromise<number>((resolve) => resolve(1), 10);
+        for (let i = 0; i < linkCount; i++) {
+            p = p.then((v: number) => {
+                times.push(clock.now);
+                return v + 1;
+            });
+        }
+
+        for (let i = 0; i <= linkCount; i++) {
+            clock.tick(10);
+        }
+
+        assert.equal(times.length, linkCount, "Expected every link in the chain to have resolved");
+        for (let i = 0; i < times.length; i++) {
+            assert.equal(times[i], (i + 1) * 10, `Expected link ${i} to resolve after its 10ms timeout was honored`);
+        }
+    });
+
     it("Test resolving promise using then/catch synchronously and state", () => {
         let resolvedValue: number | null = null;
         let rejectedValue = null;
