@@ -79,7 +79,51 @@ export function setMaxSyncPromiseChainDepth(maxDepth?: number): void {
     _maxSyncChainDepth = isNumber(maxDepth) ? maxDepth : DEFAULT_MAX_SYNC_CHAIN_DEPTH;
 }
 
+/**
+ * @internal
+ * @ignore
+ * When `true`, {@link _isFakeTimersEnabled} is forced to always report `false` regardless of whether a
+ * patched `setTimeout.clock` is actually present, see {@link setDisableFakeTimersDetection}.
+ */
+let _disableFakeTimersDetection = false;
+
+/**
+ * Enables or disables this library's automatic detection of Sinon-style fake timers (a patched
+ * `setTimeout` exposing a `.clock` property). By default (and when this function has never been called,
+ * or has been called with `undefined`) detection remains active -- this is the existing / historical
+ * behavior, so any global that patches `setTimeout` and happens to also expose a `.clock` property (not
+ * necessarily Sinon) will still be treated as fake timers and change this library's internal scheduling
+ * (eg. using a `0ms` timeout "hop" instead of a microtask when deferring a queued continuation).
+ * Passing `true` disables the detection so it always behaves as though fake timers are **not** present
+ * (real microtask / timer scheduling is always used), which avoids that false-positive fingerprinting
+ * risk for consumers who don't rely on it. Passing `false` re-enables detection.
+ * @since 0.7.0
+ * @group Promise
+ * @param disable - When `true` (or any other truthy value), disables fake timer detection so
+ * {@link _isFakeTimersEnabled} always returns `false`. When `false` (or any other falsy value),
+ * (re-)enables detection. When `undefined`, restores the default (detection enabled).
+ * @example
+ * ```ts
+ * // Disable fake timer detection -- this library will never treat a patched
+ * // setTimeout.clock as an indication that fake timers are active
+ * setDisableFakeTimersDetection(true);
+ *
+ * // Re-enable detection
+ * setDisableFakeTimersDetection(false);
+ *
+ * // Restore the default (detection enabled)
+ * setDisableFakeTimersDetection();
+ * ```
+ */
+export function setDisableFakeTimersDetection(disable?: boolean): void {
+    _disableFakeTimersDetection = disable === undefined ? false : !!disable;
+}
+
 function _isFakeTimersEnabled(): boolean {
+    if (_disableFakeTimersDetection) {
+        return false;
+    }
+
     // Sinon fake timers patch setTimeout and expose the active clock instance as `setTimeout.clock`.
     // This check intentionally targets that behavior so async promise callbacks remain testable with fake clocks.
     let setTimeoutFn = setTimeout as any;

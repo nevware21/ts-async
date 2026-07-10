@@ -34,6 +34,40 @@ Also of note is that all implementations will "emit/dispatch" the unhandled prom
 
 The provided polyfill wrapper is build around the `asynchronous` promise implementation which is tested and validated against the standard native (`Promise()`) implementations for node, browser and web-worker to ensure compatibility.
 
+## Fake Timer Detection
+
+**Where:** [`setDisableFakeTimersDetection`](https://nevware21.github.io/ts-async/typedoc/functions/setDisableFakeTimersDetection.html) (`lib/src/promise/itemProcessor.ts`), exported from the package root since `0.7.0`.
+
+Internally, whenever this library needs to defer work to the next tick (eg. the [`setMaxSyncPromiseChainDepth`](https://nevware21.github.io/ts-async/typedoc/functions/setMaxSyncPromiseChainDepth.html) synchronous-chain guard forcing a "hop", or the async/timeout item processors scheduling their queued continuations) it normally uses a real microtask (`scheduleMicrotask`). As an affordance for unit tests that install Sinon-style fake timers, it detects a patched global `setTimeout` that exposes a `.clock` property and, when found, uses a `0ms` timer (`scheduleTimeout(fn, 0)`) instead of a microtask -- because queued microtasks are not advanced by fake-clock `tick()` calls, only real timers are.
+
+This detection is a simple fingerprint (`(setTimeout as any).clock`) and is always active by default: **any** code that happens to patch the global `setTimeout` and also add a `.clock` property to it -- not necessarily Sinon -- will be treated the same way and will change this library's internal scheduling to use fake-timer-compatible `0ms` timeouts instead of microtasks.
+
+`setDisableFakeTimersDetection(disable?: boolean): void` lets a consumer opt out of this fingerprinting:
+
+| Call | Effect |
+|------|--------|
+| `setDisableFakeTimersDetection(true)` | Disables the check -- the library always behaves as though fake timers are **not** present and always uses real microtask scheduling to defer work, even if a patched `setTimeout.clock` is present. |
+| `setDisableFakeTimersDetection(false)` | Explicitly (re-)enables the check (same as the default). |
+| `setDisableFakeTimersDetection()` / `setDisableFakeTimersDetection(undefined)` | Restores the default (detection enabled). |
+| Any other value | Coerced to a boolean via `!!value`, so e.g. `setDisableFakeTimersDetection(1)` behaves the same as passing `true`. |
+
+**Side effects:**
+- This is global, process/runtime-wide mutable state (a module-level flag), not scoped to a single Promise, chain, or scheduler -- calling it affects **all** subsequent deferred scheduling across the entire library until it is called again.
+- It takes effect immediately for any future deferral decision; it does not retroactively change already-scheduled callbacks.
+- If your own test suite legitimately relies on this library's fake-timer-aware scheduling (eg. advancing a Sinon clock to drive queued continuations), disabling detection will cause those queued continuations to instead wait on a real microtask, which fake clock `tick()`/`next()` calls will **not** flush -- only draining the real microtask queue (eg. `await`ing a native `Promise`) will. Conversely, if you never install fake timers, calling this has no observable effect.
+- It is safe to call from application startup code (outside of tests) if you want to unconditionally opt out of the fingerprinting check described above; there is no cleanup required beyond calling it again (or with `undefined`) to change the behavior.
+
+```ts
+import { setDisableFakeTimersDetection } from "@nevware21/ts-async";
+
+// Opt out of the setTimeout.clock fingerprint -- deferred continuations always use a
+// real microtask, regardless of any patched setTimeout global.
+setDisableFakeTimersDetection(true);
+
+// Restore the default (fingerprinting / fake timer detection enabled)
+setDisableFakeTimersDetection();
+```
+
 ## Documentation
 
 Documentation [generated from source code](https://nevware21.github.io/ts-async/typedoc/index.html) via typedoc
