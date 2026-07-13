@@ -70,6 +70,14 @@ async function myApi()
 }
 ```
 
+### Fake Timer Detection
+
+Internally this library detects Sinon-style fake timers (a patched global `setTimeout` exposing a `.clock`
+property) so that deferred/queued continuations remain testable with fake clocks. This is on by default;
+call [`setDisableFakeTimersDetection`](./docs/README.md#fake-timer-detection) to opt out if your own code
+patches `setTimeout` in a way that could otherwise be mistaken for fake timers. See
+[Fake Timer Detection](./docs/README.md#fake-timer-detection) for full details and side effects.
+
 ### Unhandled Promise Rejection Event
 
 All implementations will "emit/dispatch" the unhandled promise rejections event (`unhandledRejection` (node) or `unhandledrejection`) (if supported by the runtime) using the standard runtime mechanisms. So any existing handlers for native (`new Promise`) unhandled rejections will also receive them from the `idle`, `sync` and `async` implementations. The only exception to this is when the runtime (like IE) doesn't support this event in those cases "if" an `onunhandledrejection` function is registered it will be called and if that also doesn't exist it will logged to the console (if possible).

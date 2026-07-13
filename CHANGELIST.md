@@ -9,6 +9,10 @@
 - [#528](https://github.com/nevware21/ts-async/pull/528) [BUG] Fix unbounded loop in timeout normalization and long-chain timeout propagation
   - `_normalizeTimeoutValue` unwrapped nested array timeout values with no iteration cap; a self-referential array (e.g. `const a: any[] = []; a[0] = a;`) passed as a timeout would loop forever. The unwrap loop is now capped at 5 iterations, falling back to the default timeout if no numeric value is found within that bound.
   - `createAsyncPromise` was re-wrapping the raw (potentially array) timeout as the chained promise's additional args on every `then()`/`catch()`/`finally()` link, growing an extra array-nesting level per link. Combined with the new depth cap this silently dropped an explicit timeout after ~5-6 chained calls. Fixed by normalizing the timeout once before it is stored, matching the existing `createIdlePromise` pattern, so nesting never exceeds one level regardless of chain length.
+- [Feature] Add `setDisableFakeTimersDetection` to allow opting out of Sinon fake-timer fingerprinting
+  - New exported function `setDisableFakeTimersDetection(disable?: boolean)` allows a consumer to force the library's internal Sinon-fake-timer detection (a patched `setTimeout.clock` fingerprint used to decide whether deferred continuations use a `0ms` timeout or a microtask) to always report "not present", so deferred work always uses a real microtask.
+  - Default behavior (detection enabled) is unchanged when never called, or called with `undefined`. Any other value is coerced via `!!`.
+  - See [Fake Timer Detection](./docs/README.md#fake-timer-detection) for full details and side effects.
 
 
 # v0.6.1 May 31st, 2026
