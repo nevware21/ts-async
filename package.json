@@ -104,7 +104,7 @@
         "@nevware21/publish-npm": ">= 0.1.4 < 2.x",
         "@nevware21/ts-preproc": "^0.1.4",
         "@size-limit/esbuild-why": "^12.0.0",
-        "@size-limit/preset-small-lib": "^12.0.0",
+        "@size-limit/preset-small-lib": "^13.0.1",
         "@size-limit/time": "^12.0.0",
         "@types/eslint": "^8.56.10",
         "@types/estree": "^1.0.0",
